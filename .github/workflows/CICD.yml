@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    env:
+      LOCAL_DB_URL: ${{ secrets.LOCAL_DB_URL }}
+      LOCAL_DB_USERNAME: ${{ secrets.LOCAL_DB_USERNAME }}
+      LOCAL_DB_PASSWORD: ${{ secrets.LOCAL_DB_PASSWORD }}
+
+    steps:
+      - name: CheckOut Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3.1.0
+
+      - name: Build and Test with Gradle
+        run: ./gradlew clean build
