@@ -14,11 +14,12 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/profiles")
-public class ProfileController {
+public class ProfileController implements ProfileControllerSwagger{
 
 	private final ProfileService profileService;
 
 	@PostMapping
+	@Override
 	public ResponseEntity<Void> createProfile(@Valid @RequestBody final ProfileCreateRequest request) {
 		profileService.createProfile(request);
 		return ResponseEntity.ok().build();
