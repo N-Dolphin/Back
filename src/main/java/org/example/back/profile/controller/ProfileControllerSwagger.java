@@ -1,7 +1,7 @@
 package org.example.back.profile.controller;
 
-import org.apache.coyote.Response;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
+import org.example.back.profile.service.response.ProfileCreateResponse;
 import org.springframework.http.ResponseEntity;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,5 +25,5 @@ public interface ProfileControllerSwagger {
 			)
 		}
 	)
-	ResponseEntity<Void> createProfile(final ProfileCreateRequest request);
+	ResponseEntity<ProfileCreateResponse> createProfile(final ProfileCreateRequest request);
 }

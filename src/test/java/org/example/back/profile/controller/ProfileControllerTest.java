@@ -1,6 +1,5 @@
 package org.example.back.profile.controller;
 
-import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -44,6 +43,6 @@ class ProfileControllerTest {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(requestBody))
 			.andDo(print())
-			.andExpect(status().isOk());
+			.andExpect(status().isCreated());
 	}
 }
