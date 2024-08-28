@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 
 import java.util.Optional;
 
@@ -25,8 +26,8 @@ public class UserServiceTest {
     @MockBean
     private UserRepository userRepository;
 
-    @MockBean
-    private EmailProvider emailProvider;
+//    @MockBean
+//    private EmailProvider emailProvider;
 
     @MockBean
     private CertificationRepository certificationRepository;
