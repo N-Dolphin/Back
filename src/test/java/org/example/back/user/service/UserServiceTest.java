@@ -1,10 +1,12 @@
 package org.example.back.user.service;
 
+import org.example.back.config.provider.EmailProvider;
 import org.example.back.config.provider.JwtProvider;
 import org.example.back.user.dto.request.SignInRequestDto;
 import org.example.back.user.dto.response.SignInResponseDto;
 import org.example.back.user.entity.UserEntity;
 import org.example.back.user.exception.UserNotFoundException;
+import org.example.back.user.repository.CertificationRepository;
 import org.example.back.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,14 +22,20 @@ import static org.mockito.Mockito.when;
 @SpringBootTest
 public class UserServiceTest {
 
-    @Autowired
-    private UserService userService;
-
     @MockBean
     private UserRepository userRepository;
 
     @MockBean
+    private EmailProvider emailProvider;
+
+    @MockBean
+    private CertificationRepository certificationRepository;
+
+    @MockBean
     private JwtProvider jwtProvider;
+
+    @Autowired
+    private UserService userService;
 
     @Test
     public void testSignInSuccess() {
