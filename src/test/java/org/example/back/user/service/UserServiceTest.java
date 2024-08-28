@@ -26,8 +26,8 @@ public class UserServiceTest {
     @MockBean
     private UserRepository userRepository;
 
-//    @MockBean
-//    private EmailProvider emailProvider;
+    @MockBean
+    private EmailProvider emailProvider;
 
     @MockBean
     private CertificationRepository certificationRepository;
