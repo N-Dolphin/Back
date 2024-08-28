@@ -17,8 +17,8 @@ import java.util.Date;
 @Component
 public class JwtProvider {
 
-    @Value("${jwt.secret-key}")
-    private String secretKey;
+//    @Value("${jwt.secret-key}")
+    private String secretKey= "ThisStatementIsJwtSecretKeyDoNotUseThisStatement";
 
     public String create(String userId){
         Date expiredDate= Date.from(Instant.now().plus(1, ChronoUnit.HOURS));
