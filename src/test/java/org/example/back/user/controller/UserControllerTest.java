@@ -46,7 +46,7 @@ public class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"username\": \"testUser\", \"email\": \"test@example.com\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success").value("성공"))
+                .andExpect(jsonPath("$.status").value("성공"))
                 .andExpect(jsonPath("$.message").value("이메일 요청이 성공하였습니다"));
     }
 
