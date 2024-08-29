@@ -30,7 +30,8 @@ public class WebConfig implements WebMvcConfigurer {
                         "/api/v1/auth/sign-in",
                         "/api/v1/auth/sign-up",
                         "/api/v1/auth/email-certification",
-                        "/api/v1/auth/check-certification"
+                        "/api/v1/auth/check-certification",
+                        "/api/v1/profiles"
                 ); // 인증이 필요하지 않은 경로는 제외
 
     }

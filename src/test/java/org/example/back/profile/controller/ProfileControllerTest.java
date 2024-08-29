@@ -4,6 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import org.example.back.config.provider.JwtProvider;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
 import org.example.back.profile.domain.type.Gender;
 import org.example.back.profile.service.ProfileService;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,6 +30,9 @@ class ProfileControllerTest {
 
 	@MockBean
 	private ProfileService profileService;
+
+	@MockBean
+	private JwtProvider jwtProvider;
 
 	@DisplayName("프로필을 생성한다")
 	@Test
