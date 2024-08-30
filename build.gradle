@@ -49,6 +49,11 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
+tasks.named('processResources') {
+	dependsOn 'copySecret'
+}
+
+
 tasks.register('copySecret', Copy) {
 	from './secure-submodule'
 	include "application.yml"  // 복사할 파일들
