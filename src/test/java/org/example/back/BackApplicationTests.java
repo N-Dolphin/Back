@@ -18,32 +18,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @SpringBootTest
 class BackApplicationTests {
 
-    @MockBean
-    private UserRepository userRepository;
-
-    @MockBean
-    private EmailProvider emailProvider;
-
-    @MockBean
-    private CertificationRepository certificationRepository;
-
-    @MockBean
-    private JwtProvider jwtProvider;
-
-    @Autowired
-    private UserService userService;
-
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @MockBean
-    private ProfileService profileService;
-
-
-    @Autowired
-    private ProfileRepository profileRepository;
-
+    
 
     @Test
     void contextLoads() {
