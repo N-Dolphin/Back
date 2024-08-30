@@ -57,9 +57,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
-
-
       - name: Build with Gradle
         env:
-          SPRING_CONFIG_LOCATION: secret/application.yml
+            SPRING_CONFIG_LOCATION: secure-submodule/application.yml
         run: ./gradlew clean build
