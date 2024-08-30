@@ -10,14 +10,13 @@ on:
       - "develop"
       - "feature/#4"
 
-
 permissions:
   contents: read
 
 jobs:
   build:
     runs-on: ubuntu-latest
-      
+
     steps:
       - name: CheckOut Repository
         uses: actions/checkout@v4
@@ -28,8 +27,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Pull Submodules
+        run: |
+          echo " 🐳   서브모듈의 설정파일을 가져옵니다."
+          git submodule update --init --recursive
+
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3.1.0
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Build and Test with Gradle
         run: ./gradlew clean build
