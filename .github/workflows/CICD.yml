@@ -34,7 +34,7 @@ jobs:
         run: |
           echo "서브모듈의 설정파일을 가져옵니다."
           git pull
-          git submodule update
+          git submodule update --init --recursive
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
