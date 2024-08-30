@@ -33,6 +33,7 @@ jobs:
       - name: Pull Submodules
         run: |
           echo "서브모듈의 설정파일을 가져옵니다."
+          git pull
           git submodule update
 
       - name: Set up Gradle
