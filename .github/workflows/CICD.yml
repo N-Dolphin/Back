@@ -17,6 +17,17 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: ${{ secrets.LOCAL_DB_NAME }}
+          POSTGRES_USER: ${{ secrets.LOCAL_DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.LOCAL_DB_PASSWORD }}
+        ports:
+          - 25432:5432
+        options: --health-cmd "pg_isready -U ndolphin" --health-interval 10s --health-timeout 5s --health-retries 5
+
     steps:
       - name: CheckOut Repository
         uses: actions/checkout@v4
