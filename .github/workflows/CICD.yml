@@ -40,7 +40,7 @@ jobs:
           token: ${{ secrets.GH_TOKEN }}
 
       - name: Verify application.yml from submodule
-        run: cat secret/application.yml
+        run: cat secure-submodule/application.yml
 
       - name: Fix file permissions
         run: chmod 644 src/main/resources/application.yml
