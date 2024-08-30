@@ -30,14 +30,20 @@ jobs:
 
     env:
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
-      SPRING_PROFILES_ACTIVE: test
 
     steps:
       - name: CheckOut Repository
         uses: actions/checkout@v4
         with:
           submodules: true
+          fetch-depth: 0
           token: ${{ secrets.GH_TOKEN }}
+
+      - name: Verify application.yml from submodule
+        run: cat secret/application.yml
+
+      - name: Fix file permissions
+        run: chmod 644 src/main/resources/application.yml
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -45,17 +51,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Pull Submodules
-        run: |
-          echo "서브모듈의 설정파일을 가져옵니다."
-          git submodule update
-
       - name: Verify Submodule Status
         run: git submodule status
-
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Build and Test with Gradle
+      - name: Build with Gradle
+        env:
+          SPRING_CONFIG_LOCATION: secret/application.yml
         run: ./gradlew clean build
