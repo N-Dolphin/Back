@@ -42,7 +42,8 @@ jobs:
       - name: Verify application.yml from submodule
         run: cat secure-submodule/application.yml
 
-
+      - name: Fix file permissions
+        run: chmod 644 secure-submodule/application.yml
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -56,8 +57,7 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      - name: Fix file permissions
-        run: chmod 644 src/main/resources/application.yml
+
 
       - name: Build with Gradle
         env:
