@@ -49,9 +49,9 @@ tasks.named('test') {
 	useJUnitPlatform()
 }
 
-tasks.named('processResources') {
-	dependsOn 'copySecret'
-}
+//tasks.named('processResources') {
+//	dependsOn 'copySecret'
+//}
 
 
 tasks.register('copySecret', Copy) {
