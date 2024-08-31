@@ -1,15 +1,13 @@
 package org.example.back.user.service;
 
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import org.example.back.config.provider.EmailProvider;
 import org.example.back.config.provider.JwtProvider;
 import org.example.back.user.dto.User;
 import org.example.back.user.dto.request.CheckCertificationRequestDto;
+import org.example.back.user.dto.request.EmailCertificationRequestDto;
 import org.example.back.user.dto.request.SignInRequestDto;
 import org.example.back.user.dto.request.SignUpRequestDto;
 import org.example.back.user.dto.response.CheckCertificationResponseDto;
-import org.example.back.user.dto.request.EmailCertificationRequestDto;
 import org.example.back.user.dto.response.EmailCertificationResponseDto;
 import org.example.back.user.dto.response.SignInResponseDto;
 import org.example.back.user.entity.CertificationEntity;
@@ -21,126 +19,123 @@ import org.example.back.user.repository.CertificationRepository;
 import org.example.back.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
+
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-    private final UserRepository userRepository;
-    private final EmailProvider emailProvider;
-    private final CertificationRepository certificationRepository;
-    private final JwtProvider jwtProvider;
+	private final UserRepository userRepository;
+	private final EmailProvider emailProvider;
+	private final CertificationRepository certificationRepository;
+	private final JwtProvider jwtProvider;
 
-    public EmailCertificationResponseDto emailCertification(EmailCertificationRequestDto requestBody) {
+	public EmailCertificationResponseDto emailCertification(EmailCertificationRequestDto requestBody) {
 
+		String username = requestBody.username();
+		String email = requestBody.email();
 
-        String username= requestBody.username();
-        String email= requestBody.email();
+		userRepository.findByUsername(username).ifPresent(
+			user -> {
+				throw new UserAlreadyExistsException(username);
+			}
+		);
 
-        userRepository.findByUsername(username).ifPresent(
-                user -> {
-                    throw new UserAlreadyExistsException(username);
-                }
-        );
+		String certificationNumber = CertificationNumber.getCertificationNumber();
+		boolean isSucceed = emailProvider.sendCertification(email, certificationNumber);
 
-        String certificationNumber= CertificationNumber.getCertificationNumber();
-        boolean isSucceed=emailProvider.sendCertification(email,certificationNumber);
+		if (!isSucceed) {
+			return new EmailCertificationResponseDto("실패", "메일 전송에 실패했습니다");
 
-        if (!isSucceed) {
-            return new EmailCertificationResponseDto("실패", "메일 전송에 실패했습니다");
+		}
+		CertificationEntity certificationEntity = new CertificationEntity(email, username, certificationNumber);
+		certificationRepository.save(certificationEntity);
 
-        }
-        CertificationEntity certificationEntity= new CertificationEntity(email,username,certificationNumber);
-        certificationRepository.save(certificationEntity);
+		return new EmailCertificationResponseDto("성공", "이메일 요청이 성공하였습니다");
 
-        return new EmailCertificationResponseDto("성공", "이메일 요청이 성공하였습니다");
+	}
 
+	public CheckCertificationResponseDto checkCertificationNumber(CheckCertificationRequestDto dto) {
 
-    }
+		String email = dto.email();
+		String certificationNumber = dto.certificationNumber();
 
+		CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
 
-    public CheckCertificationResponseDto checkCertificationNumber(CheckCertificationRequestDto dto) {
+		if (certificationEntity == null) {
+			return new CheckCertificationResponseDto("실패", "");
+		}
+		boolean isMatched =
+			certificationEntity.getEmail().equals(email) &&
+				certificationEntity.getCertificationNumber().equals(certificationNumber);
 
-        String email=dto.email();
-        String certificationNumber= dto.certificationNumber();
+		if (!isMatched) {
+			return new CheckCertificationResponseDto("실패", "인증에 실패했습니다");
+		}
 
-        CertificationEntity certificationEntity= certificationRepository.findByEmail(email);
+		return new CheckCertificationResponseDto("성공", "인증에 성공했습니다");
+	}
 
-        if (certificationEntity==null){
-            return new CheckCertificationResponseDto("실패","");
-        }
-        boolean isMatched=
-                certificationEntity.getEmail().equals(email)&&
-                certificationEntity.getCertificationNumber().equals(certificationNumber);
+	@Transactional
+	public User signUp(SignUpRequestDto dto) {
 
-        if (!isMatched){
-            return new CheckCertificationResponseDto("실패","인증에 실패했습니다");
-        }
+		String username = dto.username();
+		userRepository.findByUsername(username).ifPresent(
+			user ->
+			{
+				throw new UserAlreadyExistsException(username);
+			}
+		);
+		String email = dto.email();
+		CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
 
-        return new CheckCertificationResponseDto("성공", "인증에 성공했습니다");
-    }
+		boolean isMatched = certificationEntity.getEmail().equals(email);
 
-    @Transactional
-    public User signUp(SignUpRequestDto dto) {
+		if (!isMatched) {
+			throw new UserEmailNotAllowedException(email);
+		}
 
+		String password = dto.password();
+		//추후에 인코딩
+		String encodedPassword = password;
 
-        String username=dto.username();
-        userRepository.findByUsername(username).ifPresent(
-                user ->
-                {
-                    throw new UserAlreadyExistsException(username);
-                }
-        );
-        String email= dto.email();
-        CertificationEntity certificationEntity= certificationRepository.findByEmail(email);
+		UserEntity userEntity = UserEntity.of("Base", email, encodedPassword, username, "USER");
+		userRepository.save(userEntity);
 
-        boolean isMatched= certificationEntity.getEmail().equals(email);
+		certificationRepository.deleteByUsername(username);
 
-        if (!isMatched){
-           throw new UserEmailNotAllowedException(email);
-        }
+		return User.from(userEntity);
 
-        String password= dto.password();
-        //추후에 인코딩
-        String encodedPassword= password;
+	}
 
+	public SignInResponseDto signIn(SignInRequestDto dto) {
 
-        UserEntity userEntity= UserEntity.of("Base",email,encodedPassword,username,"USER");
-        userRepository.save(userEntity);
+		String token = null;
+		String username = dto.username();
 
-        certificationRepository.deleteByUsername(username);
+		UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(
+			() -> new UserNotFoundException(username)
+		);
 
-        return User.from(userEntity);
+		String password = dto.password();
+		String encodedPassword = userEntity.getPassword();
 
-    }
+		token = jwtProvider.create(username);
 
-    public SignInResponseDto signIn(SignInRequestDto dto) {
+		return new SignInResponseDto(token, 3600);
+	}
 
-        String token= null;
-        String username= dto.username();
+	private static class CertificationNumber {
 
-        UserEntity userEntity= userRepository.findByUsername(username).orElseThrow(
-                ()-> new UserNotFoundException(username)
-        );
+		public static String getCertificationNumber() {
+			String certificationNumber = "";
 
-        String password= dto.password();
-        String encodedPassword= userEntity.getPassword();
-
-        token= jwtProvider.create(username);
-
-        return new SignInResponseDto(token, 3600);
-    }
-
-    private static class CertificationNumber {
-
-        public static String getCertificationNumber(){
-            String certificationNumber= "";
-
-            for (int count=0; count<4;count++) {
-                certificationNumber += (int)(Math.random() * 10);
-            }
-            return certificationNumber;
-        }
-    }
-
+			for (int count = 0; count < 4; count++) {
+				certificationNumber += (int)(Math.random() * 10);
+			}
+			return certificationNumber;
+		}
+	}
 
 }
