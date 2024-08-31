@@ -33,12 +33,8 @@ public class UserController implements UserControllerSwagger {
 	@PostMapping("/email-certification")
 	@Override
 	public ResponseEntity<EmailCertificationResponseDto> emailCertification(
-<<<<<<< HEAD
-		@RequestBody @Valid  EmailCertificationRequestDto dto
+		@RequestBody @Valid EmailCertificationRequestDto dto
 	) {
-=======
-		@RequestBody @Valid final EmailCertificationRequestDto dto) {
->>>>>>> 28e47ad43953c8d5823d1a2a425b040cc4e80b63
 		EmailCertificationResponseDto responseDto = userService.emailCertification(dto);
 		return ResponseEntity.ok(responseDto);
 	}
@@ -46,35 +42,23 @@ public class UserController implements UserControllerSwagger {
 	@PostMapping("/check-certification")
 	@Override
 	public ResponseEntity<CheckCertificationResponseDto> checkCertificationNumber(
-<<<<<<< HEAD
-		@RequestBody @Valid  CheckCertificationRequestDto dto) {
-=======
-		@RequestBody @Valid final CheckCertificationRequestDto dto) {
->>>>>>> 28e47ad43953c8d5823d1a2a425b040cc4e80b63
+		@RequestBody @Valid CheckCertificationRequestDto dto) {
 		CheckCertificationResponseDto responseDto = userService.checkCertificationNumber(dto);
 		return ResponseEntity.ok(responseDto);
 	}
 
 	@PostMapping("/sign-up")
 	@Override
-<<<<<<< HEAD
 	public ResponseEntity<User> signUp(
-		@RequestBody @Valid  SignUpRequestDto dto) {
-=======
-	public ResponseEntity<User> signUp(@RequestBody @Valid final SignUpRequestDto dto) {
->>>>>>> 28e47ad43953c8d5823d1a2a425b040cc4e80b63
+		@RequestBody @Valid SignUpRequestDto dto) {
 		User user = userService.signUp(dto);
 		return ResponseEntity.ok(user);
 	}
 
 	@PostMapping("/sign-in")
 	@Override
-<<<<<<< HEAD
 	public ResponseEntity<SignInResponseDto> signIn(
-		@RequestBody @Valid  SignInRequestDto dto) {
-=======
-	public ResponseEntity<SignInResponseDto> signIn(@RequestBody @Valid final SignInRequestDto dto) {
->>>>>>> 28e47ad43953c8d5823d1a2a425b040cc4e80b63
+		@RequestBody @Valid SignInRequestDto dto) {
 		SignInResponseDto responseDto = userService.signIn(dto);
 		return ResponseEntity.ok(responseDto);
 	}
