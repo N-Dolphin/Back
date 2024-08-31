@@ -1,6 +1,5 @@
 package org.example.back.user.entity;
 
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -15,13 +14,13 @@ import lombok.NoArgsConstructor;
 @Entity(name = "certification")
 @Table(name = "certification")
 public class CertificationEntity {
-    
-    @Id
-    private String email;
 
-    @Column
-    private String username;
+	@Id
+	private String email;
 
-    @Column
-    private String certificationNumber;
+	@Column
+	private String username;
+
+	@Column
+	private String certificationNumber;
 }

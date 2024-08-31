@@ -13,5 +13,5 @@ public interface CertificationRepository extends JpaRepository<CertificationEnti
 
 
     void deleteByUsername(String username);
-    
+
 }

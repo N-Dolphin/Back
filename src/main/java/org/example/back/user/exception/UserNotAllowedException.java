@@ -5,10 +5,8 @@ import org.springframework.http.HttpStatus;
 
 public class UserNotAllowedException extends ClientErrorException {
 
-    public UserNotAllowedException(){
-        super(HttpStatus.FORBIDDEN,"User not allowed");
-    }
-
-
+	public UserNotAllowedException() {
+		super(HttpStatus.FORBIDDEN, "User not allowed");
+	}
 
 }
