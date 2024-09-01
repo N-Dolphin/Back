@@ -21,8 +21,6 @@ public class WebConfig implements WebMvcConfigurer {
                 .order(1) //첫번째로 실행 될 인터셉터로 등록
                 .addPathPatterns("/**"); //  "/"하위에 전부 적용
 
-
-
         registry.addInterceptor(jwtInterceptor)
                 .order(2)
                 .addPathPatterns("/api/v1/auth/**") // 인증이 필요한 경로에 대해 인터셉터 적용
