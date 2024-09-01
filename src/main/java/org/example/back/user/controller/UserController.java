@@ -33,7 +33,7 @@ public class UserController implements UserControllerSwagger {
 	@PostMapping("/email-certification")
 	@Override
 	public ResponseEntity<EmailCertificationResponseDto> emailCertification(
-		@RequestBody @Valid EmailCertificationRequestDto dto
+		@RequestBody @Valid final EmailCertificationRequestDto dto
 	) {
 		EmailCertificationResponseDto responseDto = userService.emailCertification(dto);
 		return ResponseEntity.ok(responseDto);
@@ -42,7 +42,7 @@ public class UserController implements UserControllerSwagger {
 	@PostMapping("/check-certification")
 	@Override
 	public ResponseEntity<CheckCertificationResponseDto> checkCertificationNumber(
-		@RequestBody @Valid CheckCertificationRequestDto dto) {
+		@RequestBody @Valid final CheckCertificationRequestDto dto) {
 		CheckCertificationResponseDto responseDto = userService.checkCertificationNumber(dto);
 		return ResponseEntity.ok(responseDto);
 	}
@@ -50,7 +50,7 @@ public class UserController implements UserControllerSwagger {
 	@PostMapping("/sign-up")
 	@Override
 	public ResponseEntity<User> signUp(
-		@RequestBody @Valid SignUpRequestDto dto) {
+		@RequestBody @Valid final SignUpRequestDto dto) {
 		User user = userService.signUp(dto);
 		return ResponseEntity.ok(user);
 	}
@@ -58,7 +58,7 @@ public class UserController implements UserControllerSwagger {
 	@PostMapping("/sign-in")
 	@Override
 	public ResponseEntity<SignInResponseDto> signIn(
-		@RequestBody @Valid SignInRequestDto dto) {
+		@RequestBody @Valid final SignInRequestDto dto) {
 		SignInResponseDto responseDto = userService.signIn(dto);
 		return ResponseEntity.ok(responseDto);
 	}
