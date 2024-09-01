@@ -3,6 +3,8 @@ package org.example.back.profile.service;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
+import org.example.back.config.provider.EmailProvider;
+import org.example.back.config.provider.JwtProvider;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
 import org.example.back.profile.domain.type.Gender;
 import org.example.back.profile.repository.ProfileRepository;
@@ -11,6 +13,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.ActiveProfiles;
 
 @SpringBootTest
 class ProfileServiceTest {
@@ -20,6 +24,12 @@ class ProfileServiceTest {
 
 	@Autowired
 	private ProfileRepository profileRepository;
+
+	@MockBean
+	private JwtProvider jwtProvider;
+
+	@MockBean
+	private EmailProvider emailProvider;
 
 	@DisplayName("새로운 프로필을 생성하고 저장한다.")
 	@Test

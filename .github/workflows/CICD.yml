@@ -2,9 +2,13 @@ name: CI
 
 on:
   push:
-    branches: [ "develop" ]
+    branches:
+      - "develop"
+      - "feature/#4"
   pull_request:
-    branches: [ "develop" ]
+    branches:
+      - "develop"
+      - "feature/#4"
 
 permissions:
   contents: read
@@ -13,14 +17,33 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:13
+        env:
+          POSTGRES_DB: ${{ secrets.LOCAL_DB_NAME }}
+          POSTGRES_USER: ${{ secrets.LOCAL_DB_USERNAME }}
+          POSTGRES_PASSWORD: ${{ secrets.LOCAL_DB_PASSWORD }}
+        ports:
+          - 25432:5432
+        options: --health-cmd "pg_isready -U ndolphin" --health-interval 10s --health-timeout 5s --health-retries 5
+
     env:
-      LOCAL_DB_URL: ${{ secrets.LOCAL_DB_URL }}
-      LOCAL_DB_USERNAME: ${{ secrets.LOCAL_DB_USERNAME }}
-      LOCAL_DB_PASSWORD: ${{ secrets.LOCAL_DB_PASSWORD }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
 
     steps:
       - name: CheckOut Repository
         uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Verify application.yml from submodule
+        run: cat secure-submodule/application.yml
+
+      - name: Fix file permissions
+        run: chmod 644 secure-submodule/application.yml
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -28,8 +51,13 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3.1.0
+      - name: Verify Submodule Status
+        run: git submodule status
 
-      - name: Build and Test with Gradle
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build with Gradle
+        env:
+            SPRING_CONFIG_LOCATION: secure-submodule/application.yml
         run: ./gradlew clean build
