@@ -100,7 +100,10 @@ public class UserService {
 		//추후에 인코딩
 		String encodedPassword = password;
 
-		UserEntity userEntity = UserEntity.of("Base", email, encodedPassword, username, "USER");
+		UserEntity userEntity = UserEntity.ofBase("Base", email, encodedPassword, username, "USER");
+
+		//Oauth2 유저를 위한 서비스 로직 추가 (파라미터만 다르게 해서 오버로드 ㄱㄴ)
+
 		userRepository.save(userEntity);
 
 		certificationRepository.deleteByUsername(username);

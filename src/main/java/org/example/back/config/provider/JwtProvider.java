@@ -32,6 +32,7 @@ public class JwtProvider {
 
     }
 
+
     public String validate(String jwt){
 
         String subject= null;

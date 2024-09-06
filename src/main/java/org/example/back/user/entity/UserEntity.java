@@ -1,5 +1,8 @@
 package org.example.back.user.entity;
 
+import org.example.back.user.oauth.OAuthInfoResponse;
+import org.example.back.user.oauth.OAuthProvider;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -37,7 +40,10 @@ public class UserEntity {
 	@Column
 	private String role;
 
-	public static UserEntity of(String loginType, String email, String password, String username, String role) {
+	@Column
+	private OAuthProvider oAuthProvider;
+
+	public static UserEntity ofBase(String loginType, String email, String password, String username, String role) {
 		var userEntity = new UserEntity();
 		userEntity.setLoginType(loginType);
 		userEntity.setEmail(email);
@@ -46,6 +52,20 @@ public class UserEntity {
 		userEntity.setRole(role);
 		return userEntity;
 	}
+
+
+	public static UserEntity ofOauth(String loginType, String email, String password, String username, String role, OAuthProvider oAuthProvider) {
+		var userEntity = new UserEntity();
+		userEntity.setLoginType(loginType);
+		userEntity.setEmail(email);
+		userEntity.setPassword(password);
+		userEntity.setUsername(username);
+		userEntity.setRole(role);
+		userEntity.setOAuthProvider(oAuthProvider);
+		return userEntity;
+	}
+
+
 
 }
 
