@@ -14,13 +14,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/auth")
-public class AuthController {
+@Tag(name = "Authentication", description = "카카오 OAuth 로그인 관련 API")
+public final class AuthController implements AuthControllerSwagger{
 	private final OAuthLoginService oAuthLoginService;
 
 	@Value("${oauth.kakao.client-id}")
@@ -35,11 +37,14 @@ public class AuthController {
 
 
 	@PostMapping("/kakao")
+	@Override
 	public ResponseEntity<AuthTokens> loginKakao(@RequestBody KakaoLoginParams params) {
 		return ResponseEntity.ok(oAuthLoginService.login(params));
 	}
 
+
 	@GetMapping
+	@Override
 	public void redirectToKakaoLogin(HttpServletResponse response) throws IOException {
 		String redirectUrl = String.format(
 			"%s?client_id=%s&redirect_uri=%s&response_type=code",
