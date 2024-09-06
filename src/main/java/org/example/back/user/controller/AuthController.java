@@ -24,14 +24,14 @@ public class AuthController {
 	private final OAuthLoginService oAuthLoginService;
 
 	@Value("${oauth.kakao.client-id}")
-	private static String CLIENT_ID;
+	private String CLIENT_ID;
 
 
 	@Value("${oauth.kakao.redirectUrl}")
-	private static  String REDIRECT_URI;
+	private String REDIRECT_URI;
 
 	@Value("${oauth.kakao.authorizeUrl}")
-	private static  String AUTHORIZATION_ENDPOINT;
+	private String AUTHORIZATION_ENDPOINT;
 
 
 	@PostMapping("/kakao")
