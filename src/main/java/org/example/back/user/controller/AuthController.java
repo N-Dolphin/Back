@@ -38,8 +38,10 @@ public final class AuthController implements AuthControllerSwagger{
 
 	@PostMapping("/kakao")
 	@Override
-	public ResponseEntity<AuthTokens> loginKakao(@RequestBody KakaoLoginParams params) {
-		return ResponseEntity.ok(oAuthLoginService.login(params));
+	public ResponseEntity<AuthTokens> loginKakao(@RequestBody String code) {
+		KakaoLoginParams kakaoLoginParams= new KakaoLoginParams();
+		kakaoLoginParams.setAuthorizationCode(code);
+		return ResponseEntity.ok(oAuthLoginService.login(kakaoLoginParams));
 	}
 
 
