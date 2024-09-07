@@ -4,9 +4,12 @@ on:
   push:
     branches:
       - "develop"
+      - "feature/14-Oauth2"
   pull_request:
     branches:
       - "develop"
+      - "feature/14-Oauth2"
+
 
 permissions:
   contents: read

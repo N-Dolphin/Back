@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.back.config.interceptor.JwtInterceptor;
 import org.example.back.config.interceptor.LogInterceptor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -15,11 +16,11 @@ public class WebConfig implements WebMvcConfigurer {
     private final JwtInterceptor jwtInterceptor;
 
 
-    @Override
-    public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(logInterceptor)
-                .order(1) //첫번째로 실행 될 인터셉터로 등록
-                .addPathPatterns("/**"); //  "/"하위에 전부 적용
+    // @Override
+    // public void addInterceptors(InterceptorRegistry registry) {
+    //     registry.addInterceptor(logInterceptor)
+    //             .order(1) //첫번째로 실행 될 인터셉터로 등록
+    //             .addPathPatterns("/**"); //  "/"하위에 전부 적용
 
         // registry.addInterceptor(jwtInterceptor)
         //         .order(2)
@@ -35,5 +36,14 @@ public class WebConfig implements WebMvcConfigurer {
         //                 "/api/v1/auth/kakao"
         //         ); // 인증이 필요하지 않은 경로는 제외
 
+   // }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry){
+        registry.addMapping("/**")
+            .allowedOrigins("*")
+            .allowedMethods("*")
+            .allowedHeaders("*")
+            .maxAge(3600);
     }
 }
