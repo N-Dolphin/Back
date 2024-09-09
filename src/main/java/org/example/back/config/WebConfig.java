@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.back.config.interceptor.JwtInterceptor;
 import org.example.back.config.interceptor.LogInterceptor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -26,12 +27,23 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/api/v1/auth/**") // 인증이 필요한 경로에 대해 인터셉터 적용
                 .excludePathPatterns(
                         "/hc", "/env",
+                        "/api/v1/auth/**",
                         "/api/v1/auth/sign-in",
                         "/api/v1/auth/sign-up",
                         "/api/v1/auth/email-certification",
                         "/api/v1/auth/check-certification",
-                        "/api/v1/profiles"
+                        "/api/v1/profiles",
+                        "/api/v1/auth/kakao"
                 ); // 인증이 필요하지 않은 경로는 제외
 
+   }
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry){
+        registry.addMapping("/**")
+            .allowedOrigins("*")
+            .allowedMethods("*")
+            .allowedHeaders("*")
+            .maxAge(3600);
     }
 }
