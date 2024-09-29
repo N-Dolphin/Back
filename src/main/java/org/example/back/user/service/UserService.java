@@ -1,7 +1,9 @@
 package org.example.back.user.service;
 
+import org.example.back.config.provider.AuthTokens;
+import org.example.back.config.provider.AuthTokensGenerator;
 import org.example.back.config.provider.EmailProvider;
-import org.example.back.config.provider.JwtProvider;
+import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.user.dto.User;
 import org.example.back.user.dto.request.CheckCertificationRequestDto;
 import org.example.back.user.dto.request.EmailCertificationRequestDto;
@@ -29,7 +31,8 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final EmailProvider emailProvider;
 	private final CertificationRepository certificationRepository;
-	private final JwtProvider jwtProvider;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final AuthTokensGenerator authTokensGenerator;
 
 	public EmailCertificationResponseDto emailCertification(EmailCertificationRequestDto requestBody) {
 
@@ -102,18 +105,17 @@ public class UserService {
 
 		UserEntity userEntity = UserEntity.ofBase("Base", email, encodedPassword, username, "USER");
 
-		//Oauth2 유저를 위한 서비스 로직 추가 (파라미터만 다르게 해서 오버로드 ㄱㄴ)
-
 		userRepository.save(userEntity);
-
 		certificationRepository.deleteByUsername(username);
 
 		return User.from(userEntity);
 
 	}
 
+	//jwtProvider에서 유저 이름을 가지고 jwt를 생성
 	public SignInResponseDto signIn(SignInRequestDto dto) {
 
+		AuthTokens authTokens=null;
 		String token = null;
 		String username = dto.username();
 
@@ -124,9 +126,9 @@ public class UserService {
 		String password = dto.password();
 		String encodedPassword = userEntity.getPassword();
 
-		token = jwtProvider.create(username);
+		authTokens= authTokensGenerator.generate(userEntity.getUserId());
 
-		return new SignInResponseDto(token, 3600);
+		return new SignInResponseDto(authTokens, 3600);
 	}
 
 	private static class CertificationNumber {

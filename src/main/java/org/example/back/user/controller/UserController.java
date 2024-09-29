@@ -10,12 +10,14 @@ import org.example.back.user.dto.response.EmailCertificationResponseDto;
 import org.example.back.user.dto.response.SignInResponseDto;
 import org.example.back.user.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +49,7 @@ public class UserController implements UserControllerSwagger {
 		return ResponseEntity.ok(responseDto);
 	}
 
+	//check 단계에서 인증 번호가 일치하지 않을 시, signup으로 이동하지 못하도록 하는 방법
 	@PostMapping("/sign-up")
 	@Override
 	public ResponseEntity<User> signUp(
@@ -63,4 +66,8 @@ public class UserController implements UserControllerSwagger {
 		return ResponseEntity.ok(responseDto);
 	}
 
+	@GetMapping("/sign")
+	public String signIn(){
+		return "hello";
+	}
 }

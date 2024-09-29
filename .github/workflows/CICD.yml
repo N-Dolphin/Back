@@ -10,7 +10,6 @@ on:
       - "develop"
       - "feature/14-Oauth2"
 
-
 permissions:
   contents: read
 
@@ -28,6 +27,12 @@ jobs:
         ports:
           - 25432:5432
         options: --health-cmd "pg_isready -U ndolphin" --health-interval 10s --health-timeout 5s --health-retries 5
+
+      redis:  # Redis 서비스 추가
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: --health-cmd "redis-cli ping" --health-interval 10s --health-timeout 5s --health-retries 5
 
     env:
       JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
@@ -61,6 +66,8 @@ jobs:
       - name: Build with Gradle
         env:
           SPRING_CONFIG_LOCATION: secure-submodule/application.yml
+          SPRING_DATA_REDIS_HOST: ${{ SPRING_DATA_REDIS_HOST }} # Redis 호스트 추가
+          SPRING_DATA_REDIS_PORT: ${{ SPRING_DATA_REDIS_PORT }}  # Redis 포트 추가
         run: ./gradlew clean build
 
       - name: Login to DockerHub
@@ -71,6 +78,7 @@ jobs:
 
       - name: Build Docker
         run: docker build --platform linux/amd64 -t ${{ secrets.DOCKERHUB_USERNAME }}/back_server .
+
       - name: Push Docker
         run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/back_server:latest
 
@@ -137,5 +145,3 @@ jobs:
             echo ${{env.CURRENT_UPSTREAM}}
             sudo docker stop ${{env.CURRENT_UPSTREAM}}
             sudo docker rm ${{env.CURRENT_UPSTREAM}}
-
-
