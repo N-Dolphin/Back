@@ -1,7 +1,8 @@
 package org.example.back.user.service;
 
+import org.example.back.config.provider.AuthTokens;
+import org.example.back.config.provider.AuthTokensGenerator;
 import org.example.back.config.provider.EmailProvider;
-import org.example.back.config.provider.JwtProvider;
 import org.example.back.user.dto.User;
 import org.example.back.user.dto.request.CheckCertificationRequestDto;
 import org.example.back.user.dto.request.EmailCertificationRequestDto;
@@ -29,7 +30,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final EmailProvider emailProvider;
 	private final CertificationRepository certificationRepository;
-	private final JwtProvider jwtProvider;
+	private final AuthTokensGenerator authTokensGenerator;
 
 	public EmailCertificationResponseDto emailCertification(EmailCertificationRequestDto requestBody) {
 
@@ -102,21 +103,32 @@ public class UserService {
 
 		UserEntity userEntity = UserEntity.ofBase("Base", email, encodedPassword, username, "USER");
 
-		//Oauth2 유저를 위한 서비스 로직 추가 (파라미터만 다르게 해서 오버로드 ㄱㄴ)
-
 		userRepository.save(userEntity);
-
 		certificationRepository.deleteByUsername(username);
 
 		return User.from(userEntity);
 
 	}
 
+	// public SignInResponseDto signIn(SignInRequestDto dto) {
+	//
+	// 	AuthTokens token = null;
+	// 	String username = dto.username();
+	//
+	// 	UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(
+	// 		() -> new UserNotFoundException(username)
+	// 	);
+	//
+	// 	String password = dto.password();
+	// 	String encodedPassword = userEntity.getPassword();
+	//
+	// 	token = authTokensGenerator.generate(userEntity.getUserId());
+	//
+	// 	return new SignInResponseDto(token, 3600);
+	// }
+
 	public SignInResponseDto signIn(SignInRequestDto dto) {
-
-		String token = null;
 		String username = dto.username();
-
 		UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(
 			() -> new UserNotFoundException(username)
 		);
@@ -124,10 +136,16 @@ public class UserService {
 		String password = dto.password();
 		String encodedPassword = userEntity.getPassword();
 
-		token = jwtProvider.create(username);
+		// 비밀번호 확인 로직 추가 필요
+		// 예: if (!passwordEncoder.matches(password, encodedPassword)) { ... }
 
-		return new SignInResponseDto(token, 3600);
+		// AuthTokens 생성
+		AuthTokens tokens = authTokensGenerator.generate(userEntity.getUserId());
+
+		// SignInResponseDto 생성
+		return new SignInResponseDto(tokens, tokens.getExpiresIn()); // 만료 시간을 int로 변환
 	}
+
 
 	private static class CertificationNumber {
 

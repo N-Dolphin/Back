@@ -1,6 +1,7 @@
 package org.example.back.user.controller;
 
-import org.example.back.config.provider.JwtProvider;
+import org.example.back.config.provider.AuthTokens;
+import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.user.dto.User;
 import org.example.back.user.dto.request.CheckCertificationRequestDto;
 import org.example.back.user.dto.request.EmailCertificationRequestDto;
@@ -34,7 +35,7 @@ public class UserControllerTest {
     private UserService userService;
 
     @MockBean
-    private JwtProvider jwtProvider;
+    private JwtTokenProvider jwtTokenProvider;
 
     @Test
     public void testEmailCertification() throws Exception {
@@ -83,7 +84,7 @@ public class UserControllerTest {
     @Test
     public void testSignIn() throws Exception {
         // given
-        SignInResponseDto responseDto = new SignInResponseDto("mockedToken", 3600);
+        SignInResponseDto responseDto = new SignInResponseDto(AuthTokens.of("qwerasdf","12341234","qwerqwer",1L), 3600L);
         when(userService.signIn(any(SignInRequestDto.class))).thenReturn(responseDto);
 
         // when & then

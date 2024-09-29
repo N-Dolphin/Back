@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 
 import org.example.back.config.provider.EmailProvider;
-import org.example.back.config.provider.JwtProvider;
+import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
 import org.example.back.profile.domain.type.Gender;
 import org.example.back.profile.repository.ProfileRepository;
@@ -26,7 +26,7 @@ class ProfileServiceTest {
 	private ProfileRepository profileRepository;
 
 	@MockBean
-	private JwtProvider jwtProvider;
+	private JwtTokenProvider jwtTokenProvider;
 
 	@MockBean
 	private EmailProvider emailProvider;

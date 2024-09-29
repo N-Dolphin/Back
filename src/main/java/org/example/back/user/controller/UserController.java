@@ -10,6 +10,7 @@ import org.example.back.user.dto.response.EmailCertificationResponseDto;
 import org.example.back.user.dto.response.SignInResponseDto;
 import org.example.back.user.service.UserService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,6 +62,11 @@ public class UserController implements UserControllerSwagger {
 		@RequestBody @Valid final SignInRequestDto dto) {
 		SignInResponseDto responseDto = userService.signIn(dto);
 		return ResponseEntity.ok(responseDto);
+	}
+
+	@GetMapping("/sign")
+	public String signIn(){
+		return "hello";
 	}
 
 }

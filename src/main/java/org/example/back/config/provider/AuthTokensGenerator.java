@@ -1,6 +1,7 @@
 package org.example.back.config.provider;
 
 import java.util.Date;
+import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
@@ -22,9 +23,12 @@ public class AuthTokensGenerator {
 
 		String subject = memberId.toString();
 		String accessToken = jwtTokenProvider.generate(subject, accessTokenExpiredAt);
-		String refreshToken = jwtTokenProvider.generate(subject, refreshTokenExpiredAt);
+		String refreshToken = UUID.randomUUID().toString(); // 랜덤한 문자열로 생성
+
+		//refreshTokenRepository.save(refreshToken, memberId, refreshTokenExpiredAt);
 
 		return AuthTokens.of(accessToken, refreshToken, BEARER_TYPE, ACCESS_TOKEN_EXPIRE_TIME / 1000L);
+
 	}
 
 	public Long extractMemberId(String accessToken) {

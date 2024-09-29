@@ -1,7 +1,8 @@
 package org.example.back.user.service;
 
+import org.example.back.config.provider.AuthTokens;
+import org.example.back.config.provider.AuthTokensGenerator;
 import org.example.back.config.provider.EmailProvider;
-import org.example.back.config.provider.JwtProvider;
 import org.example.back.user.dto.request.SignInRequestDto;
 import org.example.back.user.dto.response.SignInResponseDto;
 import org.example.back.user.entity.UserEntity;
@@ -12,9 +13,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
-import org.springframework.test.context.ActiveProfiles;
 
+import java.util.Date;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -34,7 +34,7 @@ public class UserServiceTest {
     private CertificationRepository certificationRepository;
 
     @MockBean
-    private JwtProvider jwtProvider;
+    private AuthTokensGenerator authTokensGenerator;
 
     @Autowired
     private UserService userService;
@@ -49,15 +49,20 @@ public class UserServiceTest {
         UserEntity userEntity = new UserEntity();
         userEntity.setUsername(username);
         userEntity.setPassword(password);
+        userEntity.setUserId(1L); // 유저 ID 설정
 
+        AuthTokens mockedTokens = AuthTokens.of("mockedAccessToken", "mockedRefreshToken", "Bearer", 3600L);
+
+        // Mocking repository and generator behavior
         when(userRepository.findByUsername(username)).thenReturn(Optional.of(userEntity));
-        when(jwtProvider.create(username)).thenReturn("mockedToken");
+        when(authTokensGenerator.generate(userEntity.getUserId())).thenReturn(mockedTokens);
 
         // when
         SignInResponseDto responseDto = userService.signIn(signInRequestDto);
 
         // then
-        assertEquals("mockedToken", responseDto.token());
+        assertEquals(mockedTokens, responseDto.token());
+        assertEquals(3600, responseDto.expiredTime());
     }
 
     @Test
@@ -73,5 +78,4 @@ public class UserServiceTest {
             userService.signIn(signInRequestDto);
         });
     }
-
 }
