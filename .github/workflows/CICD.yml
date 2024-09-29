@@ -143,7 +143,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
           script: |
-            sudo usermod -aG docker $USER
+            sudo chmod 666 /var/run/docker.sock
             echo ${{env.CURRENT_UPSTREAM}}
             if [ $(docker ps -a -q -f name=${{env.CURRENT_UPSTREAM}}) ]; then
                 echo "Stopping and removing ${{env.CURRENT_UPSTREAM}} container"
