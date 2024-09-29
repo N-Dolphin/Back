@@ -138,17 +138,11 @@ jobs:
       - name: Stop current server
         uses: appleboy/ssh-action@master
         with:
-          username: ubuntu
-          host: ${{ secrets.BACK_SERVER_IP }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script_stop: true
-          script: |
-            sudo chmod 666 /var/run/docker.sock
-            echo ${{env.CURRENT_UPSTREAM}}
-            if [ $(docker ps -a -q -f name=${{env.CURRENT_UPSTREAM}}) ]; then
-                echo "Stopping and removing ${{env.CURRENT_UPSTREAM}} container"
-                sudo docker stop ${{env.CURRENT_UPSTREAM}}
-                sudo docker rm ${{env.CURRENT_UPSTREAM}}
-            else
-                echo "No such container: ${{env.CURRENT_UPSTREAM}}"
-            fi
+            username: ubuntu
+            host: ${{ secrets.BACK_SERVER_IP }}
+            key: ${{ secrets.EC2_SSH_KEY }}
+            script_stop: true
+            script: |
+              echo ${{env.CURRENT_UPSTREAM}}
+              sudo docker stop ${{env.CURRENT_UPSTREAM}}
+              sudo docker rm ${{env.CURRENT_UPSTREAM}}
