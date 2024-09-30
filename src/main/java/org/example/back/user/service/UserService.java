@@ -3,6 +3,7 @@ package org.example.back.user.service;
 import org.example.back.config.provider.AuthTokens;
 import org.example.back.config.provider.AuthTokensGenerator;
 import org.example.back.config.provider.EmailProvider;
+import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.user.dto.User;
 import org.example.back.user.dto.request.CheckCertificationRequestDto;
 import org.example.back.user.dto.request.EmailCertificationRequestDto;
@@ -30,6 +31,7 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final EmailProvider emailProvider;
 	private final CertificationRepository certificationRepository;
+	private final JwtTokenProvider jwtTokenProvider;
 	private final AuthTokensGenerator authTokensGenerator;
 
 	public EmailCertificationResponseDto emailCertification(EmailCertificationRequestDto requestBody) {
@@ -127,7 +129,11 @@ public class UserService {
 	// 	return new SignInResponseDto(token, 3600);
 	// }
 
+	//jwtProvider에서 유저 이름을 가지고 jwt를 생성
 	public SignInResponseDto signIn(SignInRequestDto dto) {
+
+		AuthTokens authTokens=null;
+		String token = null;
 		String username = dto.username();
 		UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(
 			() -> new UserNotFoundException(username)
@@ -142,8 +148,7 @@ public class UserService {
 		// AuthTokens 생성, 유저 ID와 리프레시 토큰,
 		AuthTokens tokens = authTokensGenerator.generate(userEntity.getUserId());
 
-		// SignInResponseDto 생성
-		return new SignInResponseDto(tokens, tokens.getExpiresIn()); // 만료 시간을 int로 변환
+		return new SignInResponseDto(authTokens, 3600L);
 	}
 
 

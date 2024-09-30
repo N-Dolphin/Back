@@ -1,6 +1,5 @@
 package org.example.back.redis;
 
-
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -63,7 +62,8 @@ public class RedisConfigure {
 	private RedisCacheConfiguration defaultConfiguration() {
 		return RedisCacheConfiguration.defaultCacheConfig()
 			.serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
-			.serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
+			.serializeValuesWith(
+				RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
 			.entryTtl(Duration.ofMinutes(10));
 	}
 }

@@ -20,17 +20,21 @@ public class AuthTokensGenerator {
 
 	public AuthTokens generate(Long memberId) {
 		long now = (new Date()).getTime();
+
 		Date accessTokenExpiredAt = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
 		Date refreshTokenExpiredAt = new Date(now + REFRESH_TOKEN_EXPIRE_TIME);
 
 		String subject = memberId.toString();
-		String accessToken = jwtTokenProvider.generate(subject, accessTokenExpiredAt);
+		String accessToken = jwtTokenProvider.generate(memberId.toString(), accessTokenExpiredAt);
 		String refreshToken = UUID.randomUUID().toString(); // 랜덤한 문자열로 생성
 
-		//refreshTokenRepository.save(refreshToken, memberId, refreshTokenExpiredAt);
 
 		redisService.saveRefreshToken(subject,refreshToken,REFRESH_TOKEN_EXPIRE_TIME);
 
+		// 리프레시 토큰은 서버 내부에서만 관리할 수 있도록 별도로 처리
+
+		// refreshToken을 Redis 또는 DB에 저장 (예: Redis 사용 시)
+		// refreshTokenRepository.save(refreshToken, memberId, refreshTokenExpiredAt);
 		return AuthTokens.of(accessToken, refreshToken, BEARER_TYPE, ACCESS_TOKEN_EXPIRE_TIME / 1000L);
 
 	}
