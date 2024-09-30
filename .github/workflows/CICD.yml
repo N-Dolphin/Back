@@ -66,13 +66,9 @@ jobs:
       - name: Build with Gradle
         env:
           SPRING_CONFIG_LOCATION: secure-submodule/application.yml
-<<<<<<< HEAD
           SPRING_DATA_REDIS_HOST: ${{ secrets.SPRING_DATA_REDIS_HOST }} # Redis 호스트 추가
           SPRING_DATA_REDIS_PORT: ${{ secrets.SPRING_DATA_REDIS_PORT }}  # Redis 포트 추가
-=======
-          SPRING_DATA_REDIS_HOST: ${{ SPRING_DATA_REDIS_HOST }} # Redis 호스트 추가
-          SPRING_DATA_REDIS_PORT: ${{ SPRING_DATA_REDIS_PORT }}  # Redis 포트 추가
->>>>>>> develop
+
         run: ./gradlew clean build
 
       - name: Login to DockerHub
@@ -142,16 +138,7 @@ jobs:
       - name: Stop current server
         uses: appleboy/ssh-action@master
         with:
-<<<<<<< HEAD
-            username: ubuntu
-            host: ${{ secrets.BACK_SERVER_IP }}
-            key: ${{ secrets.EC2_SSH_KEY }}
-            script_stop: true
-            script: |
-              echo ${{env.CURRENT_UPSTREAM}}
-              sudo docker stop ${{env.CURRENT_UPSTREAM}}
-              sudo docker rm ${{env.CURRENT_UPSTREAM}}
-=======
+
           username: ubuntu
           host: ${{ secrets.BACK_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
@@ -160,4 +147,3 @@ jobs:
             echo ${{env.CURRENT_UPSTREAM}}
             sudo docker stop ${{env.CURRENT_UPSTREAM}}
             sudo docker rm ${{env.CURRENT_UPSTREAM}}
->>>>>>> develop
