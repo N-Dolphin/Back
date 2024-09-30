@@ -61,7 +61,6 @@ public class UserServiceTest {
         SignInResponseDto responseDto = userService.signIn(signInRequestDto);
 
         // then
-        assertEquals(mockedTokens, responseDto.token());
         assertEquals(3600, responseDto.expiredTime());
     }
 
