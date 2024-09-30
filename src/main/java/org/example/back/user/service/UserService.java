@@ -139,7 +139,7 @@ public class UserService {
 		// 비밀번호 확인 로직 추가 필요
 		// 예: if (!passwordEncoder.matches(password, encodedPassword)) { ... }
 
-		// AuthTokens 생성
+		// AuthTokens 생성, 유저 ID와 리프레시 토큰,
 		AuthTokens tokens = authTokensGenerator.generate(userEntity.getUserId());
 
 		// SignInResponseDto 생성
