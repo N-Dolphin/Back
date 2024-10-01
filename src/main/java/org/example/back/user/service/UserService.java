@@ -146,7 +146,7 @@ public class UserService {
 		// 예: if (!passwordEncoder.matches(password, encodedPassword)) { ... }
 
 		// AuthTokens 생성, 유저 ID와 리프레시 토큰,
-		AuthTokens tokens = authTokensGenerator.generate(userEntity.getUserId());
+		authTokens = authTokensGenerator.generate(userEntity.getUserId());
 
 		return new SignInResponseDto(authTokens, 3600L);
 	}
