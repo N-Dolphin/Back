@@ -24,7 +24,7 @@ public class RedisServiceImpl implements RedisService {
 		String result = (String) operations.get(param.key());
 		if (!StringUtils.hasText(result)) {
 			operations.set(param.key(), param.value(), 10, TimeUnit.MINUTES);
-			log.info("redis save");
+			// log.info("redis save");
 			result = param.value();
 		}
 		return result;
