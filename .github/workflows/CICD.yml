@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - "develop"
-      - "feature/14-Oauth2"
   pull_request:
     branches:
       - "develop"
-      - "feature/14-Oauth2"
 
 permissions:
   contents: read
@@ -66,8 +64,9 @@ jobs:
       - name: Build with Gradle
         env:
           SPRING_CONFIG_LOCATION: secure-submodule/application.yml
-          SPRING_DATA_REDIS_HOST: ${{ SPRING_DATA_REDIS_HOST }} # Redis 호스트 추가
-          SPRING_DATA_REDIS_PORT: ${{ SPRING_DATA_REDIS_PORT }}  # Redis 포트 추가
+          SPRING_DATA_REDIS_HOST: ${{ secrets.SPRING_DATA_REDIS_HOST }} # Redis 호스트 추가
+          SPRING_DATA_REDIS_PORT: ${{ secrets.SPRING_DATA_REDIS_PORT }}  # Redis 포트 추가
+
         run: ./gradlew clean build
 
       - name: Login to DockerHub
@@ -137,6 +136,7 @@ jobs:
       - name: Stop current server
         uses: appleboy/ssh-action@master
         with:
+
           username: ubuntu
           host: ${{ secrets.BACK_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}

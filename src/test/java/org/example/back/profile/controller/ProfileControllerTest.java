@@ -4,7 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-import org.example.back.config.provider.JwtProvider;
+import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
 import org.example.back.profile.domain.type.Gender;
 import org.example.back.profile.service.ProfileService;
@@ -32,7 +32,7 @@ class ProfileControllerTest {
 	private ProfileService profileService;
 
 	@MockBean
-	private JwtProvider jwtProvider;
+	private JwtTokenProvider jwtTokenProvider;
 
 	@DisplayName("프로필을 생성한다")
 	@Test

@@ -1,5 +1,6 @@
 package org.example.back.exception;
 
+import org.example.back.user.exception.InvalidTokenException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -9,6 +10,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(InvalidTokenException.class)
+    public ResponseEntity<String> handleInvalidTokenException(InvalidTokenException e) {
+        return ResponseEntity.status(401).body(e.getMessage());
+    }
 
     @ExceptionHandler(ClientErrorException.class)
     public ResponseEntity<ClientErrorResponse> handleClientErrorException(ClientErrorException e){

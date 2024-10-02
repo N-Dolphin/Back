@@ -10,7 +10,7 @@ public record SignInResponseDto(
 	AuthTokens token,
 
 	@Schema(description = "만료시간")
-	int expiredTime
+	Long expiredTime
 
 ) {
 }
