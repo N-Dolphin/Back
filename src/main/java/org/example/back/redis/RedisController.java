@@ -6,10 +6,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
+@Tag(name = "Redis", description = "Redis 관련 API")
 public class RedisController implements RedisControllerSwagger {
 
 	private final RedisService redisService;
