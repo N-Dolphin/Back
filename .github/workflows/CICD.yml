@@ -143,5 +143,9 @@ jobs:
           script_stop: true
           script: |
             echo ${{env.CURRENT_UPSTREAM}}
-            sudo docker stop ${{env.CURRENT_UPSTREAM}}
-            sudo docker rm ${{env.CURRENT_UPSTREAM}}
+            if [ "$(sudo docker ps -aq -f name=${{env.CURRENT_UPSTREAM}})" ]; then
+              sudo docker stop ${{env.CURRENT_UPSTREAM}}
+              sudo docker rm ${{env.CURRENT_UPSTREAM}}
+            else
+              echo "Container ${{env.CURRENT_UPSTREAM}} does not exist."
+            fi
