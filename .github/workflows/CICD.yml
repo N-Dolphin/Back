@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - "develop"
-      - "feature/16-jwt"
   pull_request:
     branches:
       - "develop"
-      - "feature/16-jwt"
 
 permissions:
   contents: read
