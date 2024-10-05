@@ -24,7 +24,7 @@ public class RedisServiceImpl implements RedisService {
 		String result = (String) operations.get(param.key());
 		if (!StringUtils.hasText(result)) {
 			operations.set(param.key(), param.value(), 10, TimeUnit.MINUTES);
-			log.info("redis save");
+			// log.info("redis save");
 			result = param.value();
 		}
 		return result;
@@ -35,4 +35,13 @@ public class RedisServiceImpl implements RedisService {
 	public String getRedisWithCacheManager(RedisParam param) {
 		return param.value();
 	}
+
+
+	@Override
+	public void saveRefreshToken(String key, String refreshToken, long duration) {
+		ValueOperations<String, Object> operations = redisTemplate.opsForValue();
+		operations.set(key, refreshToken, duration, TimeUnit.MILLISECONDS);
+		log.info("Refresh token saved to Redis: key={}, duration={}ms", key, duration);
+	}
+
 }

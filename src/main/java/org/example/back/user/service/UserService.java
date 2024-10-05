@@ -112,13 +112,29 @@ public class UserService {
 
 	}
 
+	// public SignInResponseDto signIn(SignInRequestDto dto) {
+	//
+	// 	AuthTokens token = null;
+	// 	String username = dto.username();
+	//
+	// 	UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(
+	// 		() -> new UserNotFoundException(username)
+	// 	);
+	//
+	// 	String password = dto.password();
+	// 	String encodedPassword = userEntity.getPassword();
+	//
+	// 	token = authTokensGenerator.generate(userEntity.getUserId());
+	//
+	// 	return new SignInResponseDto(token, 3600);
+	// }
+
 	//jwtProvider에서 유저 이름을 가지고 jwt를 생성
 	public SignInResponseDto signIn(SignInRequestDto dto) {
 
 		AuthTokens authTokens=null;
 		String token = null;
 		String username = dto.username();
-
 		UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(
 			() -> new UserNotFoundException(username)
 		);
@@ -126,10 +142,15 @@ public class UserService {
 		String password = dto.password();
 		String encodedPassword = userEntity.getPassword();
 
-		authTokens= authTokensGenerator.generate(userEntity.getUserId());
+		// 비밀번호 확인 로직 추가 필요
+		// 예: if (!passwordEncoder.matches(password, encodedPassword)) { ... }
 
-		return new SignInResponseDto(authTokens, 3600);
+		// AuthTokens 생성, 유저 ID와 리프레시 토큰,
+		authTokens = authTokensGenerator.generate(userEntity.getUserId());
+
+		return new SignInResponseDto(authTokens, 3600L);
 	}
+
 
 	private static class CertificationNumber {
 

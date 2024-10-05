@@ -70,4 +70,5 @@ public class UserController implements UserControllerSwagger {
 	public String signIn(){
 		return "hello";
 	}
+
 }

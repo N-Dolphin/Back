@@ -2,7 +2,6 @@ package org.example.back;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.back.config.provider.EmailProvider;
-import org.example.back.config.provider.JwtProvider;
 import org.example.back.profile.repository.ProfileRepository;
 import org.example.back.profile.service.ProfileService;
 import org.example.back.user.repository.CertificationRepository;
