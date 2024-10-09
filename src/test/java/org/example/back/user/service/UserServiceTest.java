@@ -3,6 +3,7 @@ package org.example.back.user.service;
 import org.example.back.config.provider.AuthTokens;
 import org.example.back.config.provider.AuthTokensGenerator;
 import org.example.back.config.provider.EmailProvider;
+import org.example.back.profile.repository.ProfileRepository;
 import org.example.back.user.dto.request.SignInRequestDto;
 import org.example.back.user.dto.response.SignInResponseDto;
 import org.example.back.user.entity.UserEntity;
@@ -32,6 +33,10 @@ public class UserServiceTest {
 
     @MockBean
     private CertificationRepository certificationRepository;
+
+    @MockBean
+    private ProfileRepository profileRepository;
+
 
     @MockBean
     private AuthTokensGenerator authTokensGenerator;

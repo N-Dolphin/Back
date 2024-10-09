@@ -1,53 +1,85 @@
 package org.example.back.profile.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+import static org.springframework.http.HttpStatus.CONFLICT;
+import static org.springframework.http.HttpStatus.CREATED;
+import static org.springframework.http.ResponseEntity.status;
 
-import org.example.back.config.provider.JwtTokenProvider;
+import org.example.back.exception.ClientErrorException;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
+import org.example.back.profile.domain.Profile;
 import org.example.back.profile.domain.type.Gender;
+import org.example.back.profile.repository.ProfileRepository;
 import org.example.back.profile.service.ProfileService;
-import org.junit.jupiter.api.DisplayName;
+import org.example.back.profile.service.response.ProfileCreateResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.ResponseEntity;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
-@WebMvcTest(ProfileController.class)
 class ProfileControllerTest {
 
-	@Autowired
-	private MockMvc mockMvc;
+	@InjectMocks
+	private ProfileController profileController;
 
-	@Autowired
-	private ObjectMapper objectMapper;
-
-	@MockBean
+	@Mock
 	private ProfileService profileService;
 
-	@MockBean
-	private JwtTokenProvider jwtTokenProvider;
+	@Mock
+	private ProfileRepository profileRepository;
 
-	@DisplayName("프로필을 생성한다")
+	@Mock
+	private HttpServletRequest httpServletRequest;
+
+	@BeforeEach
+	void setUp() {
+		MockitoAnnotations.openMocks(this);
+	}
+
 	@Test
-	void createProfile() throws Exception {
+	void createProfile_Success() {
+		// Arrange
+		String userId = "1";
+		ProfileCreateRequest request = new ProfileCreateRequest("피카츄", "안녕하세요", 23, Gender.MALE);
+		ProfileCreateResponse response = new ProfileCreateResponse(1L, "피카츄", 23, "안녕하세요", Gender.MALE);
 
-		ProfileCreateRequest request = new ProfileCreateRequest(
-			"피카츄", "안녕하세요 피카츄입니다.", 23, Gender.MALE
-		);
+		when(httpServletRequest.getAttribute("userId")).thenReturn(userId);
+		when(profileRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
+		when(profileService.createProfile(any(), anyLong())).thenReturn(response);
 
-		String requestBody = objectMapper.writeValueAsString(request);
+		// Act
+		ResponseEntity<ProfileCreateResponse> result = profileController.createProfile(request, httpServletRequest);
 
-		mockMvc.perform(post("/api/v1/profiles")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content(requestBody))
-			.andDo(print())
-			.andExpect(status().isCreated());
+		// Assert
+		verify(profileRepository).findByUserId(Long.valueOf(userId));
+		verify(profileService).createProfile(request, Long.valueOf(userId));
+		verify(httpServletRequest).setAttribute("profileId", String.valueOf(response.id()));
+		assertEquals(CREATED, result.getStatusCode());
+		assertEquals(response, result.getBody());
+	}
+
+	@Test
+	void createProfile_ProfileAlreadyExists() {
+		// Arrange
+		String userId = "1";
+		Profile existingProfile = new Profile(); // Create a profile object as needed
+		when(httpServletRequest.getAttribute("userId")).thenReturn(userId);
+		when(profileRepository.findByUserId(anyLong())).thenReturn(Optional.of(existingProfile));
+
+		// Act & Assert
+		ClientErrorException exception = assertThrows(ClientErrorException.class, () -> {
+			profileController.createProfile(new ProfileCreateRequest("피카츄", "안녕하세요", 23, Gender.MALE), httpServletRequest);
+		});
+
+		assertEquals(CONFLICT, exception.getStatus());
+		assertEquals("이미 프로필이 존재합니다", exception.getMessage());
 	}
 }
