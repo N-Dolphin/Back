@@ -25,14 +25,15 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addInterceptor(jwtInterceptor)
                 .order(2)
                 .addPathPatterns("/api/v1/auth/**") // 인증이 필요한 경로에 대해 인터셉터 적용
+                .addPathPatterns("/api/v1/**") // 인증이 필요한 경로에 대해 인터셉터 적용
                 .excludePathPatterns(
                         "/hc", "/env",
                         "/api/v1/auth",
+                        "/api/v1/auth/home",
                         "/api/v1/auth/sign-in",
                         "/api/v1/auth/sign-up",
                         "/api/v1/auth/email-certification",
                         "/api/v1/auth/check-certification",
-                        "/api/v1/profiles",
                         "/api/v1/auth/kakao"
                 ); // 인증이 필요하지 않은 경로는 제외
 
