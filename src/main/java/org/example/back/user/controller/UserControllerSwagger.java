@@ -29,6 +29,6 @@ public interface UserControllerSwagger {
 
 	@Operation(summary = "로그인 요청", description = "로그인 요청을 합니다.")
 	@ApiResponse(responseCode = "200", description = "로그인에 성공하였습니다.")
-	ResponseEntity<SignInResponseDto> signIn(SignInRequestDto dto);
+	ResponseEntity<?> signIn(SignInRequestDto dto);
 
 }

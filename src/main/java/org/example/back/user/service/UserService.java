@@ -1,9 +1,14 @@
 package org.example.back.user.service;
 
+import java.util.Optional;
+
 import org.example.back.config.provider.AuthTokens;
 import org.example.back.config.provider.AuthTokensGenerator;
 import org.example.back.config.provider.EmailProvider;
 import org.example.back.config.provider.JwtTokenProvider;
+import org.example.back.profile.domain.Profile;
+import org.example.back.profile.exception.ProfileNotFoundException;
+import org.example.back.profile.repository.ProfileRepository;
 import org.example.back.user.dto.User;
 import org.example.back.user.dto.request.CheckCertificationRequestDto;
 import org.example.back.user.dto.request.EmailCertificationRequestDto;
@@ -33,6 +38,7 @@ public class UserService {
 	private final CertificationRepository certificationRepository;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final AuthTokensGenerator authTokensGenerator;
+	private final ProfileRepository profileRepository;
 
 	public EmailCertificationResponseDto emailCertification(EmailCertificationRequestDto requestBody) {
 
@@ -112,24 +118,6 @@ public class UserService {
 
 	}
 
-	// public SignInResponseDto signIn(SignInRequestDto dto) {
-	//
-	// 	AuthTokens token = null;
-	// 	String username = dto.username();
-	//
-	// 	UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(
-	// 		() -> new UserNotFoundException(username)
-	// 	);
-	//
-	// 	String password = dto.password();
-	// 	String encodedPassword = userEntity.getPassword();
-	//
-	// 	token = authTokensGenerator.generate(userEntity.getUserId());
-	//
-	// 	return new SignInResponseDto(token, 3600);
-	// }
-
-	//jwtProvider에서 유저 이름을 가지고 jwt를 생성
 	public SignInResponseDto signIn(SignInRequestDto dto) {
 
 		AuthTokens authTokens=null;
@@ -142,15 +130,33 @@ public class UserService {
 		String password = dto.password();
 		String encodedPassword = userEntity.getPassword();
 
-		// 비밀번호 확인 로직 추가 필요
-		// 예: if (!passwordEncoder.matches(password, encodedPassword)) { ... }
 
 		// AuthTokens 생성, 유저 ID와 리프레시 토큰,
 		authTokens = authTokensGenerator.generate(userEntity.getUserId());
 
-		return new SignInResponseDto(authTokens, 3600L);
+		boolean hasProfile=false;
+
+		if (profileRepository.findByUserId(userEntity.getUserId()).isPresent()){
+			hasProfile=true;
+		}
+
+		return new SignInResponseDto(authTokens, 3600L,hasProfile);
 	}
 
+	public Long getProfileIdByUserId(Long userId) {
+		UserEntity user = userRepository.findByUserId(userId).orElseThrow(
+			()-> new UserNotFoundException()
+		);
+
+		Optional<Profile> profile = profileRepository.findByUserId(user.getUserId());
+
+		if (profile.isPresent()){
+			return profile.get().getProfileId();
+		}
+		else{
+			throw new ProfileNotFoundException();
+		}
+	}
 
 	private static class CertificationNumber {
 
