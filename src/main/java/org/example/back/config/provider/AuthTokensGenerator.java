@@ -31,10 +31,6 @@ public class AuthTokensGenerator {
 
 		redisService.saveRefreshToken(subject,refreshToken,REFRESH_TOKEN_EXPIRE_TIME);
 
-		// 리프레시 토큰은 서버 내부에서만 관리할 수 있도록 별도로 처리
-
-		// refreshToken을 Redis 또는 DB에 저장 (예: Redis 사용 시)
-		// refreshTokenRepository.save(refreshToken, memberId, refreshTokenExpiredAt);
 		return AuthTokens.of(accessToken, refreshToken, BEARER_TYPE, ACCESS_TOKEN_EXPIRE_TIME / 1000L);
 
 	}
