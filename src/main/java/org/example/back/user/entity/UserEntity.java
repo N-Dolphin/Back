@@ -1,13 +1,17 @@
 package org.example.back.user.entity;
 
+import org.example.back.profile.domain.Profile;
 import org.example.back.user.oauth.OAuthInfoResponse;
 import org.example.back.user.oauth.OAuthProvider;
+import org.locationtech.jts.geom.Point;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -42,6 +46,10 @@ public class UserEntity {
 
 	@Column
 	private OAuthProvider oAuthProvider;
+
+	@Column
+	@JoinColumn(name = "profile_id")
+	private Long profileId;
 
 	public static UserEntity ofBase(String loginType, String email, String password, String username, String role) {
 		var userEntity = new UserEntity();

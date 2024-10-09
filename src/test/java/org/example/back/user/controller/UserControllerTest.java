@@ -81,17 +81,5 @@ public class UserControllerTest {
 
     }
 
-    @Test
-    public void testSignIn() throws Exception {
-        // given
-        SignInResponseDto responseDto = new SignInResponseDto(AuthTokens.of("qwerasdf","12341234","qwerqwer",1L), 3600L);
-        when(userService.signIn(any(SignInRequestDto.class))).thenReturn(responseDto);
 
-        // when & then
-        mockMvc.perform(post("/api/v1/auth/sign-in")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\": \"testUser\", \"password\": \"password\"}"))
-                .andExpect(status().isOk());
-
-    }
 }

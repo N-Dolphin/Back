@@ -33,7 +33,7 @@ public class JwtInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        token = token.substring(7); // "Bearer " 이후의 실제 토큰 부분 추출
+        token = token.substring(7);
 
         try {
             // JWT 유효성 검증 및 subject 추출

@@ -1,5 +1,8 @@
 package org.example.back.user.controller;
 
+import java.util.Optional;
+
+import org.example.back.profile.domain.Profile;
 import org.example.back.user.dto.User;
 import org.example.back.user.dto.request.CheckCertificationRequestDto;
 import org.example.back.user.dto.request.EmailCertificationRequestDto;
@@ -9,6 +12,8 @@ import org.example.back.user.dto.response.CheckCertificationResponseDto;
 import org.example.back.user.dto.response.EmailCertificationResponseDto;
 import org.example.back.user.dto.response.SignInResponseDto;
 import org.example.back.user.service.UserService;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -60,15 +65,12 @@ public class UserController implements UserControllerSwagger {
 
 	@PostMapping("/sign-in")
 	@Override
-	public ResponseEntity<SignInResponseDto> signIn(
+	public ResponseEntity<?> signIn(
 		@RequestBody @Valid final SignInRequestDto dto) {
 		SignInResponseDto responseDto = userService.signIn(dto);
 		return ResponseEntity.ok(responseDto);
 	}
 
-	@GetMapping("/sign")
-	public String signIn(){
-		return "hello";
-	}
+
 
 }

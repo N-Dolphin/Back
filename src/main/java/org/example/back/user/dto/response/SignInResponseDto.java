@@ -10,8 +10,10 @@ public record SignInResponseDto(
 	AuthTokens token,
 
 	@Schema(description = "만료시간")
-	Long expiredTime
+	Long expiredTime,
 
-) {
+	@Schema(description = "프로필 생성 여부")
+	boolean hasProfile
+	) {
 }
 
