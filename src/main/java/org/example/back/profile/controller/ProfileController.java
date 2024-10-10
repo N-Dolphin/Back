@@ -68,6 +68,7 @@ public class ProfileController implements ProfileControllerSwagger {
 	}
 
 	@PostMapping("/saveLocation")
+	@Override
 	public ResponseEntity<Profile> saveLocation(@RequestBody LocationRequest locationRequest, HttpServletRequest httpServletRequest) {
 
 		String token = resolveToken(httpServletRequest);
@@ -94,6 +95,7 @@ public class ProfileController implements ProfileControllerSwagger {
 
 
 	@GetMapping("/distanceFrom40")
+	@Override
 	public ResponseEntity<List<Profile>> getDistanceFrom10(HttpServletRequest httpServletRequest) {
 		String token = resolveToken(httpServletRequest);
 		String userIdToken = jwtTokenProvider.extractSubject(token);
