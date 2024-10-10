@@ -24,7 +24,7 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 
 	@PostMapping("/upload-profile")
 	@Override
-	public ResponseEntity<String> uploadProfilePicture(@RequestParam("profileImage") MultipartFile file) {
+	public ResponseEntity<String> uploadProfileImage(@RequestParam("profileImage") MultipartFile file) {
 		if (file.isEmpty()) {
 			return ResponseEntity.badRequest().body("파일이 없습니다.");
 		}
