@@ -23,11 +23,7 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 
 	private final AmazonS3 amazonS3;
 
-<<<<<<< HEAD
 	@Value("${cloud.aws.s3.bucket}")
-=======
-	@Value("${cloud.aws.s3.bucket-name}")
->>>>>>> e59a2d5d11d89144e4232137be9dc6372690cb82
 	private String bucketName; // S3 버킷 이름
 
 	@PostMapping("/upload-profile")
