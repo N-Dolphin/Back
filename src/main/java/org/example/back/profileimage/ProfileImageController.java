@@ -8,9 +8,12 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.PutObjectRequest;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 @RestController
 @RequestMapping("/api/v1/profiles")
@@ -18,9 +21,10 @@ import java.io.IOException;
 @Tag(name = "Profile Image API", description = "프로필 이미지 관련 API")
 public class ProfileImageController implements ProfileImageControllerSwagger {
 
-	// 파일이 저장될 경로를 설정 (properties 파일에서 값을 가져오거나 고정값을 설정할 수 있음)
-	// @Value("${profile.image.upload-dir}")
-	// private String uploadDir;
+	private final AmazonS3 amazonS3;
+
+	@Value("${cloud.aws.s3.bucket-name}")
+	private String bucketName; // S3 버킷 이름
 
 	@PostMapping("/upload-profile")
 	@Override
@@ -32,25 +36,19 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 		try {
 			// 파일 이름 추출
 			String fileName = file.getOriginalFilename();
-
-			// 파일 저장 경로 생성
-			//String filePath = uploadDir + File.separator + fileName;
-
-			// 파일을 저장
-			//File dest = new File(filePath);
-			//file.transferTo(dest);
+			// S3에 업로드
+			InputStream inputStream = file.getInputStream();
+			ObjectMetadata metadata = new ObjectMetadata();
+			metadata.setContentLength(file.getSize());
+			PutObjectRequest putRequest = new PutObjectRequest(bucketName, fileName, inputStream, metadata);
+			amazonS3.putObject(putRequest);
 
 			// 파일 경로를 URL로 변환 (프론트엔드에 보낼 URL 생성)
-			// String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
-			// 	.path("/uploads/")
-			// 	.path(fileName)
-			// 	.toUriString();
+			String fileDownloadUri = amazonS3.getUrl(bucketName, fileName).toString();
 
-			//return ResponseEntity.ok("파일이 성공적으로 업로드되었습니다: " + fileDownloadUri);
-			return ResponseEntity.ok("파일이 성공적으로 업로드되었습니다: ");
-		} catch (Exception e) {
+			return ResponseEntity.ok("파일이 성공적으로 업로드되었습니다: " + fileDownloadUri);
+		} catch (IOException e) {
 			return ResponseEntity.status(500).body("파일 업로드 중 오류가 발생했습니다.");
 		}
 	}
-
 }
