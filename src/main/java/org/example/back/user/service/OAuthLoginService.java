@@ -2,6 +2,8 @@ package org.example.back.user.service;
 
 import org.example.back.config.provider.AuthTokens;
 import org.example.back.config.provider.AuthTokensGenerator;
+import org.example.back.profile.repository.ProfileRepository;
+import org.example.back.user.dto.response.SignInResponseDto;
 import org.example.back.user.entity.UserEntity;
 import org.example.back.user.oauth.OAuthInfoResponse;
 import org.example.back.user.oauth.OAuthLoginParams;
@@ -17,11 +19,19 @@ public class OAuthLoginService {
 	private final UserRepository userRepository;
 	private final AuthTokensGenerator authTokensGenerator;
 	private final RequestOAuthInfoService requestOAuthInfoService;
+	private final ProfileRepository profileRepository;
 
-	public AuthTokens login(OAuthLoginParams params) {
+	public SignInResponseDto login(OAuthLoginParams params) {
 		OAuthInfoResponse oAuthInfoResponse = requestOAuthInfoService.request(params);
 		UserEntity userEntity = findOrCreateMember(oAuthInfoResponse);
-		return authTokensGenerator.generate(userEntity.getUserId());
+
+		boolean hasProfile=false;
+
+		if (profileRepository.findByUserId(userEntity.getUserId()).isPresent()){
+			hasProfile=true;
+		}
+
+		return new SignInResponseDto(authTokensGenerator.generate(userEntity.getUserId()),3600L, hasProfile);
 	}
 
 	private UserEntity findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {

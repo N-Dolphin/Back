@@ -28,6 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
                 .addPathPatterns("/api/v1/**") // 인증이 필요한 경로에 대해 인터셉터 적용
                 .excludePathPatterns(
                         "/hc", "/env",
+                        "/api/v1/test-redis",
                         "/api/v1/auth",
                         "/api/v1/auth/home",
                         "/api/v1/auth/sign-in",
