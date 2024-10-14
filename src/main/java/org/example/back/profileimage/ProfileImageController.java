@@ -1,4 +1,4 @@
-package org.example.back.profileimage.controller;
+package org.example.back.profileimage;
 
 import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.profileimage.service.ProfileImageService;
@@ -58,11 +58,16 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 
 			Long profileId = userService.getProfileIdByUserId(userId);
 
+			System.out.println(token);
+			System.out.println(userIdToken);
+			System.out.println(userId);
+			System.out.println(profileId);
+
 			// 파일 경로를 URL로 변환 (프론트엔드에 보낼 URL 생성)
 			String fileDownloadUri = amazonS3.getUrl(bucketName, fileName).toString();
 
 			//파일 경로를 DB에 저장
-			profileImageService.saveProfileImage(userId,profileId,fileDownloadUri, imageSize);
+			profileImageService.saveProfileImage(profileId,fileDownloadUri, imageSize);
 
 
 

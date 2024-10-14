@@ -1,4 +1,4 @@
-package org.example.back.profileimage.controller;
+package org.example.back.profileimage;
 
 import org.springframework.http.ResponseEntity;
 

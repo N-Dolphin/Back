@@ -1,4 +1,4 @@
-package org.example.back.profileimage;
+package org.example.back.profileimage.entity;
 
 import org.example.back.profile.domain.Profile;
 
@@ -8,31 +8,35 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
 @Getter
 @Setter
-
+@NoArgsConstructor
+@Table(name = "profile_image") // 테이블 이름을 명시적으로 지정
 public class ProfileImage {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	Long id;
+	private Long id;
 
-	// 프로필 아이디
-	// 프로필과의 연관관계 (다대일)
 	@ManyToOne
 	@JoinColumn(name = "profile_id")
 	private Profile profile;
 
-	String imageUrl;
+	private String imageUrl;
+	private Integer imageSize;
 
-	Integer imageSize;
 
-	String imageOriginalName;
-
-	String imageStoredName;
-
+	public static ProfileImage of(Profile profile, String imageUrl, Integer imageSize) {
+		ProfileImage profileImage = new ProfileImage();
+		profileImage.setProfile(profile);
+		profileImage.setImageUrl(imageUrl);
+		profileImage.setImageSize(imageSize);
+		return profileImage;
+	}
 }
