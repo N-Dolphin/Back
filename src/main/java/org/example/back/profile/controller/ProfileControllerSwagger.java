@@ -2,6 +2,7 @@ package org.example.back.profile.controller;
 
 import org.example.back.location.LocationRequest;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
+import org.example.back.profile.domain.ProfileDto;
 import org.example.back.profile.service.response.ProfileCreateResponse;
 import org.example.back.profile.domain.Profile;
 import org.springframework.http.ResponseEntity;
@@ -56,7 +57,7 @@ public interface ProfileControllerSwagger {
 			)
 		}
 	)
-	ResponseEntity<Profile> saveLocation(@RequestBody LocationRequest locationRequest, HttpServletRequest httpServletRequest);
+	ResponseEntity<ProfileDto> saveLocation(@RequestBody LocationRequest locationRequest, HttpServletRequest httpServletRequest);
 
 	@Operation(
 		summary = "청와대와의 거리 계산",
@@ -70,4 +71,18 @@ public interface ProfileControllerSwagger {
 		}
 	)
 	ResponseEntity<List<Profile>> getDistanceFrom10(HttpServletRequest httpServletRequest);
+
+
+	@Operation(
+		summary = "유저와의 프로필 계산",
+		description = "계산 결과(프로필 리스트)를 반환합니다.",
+		responses = {
+			@ApiResponse(
+				responseCode = "200",
+				description = "리스트 반환 성공",
+				content = @Content(schema = @Schema(implementation = Profile.class))
+			)
+		}
+	)
+	ResponseEntity<List<ProfileDto>> findProfiles(HttpServletRequest httpServletRequest);
 }

@@ -9,10 +9,13 @@ import org.example.back.location.LocationRequest;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
 import org.example.back.profile.domain.Profile;
 import org.example.back.profile.domain.ProfileDistance;
+import org.example.back.profile.domain.ProfileDto;
 import org.example.back.profile.exception.ProfileNotFoundException;
 import org.example.back.profile.repository.ProfileRepository;
 import org.example.back.profile.service.ProfileService;
 import org.example.back.profile.service.response.ProfileCreateResponse;
+import org.example.back.profileimage.entity.ProfileImage;
+import org.example.back.profileimage.repository.ProfileImageRepository;
 import org.example.back.user.entity.UserEntity;
 import org.example.back.user.exception.InvalidTokenException;
 import org.example.back.user.exception.UserNotFoundException;
@@ -48,6 +51,7 @@ public class ProfileController implements ProfileControllerSwagger {
 	private static final double CHEONGWADAE_LONGITUDE = 37.52736667;
 	private final UserRepository userRepository;
 	private final UserService userService;
+	private final ProfileImageRepository profileImageRepository;
 
 	@PostMapping
 	@Override
@@ -69,7 +73,7 @@ public class ProfileController implements ProfileControllerSwagger {
 
 	@PostMapping("/saveLocation")
 	@Override
-	public ResponseEntity<Profile> saveLocation(@RequestBody LocationRequest locationRequest, HttpServletRequest httpServletRequest) {
+	public ResponseEntity<ProfileDto> saveLocation(@RequestBody LocationRequest locationRequest, HttpServletRequest httpServletRequest) {
 
 		String token = resolveToken(httpServletRequest);
 
@@ -81,15 +85,12 @@ public class ProfileController implements ProfileControllerSwagger {
 			ProfileNotFoundException::new
 		);
 
-		System.out.println("임시 확인 1");
-		System.out.println(locationRequest.longitude());
-		System.out.println(locationRequest.latitude());
-		System.out.println("임시 확인 1");
+		ProfileImage image= profileImageRepository.findFirstByProfile_ProfileId(profileId);
 
 		profileService.updateProfileLocation(profileId, locationRequest.longitude(),
 			locationRequest.latitude());
 
-		return ResponseEntity.ok(profile);
+		return ResponseEntity.ok(new ProfileDto(image.getImageUrl(),profile.getNickname(),profile.getAge()));
 	}
 
 
@@ -109,6 +110,20 @@ public class ProfileController implements ProfileControllerSwagger {
 		return ResponseEntity.ok(distances);
 	}
 
+
+	@GetMapping("/findProfiles")
+	public ResponseEntity<List<ProfileDto>> findProfiles(HttpServletRequest request) {
+
+		String token = resolveToken(request);
+		String userIdToken = jwtTokenProvider.extractSubject(token);
+		Long userId = Long.valueOf(userIdToken);
+
+		Long profileId = userService.getProfileIdByUserId(userId);
+
+		List<ProfileDto> profiles = profileService.getProfiles(profileId);
+
+		return ResponseEntity.ok(profiles);
+	}
 
 	private String resolveToken(HttpServletRequest request) {
 		String bearerToken = request.getHeader("Authorization");
