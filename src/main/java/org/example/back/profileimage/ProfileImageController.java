@@ -20,7 +20,6 @@ import java.io.InputStream;
 @RestController
 @RequestMapping("/api/v1/profiles/upload-profile")
 @RequiredArgsConstructor
-@Tag(name = "Profile Image API", description = "프로필 이미지 관련 API")
 public class ProfileImageController implements ProfileImageControllerSwagger {
 
 	private final AmazonS3 amazonS3;
