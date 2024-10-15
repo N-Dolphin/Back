@@ -92,4 +92,10 @@ public class ProfileService {
 		return profileDtos;
 	}
 
+	public Long findProfileByNickname(String toUsername) {
+
+		Profile profile= profileRepository.findProfileByNickname(toUsername);
+
+		return profile.getProfileId();
+	}
 }

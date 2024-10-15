@@ -112,6 +112,7 @@ public class ProfileController implements ProfileControllerSwagger {
 
 
 	@GetMapping("/findProfiles")
+	@Override
 	public ResponseEntity<List<ProfileDto>> findProfiles(HttpServletRequest request) {
 
 		String token = resolveToken(request);
