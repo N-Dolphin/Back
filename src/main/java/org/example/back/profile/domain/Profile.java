@@ -1,10 +1,6 @@
 package org.example.back.profile.domain;
 
 import org.example.back.profile.domain.type.Gender;
-import org.example.back.user.entity.UserEntity;
-import org.locationtech.jts.geom.Point;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Embedded;
@@ -14,7 +10,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -52,6 +47,5 @@ public class Profile {
 
 	@Embedded
 	private ProfileLocation location;
-
 
 }

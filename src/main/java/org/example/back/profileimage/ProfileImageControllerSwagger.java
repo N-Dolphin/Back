@@ -1,16 +1,10 @@
 package org.example.back.profileimage;
 
-import org.example.back.location.LocationRequest;
-import org.example.back.profile.controller.request.ProfileCreateRequest;
-import org.example.back.profile.service.response.ProfileCreateResponse;
-import org.example.back.profile.domain.Profile;
 import org.springframework.http.ResponseEntity;
-import java.util.List;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -20,7 +14,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-@Tag(name = "Profile API", description = "프로필 관련 API")
+@Tag(name = "Profile 이미지 API", description = "프로필 이미지 관련 API")
 public interface ProfileImageControllerSwagger {
 
 
@@ -52,5 +46,5 @@ public interface ProfileImageControllerSwagger {
 			)
 		}
 	)
-	ResponseEntity<String> uploadProfileImage(@RequestParam("profileImage") MultipartFile file);
+	ResponseEntity<String> uploadProfileImage(@RequestParam("profileImage") MultipartFile file,  HttpServletRequest httpServletRequest);
 }

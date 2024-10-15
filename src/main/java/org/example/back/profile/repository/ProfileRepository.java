@@ -24,4 +24,27 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 		"300000)", nativeQuery = true)
 	List<Profile> findProfilesWithinDistance(@Param("longitude") double longitude, @Param("latitude") double latitude);
 
+
+	@Query("SELECT p FROM Profile p")
+	List<Profile> findProfilesWithoutImages();
+
+	@Query("SELECT p FROM Profile p LEFT JOIN ProfileImage pi ON pi.profile.profileId = p.profileId WHERE p.profileId = :profileId")
+	Optional<Profile> findProfileWithImages(@Param("profileId") Long profileId);
+
+
+	@Query("SELECT p FROM Profile p LEFT JOIN ProfileImage pi ON pi.profile.profileId = p.profileId WHERE pi.profile.profileId IS NOT NULL")
+	List<Profile> findProfilesWithImages();
+
+
+
+	@Query(value = "SELECT p.* FROM profile p " +
+		"WHERE ST_DWithin(geography(p.location), geography(:currentLocation), :radius) " +
+		"AND p.profileid != :profileId " +  // profile_id -> profileid로 수정
+		"ORDER BY ST_Distance(geography(p.location), geography(:currentLocation)) ASC",
+		nativeQuery = true)
+	List<Profile> findProfilesSortedByDistance(@Param("currentLocation") Point currentLocation,
+		@Param("profileId") Long profileId,
+		@Param("radius") double radius);
+
+
 }
