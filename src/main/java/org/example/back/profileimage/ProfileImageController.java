@@ -12,8 +12,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -48,19 +51,19 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 			InputStream inputStream = file.getInputStream();
 			ObjectMetadata metadata = new ObjectMetadata();
 			metadata.setContentLength(file.getSize());
+			metadata.setContentType(file.getContentType()); // 요청받은 파일의 ContentType 메타데이터에 주입
+
 			PutObjectRequest putRequest = new PutObjectRequest(bucketName, fileName, inputStream, metadata);
 			amazonS3.putObject(putRequest);
+
+			// 업로드할때 컨텐츠 타입을 지정해줘야 이미지가 업로드
+
 
 			String token = resolveToken(request);
 			String userIdToken = jwtTokenProvider.extractSubject(token);
 			Long userId = Long.valueOf(userIdToken);
 
 			Long profileId = userService.getProfileIdByUserId(userId);
-
-			System.out.println(token);
-			System.out.println(userIdToken);
-			System.out.println(userId);
-			System.out.println(profileId);
 
 			// 파일 경로를 URL로 변환 (프론트엔드에 보낼 URL 생성)
 			String fileDownloadUri = amazonS3.getUrl(bucketName, fileName).toString();
@@ -82,4 +85,5 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 		}
 		return null;
 	}
+
 }
