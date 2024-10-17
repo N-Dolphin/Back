@@ -59,19 +59,6 @@ public interface ProfileControllerSwagger {
 	)
 	ResponseEntity<ProfileDto> saveLocation(@RequestBody LocationRequest locationRequest, HttpServletRequest httpServletRequest);
 
-	@Operation(
-		summary = "청와대와의 거리 계산",
-		description = "청와대와의 거리 계산 결과를 반환합니다.",
-		responses = {
-			@ApiResponse(
-				responseCode = "200",
-				description = "거리 계산 성공",
-				content = @Content(schema = @Schema(implementation = Profile.class))
-			)
-		}
-	)
-	ResponseEntity<List<Profile>> getDistanceFrom10(HttpServletRequest httpServletRequest);
-
 
 	@Operation(
 		summary = "유저와의 프로필 계산",
@@ -80,7 +67,7 @@ public interface ProfileControllerSwagger {
 			@ApiResponse(
 				responseCode = "200",
 				description = "리스트 반환 성공",
-				content = @Content(schema = @Schema(implementation = Profile.class))
+				content = @Content(schema = @Schema(implementation = ProfileDto.class))
 			)
 		}
 	)

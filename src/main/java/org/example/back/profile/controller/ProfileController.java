@@ -45,11 +45,6 @@ public class ProfileController implements ProfileControllerSwagger {
 	private final ProfileService profileService;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final ProfileRepository profileRepository;
-
-	// 청와대의 위도와 경도
-	private static final double CHEONGWADAE_LATITUDE =  127.1258639;
-	private static final double CHEONGWADAE_LONGITUDE = 37.52736667;
-	private final UserRepository userRepository;
 	private final UserService userService;
 	private final ProfileImageRepository profileImageRepository;
 
@@ -94,21 +89,6 @@ public class ProfileController implements ProfileControllerSwagger {
 	}
 
 
-
-	@GetMapping("/distanceFrom40")
-	@Override
-	public ResponseEntity<List<Profile>> getDistanceFrom10(HttpServletRequest httpServletRequest) {
-		String token = resolveToken(httpServletRequest);
-		String userIdToken = jwtTokenProvider.extractSubject(token);
-		Long userId = Long.valueOf(userIdToken);
-		Long profileId = userService.getProfileIdByUserId(userId);
-
-		// 청와대와의 거리 계산
-		List<Profile> distances = profileService.getProfilesWithinDistance(CHEONGWADAE_LATITUDE,CHEONGWADAE_LONGITUDE);
-
-		// 결과 반환
-		return ResponseEntity.ok(distances);
-	}
 
 
 	@GetMapping("/findProfiles")
