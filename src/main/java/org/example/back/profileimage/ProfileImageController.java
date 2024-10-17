@@ -19,6 +19,8 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/profiles/upload-profile")
@@ -35,28 +37,12 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 
 	@PostMapping()
 	@Override
-	public ResponseEntity<String> uploadProfileImage(@RequestParam("profileImage") MultipartFile file, HttpServletRequest request) {
+	public ResponseEntity<String> uploadProfileImage(@RequestParam("profileImage") List<MultipartFile> file, HttpServletRequest request) {
 		if (file.isEmpty()) {
 			return ResponseEntity.badRequest().body("파일이 없습니다.");
 		}
 
 		try {
-			// 파일 이름 추출
-			String fileName = file.getOriginalFilename();
-
-			// 이미지 사이즈 얻기
-			Integer imageSize = (int) file.getSize(); // 파일 크기를 바이트 단위로 얻기
-
-			// S3에 업로드
-			InputStream inputStream = file.getInputStream();
-			ObjectMetadata metadata = new ObjectMetadata();
-			metadata.setContentLength(file.getSize());
-			metadata.setContentType(file.getContentType()); // 요청받은 파일의 ContentType 메타데이터에 주입
-
-			PutObjectRequest putRequest = new PutObjectRequest(bucketName, fileName, inputStream, metadata);
-			amazonS3.putObject(putRequest);
-
-			// 업로드할때 컨텐츠 타입을 지정해줘야 이미지가 업로드
 
 
 			String token = resolveToken(request);
@@ -65,15 +51,42 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 
 			Long profileId = userService.getProfileIdByUserId(userId);
 
+			List<String> imgUrlList = new ArrayList<>();
+			for (MultipartFile multipartFile : file) {
+
+
+
+				String fileName = multipartFile.getOriginalFilename();
+
+				// 이미지 사이즈 얻기
+				Integer imageSize = (int) multipartFile.getSize(); // 파일 크기를 바이트 단위로 얻기
+
+				// 파일 이름 추출
+				// S3에 업로드
+				// 업로드할때 컨텐츠 타입을 지정해줘야 이미지가 업로드
+
+				InputStream inputStream = multipartFile.getInputStream();
+				ObjectMetadata metadata = new ObjectMetadata();
+				metadata.setContentLength(multipartFile.getSize());
+				metadata.setContentType(multipartFile.getContentType()); // 요청받은 파일의 ContentType 메타데이터에 주입
+
+				PutObjectRequest putRequest = new PutObjectRequest(bucketName, fileName, inputStream, metadata);
+				amazonS3.putObject(putRequest);
+
+				String fileDownloadUri = amazonS3.getUrl(bucketName, fileName).toString();
+
+
+				//파일 경로를 DB에 저장
+				profileImageService.saveProfileImage(profileId,fileDownloadUri, imageSize);
+
+
+
+				imgUrlList.add(fileDownloadUri);
+
+
+			}
 			// 파일 경로를 URL로 변환 (프론트엔드에 보낼 URL 생성)
-			String fileDownloadUri = amazonS3.getUrl(bucketName, fileName).toString();
-
-			//파일 경로를 DB에 저장
-			profileImageService.saveProfileImage(profileId,fileDownloadUri, imageSize);
-
-
-
-			return ResponseEntity.ok("파일이 성공적으로 업로드되었습니다: " + fileDownloadUri);
+			return ResponseEntity.ok("파일이 성공적으로 업로드되었습니다: " + imgUrlList.get(0));
 		} catch (IOException e) {
 			return ResponseEntity.status(500).body("파일 업로드 중 오류가 발생했습니다.");
 		}

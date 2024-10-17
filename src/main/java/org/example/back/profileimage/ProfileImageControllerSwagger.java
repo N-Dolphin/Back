@@ -1,5 +1,7 @@
 package org.example.back.profileimage;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -46,5 +48,5 @@ public interface ProfileImageControllerSwagger {
 			)
 		}
 	)
-	ResponseEntity<String> uploadProfileImage(@RequestParam("profileImage") MultipartFile file,  HttpServletRequest httpServletRequest);
+	ResponseEntity<String> uploadProfileImage(@RequestParam("profileImage") List<MultipartFile>  file,  HttpServletRequest httpServletRequest);
 }
