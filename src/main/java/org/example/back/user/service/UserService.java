@@ -42,12 +42,11 @@ public class UserService {
 
 	public EmailCertificationResponseDto emailCertification(EmailCertificationRequestDto requestBody) {
 
-		String username = requestBody.username();
 		String email = requestBody.email();
 
-		userRepository.findByUsername(username).ifPresent(
+		userRepository.findByEmail(email).ifPresent(
 			user -> {
-				throw new UserAlreadyExistsException(username);
+				throw new UserAlreadyExistsException(email);
 			}
 		);
 
@@ -58,7 +57,7 @@ public class UserService {
 			return new EmailCertificationResponseDto("실패", "메일 전송에 실패했습니다");
 
 		}
-		CertificationEntity certificationEntity = new CertificationEntity(email, username, certificationNumber);
+		CertificationEntity certificationEntity = new CertificationEntity(email , certificationNumber);
 		certificationRepository.save(certificationEntity);
 
 		return new EmailCertificationResponseDto("성공", "이메일 요청이 성공하였습니다");
@@ -89,16 +88,16 @@ public class UserService {
 	@Transactional
 	public User signUp(SignUpRequestDto dto) {
 
-		String username = dto.username();
-		userRepository.findByUsername(username).ifPresent(
-			user ->
-			{
-				throw new UserAlreadyExistsException(username);
+
+		String email= dto.email();
+		userRepository.findByEmail(email).ifPresent(
+			user -> {
+				throw new UserAlreadyExistsException(email);
 			}
 		);
-		String email = dto.email();
-		CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
 
+
+		CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
 		boolean isMatched = certificationEntity.getEmail().equals(email);
 
 		if (!isMatched) {
@@ -109,26 +108,23 @@ public class UserService {
 		//추후에 인코딩
 		String encodedPassword = password;
 
-		UserEntity userEntity = UserEntity.ofBase("Base", email, encodedPassword, username, "USER");
+		UserEntity user = UserEntity.ofBase("Base", email, encodedPassword, "USER");
 
-		userRepository.save(userEntity);
-		certificationRepository.deleteByUsername(username);
+		userRepository.save(user);
+		certificationRepository.deleteByEmail(email);
 
-		return User.from(userEntity);
+		return User.from(user);
 
 	}
 
 	public SignInResponseDto signIn(SignInRequestDto dto) {
 
 		AuthTokens authTokens=null;
-		String token = null;
-		String username = dto.username();
-		UserEntity userEntity = userRepository.findByUsername(username).orElseThrow(
-			() -> new UserNotFoundException(username)
-		);
+		String email= dto.email();
 
-		String password = dto.password();
-		String encodedPassword = userEntity.getPassword();
+		UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
+			() -> new UserNotFoundException(email)
+		);
 
 
 		// AuthTokens 생성, 유저 ID와 리프레시 토큰,
@@ -140,7 +136,7 @@ public class UserService {
 			hasProfile=true;
 		}
 
-		return new SignInResponseDto(authTokens, 3600L,hasProfile);
+		return new SignInResponseDto(authTokens, 3600L, hasProfile);
 	}
 
 	public Long getProfileIdByUserId(Long userId) {

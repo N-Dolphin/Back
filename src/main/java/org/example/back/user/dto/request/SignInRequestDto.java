@@ -5,8 +5,8 @@ import jakarta.validation.constraints.NotBlank;
 
 public record SignInRequestDto(
 
-	@Schema(description = "로그인할 Id", example = "lsh0927")
-	@NotBlank String username,
+	@Schema(description = "로그인할 이메일", example = "lsheon0927@naver.com")
+	@NotBlank String email,
 
 	@Schema(description = "로그인할 패스워드", example = "password1234")
 	@NotBlank String password

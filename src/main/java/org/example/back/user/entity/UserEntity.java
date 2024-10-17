@@ -33,9 +33,6 @@ public class UserEntity {
 	private String email;
 
 	@Column
-	private String username;
-
-	@Column
 	private String loginType;
 
 	@Column
@@ -51,23 +48,21 @@ public class UserEntity {
 	@JoinColumn(name = "profile_id")
 	private Long profileId;
 
-	public static UserEntity ofBase(String loginType, String email, String password, String username, String role) {
+	public static UserEntity ofBase(String loginType, String email, String password, String role) {
 		var userEntity = new UserEntity();
 		userEntity.setLoginType(loginType);
 		userEntity.setEmail(email);
 		userEntity.setPassword(password);
-		userEntity.setUsername(username);
 		userEntity.setRole(role);
 		return userEntity;
 	}
 
 
-	public static UserEntity ofOauth(String loginType, String email, String password, String username, String role, OAuthProvider oAuthProvider) {
+	public static UserEntity ofOauth(String loginType, String email, String password, String role, OAuthProvider oAuthProvider) {
 		var userEntity = new UserEntity();
 		userEntity.setLoginType(loginType);
 		userEntity.setEmail(email);
 		userEntity.setPassword(password);
-		userEntity.setUsername(username);
 		userEntity.setRole(role);
 		userEntity.setOAuthProvider(oAuthProvider);
 		return userEntity;

@@ -9,8 +9,6 @@ public interface CertificationRepository extends JpaRepository<CertificationEnti
 
 	CertificationEntity findByEmail(String email);
 
-	CertificationEntity findByUsername(String username);
-
-	void deleteByUsername(String username);
+	void deleteByEmail(String email);
 
 }

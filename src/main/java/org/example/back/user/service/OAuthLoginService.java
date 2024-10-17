@@ -41,7 +41,7 @@ public class OAuthLoginService {
 	}
 
 	private UserEntity newMember(OAuthInfoResponse oAuthInfoResponse) {
-		UserEntity userEntity = UserEntity.ofOauth("Oauth", oAuthInfoResponse.getEmail(),null,oAuthInfoResponse.getNickname(),"USER",
+		UserEntity userEntity = UserEntity.ofOauth("Oauth", oAuthInfoResponse.getEmail(),null,"USER",
 			OAuthProvider.KAKAO);
 		return userRepository.save(userEntity);
 	}
