@@ -48,6 +48,8 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 			InputStream inputStream = file.getInputStream();
 			ObjectMetadata metadata = new ObjectMetadata();
 			metadata.setContentLength(file.getSize());
+			metadata.setContentType(file.getContentType()); // 요청받은 파일의 ContentType 메타데이터에 주입
+
 			PutObjectRequest putRequest = new PutObjectRequest(bucketName, fileName, inputStream, metadata);
 			amazonS3.putObject(putRequest);
 
