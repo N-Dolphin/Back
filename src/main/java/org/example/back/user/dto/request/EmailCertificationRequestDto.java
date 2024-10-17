@@ -7,9 +7,6 @@ import jakarta.validation.constraints.NotBlank;
 @Schema(description = "이메일 인증 요청")
 public record EmailCertificationRequestDto(
 
-	@Schema(description = "이메일 인증을 위한 유저 이름", example = "lsh0927")
-	@NotBlank String username,
-
 	@Email(message = "email should be valid")
 	@Schema(description = "이메일 인증을 위한 이메일 주소", example = "lsheon0927@naver.com")
 	@NotBlank @Email String email

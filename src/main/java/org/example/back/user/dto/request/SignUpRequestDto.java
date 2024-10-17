@@ -7,9 +7,6 @@ import jakarta.validation.constraints.Pattern;
 
 public record SignUpRequestDto(
 
-	@Schema(description = "회원가입할 유저 이름", example = "lsh0927")
-	@NotBlank String username,
-
 	@Schema(description = "규격에 맞는 비밀번호", example = "password1234")
 	@NotBlank @Pattern(regexp = "^(?=.*[a-zA-Z])(?=.*[0-9])[a-zA-Z0-9]{8,13}$")
 	String password,
