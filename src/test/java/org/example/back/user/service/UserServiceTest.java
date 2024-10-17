@@ -47,19 +47,18 @@ public class UserServiceTest {
     @Test
     public void testSignInSuccess() {
         // given
-        String username = "testUser";
+        String email = "test1234@naver.com";
         String password = "password";
-        SignInRequestDto signInRequestDto = new SignInRequestDto(username, password);
+        SignInRequestDto signInRequestDto = new SignInRequestDto(email,password);
 
         UserEntity userEntity = new UserEntity();
-        userEntity.setUsername(username);
         userEntity.setPassword(password);
         userEntity.setUserId(1L); // 유저 ID 설정
 
         AuthTokens mockedTokens = AuthTokens.of("mockedAccessToken", "mockedRefreshToken", "Bearer", 3600L);
 
         // Mocking repository and generator behavior
-        when(userRepository.findByUsername(username)).thenReturn(Optional.of(userEntity));
+        when(userRepository.findByEmail(email)).thenReturn(Optional.of(userEntity));
         when(authTokensGenerator.generate(userEntity.getUserId())).thenReturn(mockedTokens);
 
         // when
@@ -72,10 +71,10 @@ public class UserServiceTest {
     @Test
     public void testSignInUserNotFound() {
         // given
-        String username = "nonExistentUser";
-        SignInRequestDto signInRequestDto = new SignInRequestDto(username, "password");
+        String email = "test1234";
+        SignInRequestDto signInRequestDto = new SignInRequestDto(email, "password");
 
-        when(userRepository.findByUsername(username)).thenReturn(Optional.empty());
+        when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
 
         // when / then
         assertThrows(UserNotFoundException.class, () -> {

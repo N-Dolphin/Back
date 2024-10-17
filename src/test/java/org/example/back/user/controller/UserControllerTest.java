@@ -68,13 +68,13 @@ public class UserControllerTest {
     @Test
     public void testSignUp() throws Exception {
         // given
-        User user = new User("testUser", "test@example.com");
+        User user = new User( "test@example.com");
         when(userService.signUp(any(SignUpRequestDto.class))).thenReturn(user);
 
         // when & then
         mockMvc.perform(post("/api/v1/auth/sign-up")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"username\": \"testUser\", \"email\": \"test@example.com\", \"password\": \"password123\", \"certificationNumber\": \"1234\"}")) // Ensure password matches the pattern and add certificationNumber
+                        .content("{\"email\": \"test@example.com\", \"password\": \"password123\", \"certificationNumber\": \"1234\"}")) // Ensure password matches the pattern and add certificationNumber
                 .andExpect(status().isOk());
 
 
