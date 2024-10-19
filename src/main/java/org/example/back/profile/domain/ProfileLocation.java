@@ -17,7 +17,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @ToString
 public class ProfileLocation {
-	
+
 	private Point location;
 
 	public ProfileLocation(Double longitude, Double latitude) {
