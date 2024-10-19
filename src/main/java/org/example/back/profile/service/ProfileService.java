@@ -85,7 +85,7 @@ public class ProfileService {
 		List<ProfileDto> profileDtos = profilesList.stream()
 			.map(p -> {
 				ProfileImage firstImage = profileImageRepository.findFirstByProfile_ProfileId(p.getProfileId());
-				return new ProfileDto(firstImage.getImageUrl(), p.getNickname(), p.getAge());
+				return new ProfileDto(firstImage.getImageUrl(), p.getProfileName(), p.getAge());
 			})
 			.collect(Collectors.toList());
 

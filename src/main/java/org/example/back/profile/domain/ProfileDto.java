@@ -4,7 +4,7 @@ import org.example.back.profileimage.entity.ProfileImage;
 
 public record ProfileDto(
 	String imageUrl,
-	String name,
+	String profileName,
 	int age
 ) {
 }

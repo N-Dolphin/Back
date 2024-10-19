@@ -85,7 +85,7 @@ public class ProfileController implements ProfileControllerSwagger {
 		profileService.updateProfileLocation(profileId, locationRequest.longitude(),
 			locationRequest.latitude());
 
-		return ResponseEntity.ok(new ProfileDto(image.getImageUrl(),profile.getNickname(),profile.getAge()));
+		return ResponseEntity.ok(new ProfileDto(image.getImageUrl(),profile.getProfileName(),profile.getAge()));
 	}
 
 

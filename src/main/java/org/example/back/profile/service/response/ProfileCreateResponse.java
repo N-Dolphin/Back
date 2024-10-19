@@ -27,7 +27,7 @@ public record ProfileCreateResponse(
 	public static ProfileCreateResponse of(final Profile newProfile) {
 		return new ProfileCreateResponse(
 			newProfile.getProfileId(),
-			newProfile.getNickname(),
+			newProfile.getProfileName(),
 			newProfile.getAge(),
 			newProfile.getSelfIntroduce(),
 			newProfile.getGender()
