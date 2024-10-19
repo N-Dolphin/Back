@@ -29,7 +29,7 @@ public class Profile {
 	private Long profileId;
 
 	@Column
-	private String nickname;
+	private String profileName;
 
 	@Column
 	private String selfIntroduce;

@@ -18,10 +18,6 @@ import lombok.ToString;
 @ToString
 public class ProfileLocation {
 
-
-
-	//    @Column(columnDefinition = "geometry(Point, 4326)") // PostgreSQL
-	//    @Column(columnDefinition = "POINT SRID 4326") // MySQL
 	private Point location;
 
 	public ProfileLocation(Double longitude, Double latitude) {

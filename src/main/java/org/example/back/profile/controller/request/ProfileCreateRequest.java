@@ -12,7 +12,7 @@ public record ProfileCreateRequest(
 
 	@Schema(description = "유저명", example = "피카츄")
 	@NotBlank
-	String nickname,
+	String profileName,
 	@Schema(description = "자기소개", example = "안녕하세요")
 	@NotBlank
 	String selfIntroduction,
@@ -25,7 +25,7 @@ public record ProfileCreateRequest(
 ) {
 	public Profile toProfile() {
 		return Profile.builder()
-			.nickname(this.nickname)
+			.profileName(this.profileName)
 			.selfIntroduce(this.selfIntroduction)
 			.age(this.age)
 			.gender(this.gender)
