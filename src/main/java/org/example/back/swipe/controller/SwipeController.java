@@ -29,7 +29,7 @@ public class SwipeController implements SwipeControllerSwagger{
 	@PostMapping("/like")
 	@Override
 	public ResponseEntity<Swipe> like(
-		@RequestParam String toUsername,
+		@RequestParam String toProfileName,
 		HttpServletRequest request
 	) {
 
@@ -38,7 +38,7 @@ public class SwipeController implements SwipeControllerSwagger{
 		Long fromUserId = Long.valueOf(userIdToken);
 		Long fromProfileId = userService.getProfileIdByUserId(fromUserId);
 
-		Long toProfileId= profileService.findProfileByNickname(toUsername);
+		Long toProfileId= profileService.findProfileByNickname(toProfileName);
 
 		Swipe swipe = swipeService.swipe(fromProfileId, toProfileId, MatchingEnum.LIKE);
 		return ResponseEntity.ok(swipe);
@@ -48,7 +48,7 @@ public class SwipeController implements SwipeControllerSwagger{
 	@PostMapping("/dislike")
 	@Override
 	public ResponseEntity<Swipe> dislike(
-		@RequestParam String toUsername,
+		@RequestParam String toProfileName,
 		HttpServletRequest request
 	) {
 
@@ -57,7 +57,7 @@ public class SwipeController implements SwipeControllerSwagger{
 		Long fromUserId = Long.valueOf(userIdToken);
 		Long fromProfileId = userService.getProfileIdByUserId(fromUserId);
 
-		Long toProfileId= profileService.findProfileByNickname(toUsername);
+		Long toProfileId= profileService.findProfileByNickname(toProfileName);
 
 		Swipe swipe = swipeService.swipe(fromProfileId, toProfileId, MatchingEnum.DISLIKE);
 		return ResponseEntity.ok(swipe);
