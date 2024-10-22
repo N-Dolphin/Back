@@ -98,4 +98,10 @@ public class ProfileService {
 
 		return profile.getProfileId();
 	}
+
+	public Profile findProfileByProfileId(Long profileId) {
+		return profileRepository.findByProfileId(profileId).orElseThrow(
+			ProfileNotFoundException::new
+		);
+	}
 }

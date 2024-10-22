@@ -115,4 +115,18 @@ public class ProfileController implements ProfileControllerSwagger {
 	}
 
 
+	@GetMapping("/getProfile")
+	@Override
+	public ResponseEntity<Profile> getProfile(HttpServletRequest request) {
+
+		String token = resolveToken(request);
+		String userIdToken = jwtTokenProvider.extractSubject(token);
+		Long userId = Long.valueOf(userIdToken);
+		Long profileId = userService.getProfileIdByUserId(userId);
+
+		Profile userProfile= profileService.findProfileByProfileId(profileId);
+
+		return ResponseEntity.ok(userProfile);
+	}
+
 }
