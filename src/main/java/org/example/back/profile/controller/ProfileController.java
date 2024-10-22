@@ -10,6 +10,7 @@ import org.example.back.profile.controller.request.ProfileCreateRequest;
 import org.example.back.profile.domain.Profile;
 import org.example.back.profile.domain.ProfileDistance;
 import org.example.back.profile.domain.ProfileDto;
+import org.example.back.profile.domain.ProfileResponseDto;
 import org.example.back.profile.exception.ProfileNotFoundException;
 import org.example.back.profile.repository.ProfileRepository;
 import org.example.back.profile.service.ProfileService;
@@ -116,17 +117,18 @@ public class ProfileController implements ProfileControllerSwagger {
 
 
 	@GetMapping("/getProfile")
-	@Override
-	public ResponseEntity<Profile> getProfile(HttpServletRequest request) {
+	public ResponseEntity<ProfileResponseDto> getProfile(HttpServletRequest request) {
 
 		String token = resolveToken(request);
 		String userIdToken = jwtTokenProvider.extractSubject(token);
 		Long userId = Long.valueOf(userIdToken);
 		Long profileId = userService.getProfileIdByUserId(userId);
 
-		Profile userProfile= profileService.findProfileByProfileId(profileId);
+		Profile userProfile = profileService.findProfileByProfileId(profileId);
 
-		return ResponseEntity.ok(userProfile);
+		ProfileResponseDto responseDTO = ProfileResponseDto.from(userProfile);
+
+		return ResponseEntity.ok(responseDTO);
 	}
 
 }

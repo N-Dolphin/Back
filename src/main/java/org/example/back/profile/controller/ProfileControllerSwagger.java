@@ -3,6 +3,7 @@ package org.example.back.profile.controller;
 import org.example.back.location.LocationRequest;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
 import org.example.back.profile.domain.ProfileDto;
+import org.example.back.profile.domain.ProfileResponseDto;
 import org.example.back.profile.service.response.ProfileCreateResponse;
 import org.example.back.profile.domain.Profile;
 import org.springframework.http.ResponseEntity;
@@ -95,5 +96,5 @@ public interface ProfileControllerSwagger {
 			)
 		}
 	)
-	ResponseEntity<Profile> getProfile(HttpServletRequest request);
+	ResponseEntity<ProfileResponseDto> getProfile(HttpServletRequest request);
 }
