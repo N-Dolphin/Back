@@ -19,7 +19,7 @@ public interface SwipeControllerSwagger {
 	@Operation(
 		summary = "좋아요 API",
 		description = "특정 유저에게 좋아요를 보냅니다.",
-		parameters = @Parameter(name = "toUsername", description = "좋아요를 보낼 유저의 닉네임", required = true),
+		parameters = @Parameter(name = "toProfileName", description = "좋아요를 보낼 유저의 닉네임", required = true),
 		responses = {
 			@ApiResponse(responseCode = "200", description = "좋아요 성공", content = @Content(schema = @Schema(implementation = Swipe.class))),
 			@ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),
@@ -32,7 +32,7 @@ public interface SwipeControllerSwagger {
 	@Operation(
 		summary = "싫어요 API",
 		description = "특정 유저에게 싫어요를 보냅니다.",
-		parameters = @Parameter(name = "toUsername", description = "싫어요를 보낼 유저의 닉네임", required = true),
+		parameters = @Parameter(name = "toProfileName", description = "싫어요를 보낼 유저의 닉네임", required = true),
 		responses = {
 			@ApiResponse(responseCode = "200", description = "싫어요 성공", content = @Content(schema = @Schema(implementation = Swipe.class))),
 			@ApiResponse(responseCode = "400", description = "잘못된 요청", content = @Content),

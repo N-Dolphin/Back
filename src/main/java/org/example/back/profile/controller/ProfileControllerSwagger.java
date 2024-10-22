@@ -72,4 +72,28 @@ public interface ProfileControllerSwagger {
 		}
 	)
 	ResponseEntity<List<ProfileDto>> findProfiles(HttpServletRequest httpServletRequest);
+
+
+	@Operation(
+		summary = "유저 프로필 조회",
+		description = "JWT 토큰을 이용해 해당 유저의 프로필 정보를 반환합니다.",
+		responses = {
+			@ApiResponse(
+				responseCode = "200",
+				description = "프로필 반환 성공",
+				content = @Content(schema = @Schema(implementation = Profile.class))
+			),
+			@ApiResponse(
+				responseCode = "401",
+				description = "인증 실패",
+				content = @Content
+			),
+			@ApiResponse(
+				responseCode = "404",
+				description = "프로필을 찾을 수 없음",
+				content = @Content
+			)
+		}
+	)
+	ResponseEntity<Profile> getProfile(HttpServletRequest request);
 }

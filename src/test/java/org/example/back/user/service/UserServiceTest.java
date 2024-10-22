@@ -55,7 +55,7 @@ public class UserServiceTest {
         userEntity.setPassword(password);
         userEntity.setUserId(1L); // 유저 ID 설정
 
-        AuthTokens mockedTokens = AuthTokens.of("mockedAccessToken", "mockedRefreshToken", "Bearer", 3600L);
+        AuthTokens mockedTokens = AuthTokens.of("mockedAccessToken", "mockedRefreshToken", "Bearer", 7200L);
 
         // Mocking repository and generator behavior
         when(userRepository.findByEmail(email)).thenReturn(Optional.of(userEntity));
@@ -65,7 +65,7 @@ public class UserServiceTest {
         SignInResponseDto responseDto = userService.signIn(signInRequestDto);
 
         // then
-        assertEquals(3600, responseDto.expiredTime());
+        assertEquals(7200, responseDto.expiredTime());
     }
 
     @Test

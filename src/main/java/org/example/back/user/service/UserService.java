@@ -136,7 +136,7 @@ public class UserService {
 			hasProfile=true;
 		}
 
-		return new SignInResponseDto(authTokens, 3600L, hasProfile);
+		return new SignInResponseDto(authTokens, 7200L, hasProfile);
 	}
 
 	public Long getProfileIdByUserId(Long userId) {
