@@ -65,7 +65,7 @@ public class UserServiceTest {
         SignInResponseDto responseDto = userService.signIn(signInRequestDto);
 
         // then
-        assertEquals(3600, responseDto.expiredTime());
+        assertEquals(7200, responseDto.expiredTime());
     }
 
     @Test
