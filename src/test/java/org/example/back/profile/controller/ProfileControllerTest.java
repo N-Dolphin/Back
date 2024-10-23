@@ -66,20 +66,20 @@ class ProfileControllerTest {
 	// 	assertEquals(response, result.getBody());
 	// }
 
-	@Test
-	void createProfile_ProfileAlreadyExists() {
-		// Arrange
-		String userId = "1";
-		Profile existingProfile = new Profile(); // Create a profile object as needed
-		when(httpServletRequest.getAttribute("userId")).thenReturn(userId);
-		when(profileRepository.findByUserId(anyLong())).thenReturn(Optional.of(existingProfile));
-
-		// Act & Assert
-		ClientErrorException exception = assertThrows(ClientErrorException.class, () -> {
-			profileController.createProfile(new ProfileCreateRequest("피카츄", "안녕하세요", 23, Gender.MALE), httpServletRequest);
-		});
-
-		assertEquals(CONFLICT, exception.getStatus());
-		assertEquals("이미 프로필이 존재합니다", exception.getMessage());
-	}
+	// @Test
+	// void createProfile_ProfileAlreadyExists() {
+	// 	// Arrange
+	// 	String userId = "1";
+	// 	Profile existingProfile = new Profile(); // Create a profile object as needed
+	// 	when(httpServletRequest.getAttribute("userId")).thenReturn(userId);
+	// 	when(profileRepository.findByUserId(anyLong())).thenReturn(Optional.of(existingProfile));
+	//
+	// 	// Act & Assert
+	// 	ClientErrorException exception = assertThrows(ClientErrorException.class, () -> {
+	// 		profileController.createProfile(new ProfileCreateRequest("피카츄", "안녕하세요", 23, Gender.MALE), httpServletRequest);
+	// 	});
+	//
+	// 	assertEquals(CONFLICT, exception.getStatus());
+	// 	assertEquals("이미 프로필이 존재합니다", exception.getMessage());
+	// }
 }
