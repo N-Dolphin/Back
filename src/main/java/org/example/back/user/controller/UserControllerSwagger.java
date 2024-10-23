@@ -19,10 +19,6 @@ public interface UserControllerSwagger {
 	@ApiResponse(responseCode = "200", description = "이메일 인증번호 요청에 성공하였습니다.")
 	ResponseEntity<EmailCertificationResponseDto> emailCertification(EmailCertificationRequestDto dto);
 
-	@Operation(summary = "인증번호 전송", description = "이메일 인증번호 전송을 합니다.")
-	@ApiResponse(responseCode = "200", description = "인증번호가 일치합니다.")
-	ResponseEntity<CheckCertificationResponseDto> checkCertificationNumber(CheckCertificationRequestDto dto);
-
 	@Operation(summary = "회원가입 요청", description = "회원가입 요청을 합니다.")
 	@ApiResponse(responseCode = "200", description = "회원가입 요청에 성공하였습니다.")
 	ResponseEntity<User> signUp(SignUpRequestDto dto);

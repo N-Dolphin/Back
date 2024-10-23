@@ -13,7 +13,13 @@ public record SignInResponseDto(
 	Long expiredTime,
 
 	@Schema(description = "프로필 생성 여부")
-	boolean hasProfile
+	boolean hasProfile,
+
+	@Schema(description = "프로필 이미지 생성 여부")
+	boolean hasProfileImage,
+
+	@Schema(description = "프로필 위치 생성 여부")
+	boolean hasProfileLocation
 	) {
 }
 

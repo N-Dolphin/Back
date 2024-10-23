@@ -1,6 +1,7 @@
 package org.example.back.profile.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.example.back.profile.controller.request.ProfileCreateRequest;
@@ -84,8 +85,8 @@ public class ProfileService {
 		// 각 프로필에 대한 첫 번째 이미지를 함께 조회하여 ProfileDto로 변환
 		List<ProfileDto> profileDtos = profilesList.stream()
 			.map(p -> {
-				ProfileImage firstImage = profileImageRepository.findFirstByProfile_ProfileId(p.getProfileId());
-				return new ProfileDto(firstImage.getImageUrl(), p.getProfileName(), p.getAge());
+				Optional<ProfileImage> firstImage = profileImageRepository.findFirstByProfile_ProfileId(p.getProfileId());
+				return new ProfileDto(firstImage.get().getImageUrl(), p.getProfileName(), p.getAge());
 			})
 			.collect(Collectors.toList());
 
