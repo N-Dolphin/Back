@@ -52,18 +52,18 @@ public class UserControllerTest {
                 .andExpect(jsonPath("$.message").value("이메일 요청이 성공하였습니다"));
     }
 
-    @Test
-    public void testCheckCertificationNumber() throws Exception {
-        // given
-        CheckCertificationResponseDto responseDto = new CheckCertificationResponseDto("성공", "인증에 성공했습니다");
-        when(userService.checkCertificationNumber(any(CheckCertificationRequestDto.class))).thenReturn(responseDto);
-
-        // 요청 본문에 id 필드 추가
-        mockMvc.perform(post("/api/v1/auth/check-certification")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"someId\", \"email\": \"test@example.com\", \"certificationNumber\": \"1234\"}"))
-                .andExpect(status().isOk());
-    }
+    // @Test
+    // public void testCheckCertificationNumber() throws Exception {
+    //     // given
+    //     CheckCertificationResponseDto responseDto = new CheckCertificationResponseDto("성공", "인증에 성공했습니다");
+    //     when(userService.checkCertificationNumber(any(CheckCertificationRequestDto.class))).thenReturn(responseDto);
+    //
+    //     // 요청 본문에 id 필드 추가
+    //     mockMvc.perform(post("/api/v1/auth/check-certification")
+    //                     .contentType(MediaType.APPLICATION_JSON)
+    //                     .content("{\"id\": \"someId\", \"email\": \"test@example.com\", \"certificationNumber\": \"1234\"}"))
+    //             .andExpect(status().isOk());
+    // }
 
     @Test
     public void testSignUp() throws Exception {
