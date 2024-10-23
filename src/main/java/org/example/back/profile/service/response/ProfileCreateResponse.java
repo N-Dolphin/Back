@@ -11,8 +11,8 @@ public record ProfileCreateResponse(
 	@Schema(description = "프로필 ID", example = "1")
 	Long id,
 
-	@Schema(description = "유저명", example = "피카츄")
-	String nickname,
+	@Schema(description = "프로필 이름", example = "피카츄")
+	String profileName,
 
 	@Schema(description = "유저 나이", example = "30")
 	Integer age,

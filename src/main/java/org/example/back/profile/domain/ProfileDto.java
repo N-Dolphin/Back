@@ -7,4 +7,12 @@ public record ProfileDto(
 	String profileName,
 	int age
 ) {
+	public static ProfileDto of(Profile profile,String url)
+	{
+		return new ProfileDto(
+			url,
+			profile.getProfileName(),
+			profile.getAge()
+		);
+	}
 }
