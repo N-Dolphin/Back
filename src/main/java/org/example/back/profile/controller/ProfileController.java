@@ -51,7 +51,7 @@ public class ProfileController implements ProfileControllerSwagger {
 
 	@PostMapping
 	@Override
-	public ResponseEntity<ProfileCreateResponse> createProfile(@Valid @RequestBody final ProfileCreateRequest request,
+	public ResponseEntity<ProfileDto> createProfile(@Valid @RequestBody final ProfileCreateRequest request,
 		HttpServletRequest httpServletRequest) {
 
 			String userId = (String) httpServletRequest.getAttribute("userId");
@@ -60,11 +60,9 @@ public class ProfileController implements ProfileControllerSwagger {
 				System.out.println(userId);
 				throw  new ClientErrorException(HttpStatus.CONFLICT,"이미 프로필이 존재합니다");
 			}
-			// 사용자 ID를 기반으로 프로필 생성 로직 수행
-			ProfileCreateResponse response = profileService.createProfile(request, Long.valueOf(userId));
-			httpServletRequest.setAttribute("profileId", String.valueOf(response.id()));
+			ProfileDto profileDto = profileService.createProfile(request, Long.valueOf(userId));
 
-		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+		return ResponseEntity.status(HttpStatus.CREATED).body(profileDto);
 	}
 
 	@PostMapping("/saveLocation")

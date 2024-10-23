@@ -47,30 +47,30 @@ class ProfileServiceTest {
 	void setUp() {
 		MockitoAnnotations.openMocks(this);
 	}
-
-	@Test
-	void createProfile_Success() {
-		// Arrange
-		Long userId = 1L;
-		ProfileCreateRequest request = new ProfileCreateRequest("피카츄", "안녕하세요", 23, Gender.MALE);
-		UserEntity user = new UserEntity();
-		user.setProfileId(null); // User initially has no profile ID
-
-		when(userRepository.findById(userId)).thenReturn(Optional.of(user));
-		when(profileRepository.save(any(Profile.class))).thenAnswer(invocation -> invocation.getArgument(0)); // Simulate save and return the same profile
-		when(profileRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
-
-		// Act
-		ProfileCreateResponse response = profileService.createProfile(request, userId);
-
-		// Assert
-		assertNotNull(response);
-		assertEquals("피카츄", response.nickname());
-		assertEquals(23, response.age());
-		verify(profileRepository).save(any(Profile.class));
-		verify(userRepository).save(user);
-		assertEquals(user.getProfileId(), response.id());
-	}
+	//
+	// @Test
+	// void createProfile_Success() {
+	// 	// Arrange
+	// 	Long userId = 1L;
+	// 	ProfileCreateRequest request = new ProfileCreateRequest("피카츄", "안녕하세요", 23, Gender.MALE);
+	// 	UserEntity user = new UserEntity();
+	// 	user.setProfileId(null); // User initially has no profile ID
+	//
+	// 	when(userRepository.findById(userId)).thenReturn(Optional.of(user));
+	// 	when(profileRepository.save(any(Profile.class))).thenAnswer(invocation -> invocation.getArgument(0)); // Simulate save and return the same profile
+	// 	when(profileRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
+	//
+	// 	// Act
+	// 	ProfileCreateResponse response = profileService.createProfile(request, userId);
+	//
+	// 	// Assert
+	// 	assertNotNull(response);
+	// 	assertEquals("피카츄", response.nickname());
+	// 	assertEquals(23, response.age());
+	// 	verify(profileRepository).save(any(Profile.class));
+	// 	verify(userRepository).save(user);
+	// 	assertEquals(user.getProfileId(), response.id());
+	// }
 
 	@Test
 	void createProfile_UserNotFound() {

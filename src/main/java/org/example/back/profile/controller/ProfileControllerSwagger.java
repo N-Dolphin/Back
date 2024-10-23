@@ -38,7 +38,7 @@ public interface ProfileControllerSwagger {
 			)
 		}
 	)
-	ResponseEntity<ProfileCreateResponse> createProfile(final ProfileCreateRequest request, HttpServletRequest httpServletRequest);
+	ResponseEntity<ProfileDto> createProfile(final ProfileCreateRequest request, HttpServletRequest httpServletRequest);
 
 	@Operation(
 		summary = "위치 저장",

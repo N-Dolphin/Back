@@ -35,7 +35,7 @@ public class ProfileService {
 	private final ProfileImageRepository profileImageRepository;
 
 
-	public ProfileCreateResponse createProfile(final ProfileCreateRequest request, Long userId) {
+	public ProfileDto createProfile(final ProfileCreateRequest request, Long userId) {
 		final Profile newProfile = request.toProfile();
 
 		// 사용자 ID로 UserEntity 조회
@@ -49,7 +49,9 @@ public class ProfileService {
 		user.setProfileId(newProfile.getProfileId());
 		userRepository.save(user);
 
-		return ProfileCreateResponse.of(newProfile);
+		String url= String.valueOf(profileImageRepository.findFirstByProfile_ProfileId(newProfile.getProfileId()));
+
+		return ProfileDto.of(newProfile,url);
 	}
 
 
@@ -62,8 +64,6 @@ public class ProfileService {
 
 		profile.setLocation(new ProfileLocation(location.getY(), location.getX()));
 		return profileRepository.save(profile);
-
-
 	}
 
 	public List<Profile> getProfilesWithinDistance(double longitude, double latitude) {
