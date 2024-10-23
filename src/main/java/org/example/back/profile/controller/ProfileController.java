@@ -81,12 +81,12 @@ public class ProfileController implements ProfileControllerSwagger {
 			ProfileNotFoundException::new
 		);
 
-		ProfileImage image= profileImageRepository.findFirstByProfile_ProfileId(profileId);
+		Optional<ProfileImage> image= profileImageRepository.findFirstByProfile_ProfileId(profileId);
 
 		profileService.updateProfileLocation(profileId, locationRequest.longitude(),
 			locationRequest.latitude());
 
-		return ResponseEntity.ok(new ProfileDto(image.getImageUrl(),profile.getProfileName(),profile.getAge()));
+		return ResponseEntity.ok(new ProfileDto(image.get().getImageUrl(),profile.getProfileName(),profile.getAge()));
 	}
 
 

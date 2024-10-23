@@ -9,6 +9,7 @@ import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.profile.domain.Profile;
 import org.example.back.profile.exception.ProfileNotFoundException;
 import org.example.back.profile.repository.ProfileRepository;
+import org.example.back.profileimage.repository.ProfileImageRepository;
 import org.example.back.user.dto.User;
 import org.example.back.user.dto.request.CheckCertificationRequestDto;
 import org.example.back.user.dto.request.EmailCertificationRequestDto;
@@ -19,6 +20,7 @@ import org.example.back.user.dto.response.EmailCertificationResponseDto;
 import org.example.back.user.dto.response.SignInResponseDto;
 import org.example.back.user.entity.CertificationEntity;
 import org.example.back.user.entity.UserEntity;
+import org.example.back.user.exception.CertificationNotAllowedException;
 import org.example.back.user.exception.UserAlreadyExistsException;
 import org.example.back.user.exception.UserEmailNotAllowedException;
 import org.example.back.user.exception.UserNotFoundException;
@@ -39,6 +41,7 @@ public class UserService {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final AuthTokensGenerator authTokensGenerator;
 	private final ProfileRepository profileRepository;
+	private final ProfileImageRepository profileImageRepository;
 
 	public EmailCertificationResponseDto emailCertification(EmailCertificationRequestDto requestBody) {
 
@@ -64,30 +67,35 @@ public class UserService {
 
 	}
 
-	public CheckCertificationResponseDto checkCertificationNumber(CheckCertificationRequestDto dto) {
+	private boolean checkCertificationNumber(CheckCertificationRequestDto dto) {
 
 		String email = dto.email();
 		String certificationNumber = dto.certificationNumber();
-
 		CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
 
 		if (certificationEntity == null) {
-			return new CheckCertificationResponseDto("실패", "");
+			return false;
 		}
 		boolean isMatched =
 			certificationEntity.getEmail().equals(email) &&
 				certificationEntity.getCertificationNumber().equals(certificationNumber);
 
 		if (!isMatched) {
-			return new CheckCertificationResponseDto("실패", "인증에 실패했습니다");
+			return false;
 		}
-
-		return new CheckCertificationResponseDto("성공", "인증에 성공했습니다");
+		return true;
 	}
 
 	@Transactional
 	public User signUp(SignUpRequestDto dto) {
 
+		String certEmail = dto.email();
+		String certificationNumber = dto.certificationNumber();
+		boolean check= checkCertificationNumber(new CheckCertificationRequestDto(certEmail,certificationNumber));
+
+		if (!check){
+			throw new CertificationNotAllowedException(certEmail);
+		}
 
 		String email= dto.email();
 		userRepository.findByEmail(email).ifPresent(
@@ -95,7 +103,6 @@ public class UserService {
 				throw new UserAlreadyExistsException(email);
 			}
 		);
-
 
 		CertificationEntity certificationEntity = certificationRepository.findByEmail(email);
 		boolean isMatched = certificationEntity.getEmail().equals(email);
@@ -105,16 +112,13 @@ public class UserService {
 		}
 
 		String password = dto.password();
-		//추후에 인코딩
 		String encodedPassword = password;
-
 		UserEntity user = UserEntity.ofBase("Base", email, encodedPassword, "USER");
 
 		userRepository.save(user);
 		certificationRepository.deleteByEmail(email);
 
 		return User.from(user);
-
 	}
 
 	public SignInResponseDto signIn(SignInRequestDto dto) {
@@ -126,17 +130,19 @@ public class UserService {
 			() -> new UserNotFoundException(email)
 		);
 
-
 		// AuthTokens 생성, 유저 ID와 리프레시 토큰,
 		authTokens = authTokensGenerator.generate(userEntity.getUserId());
 
-		boolean hasProfile=false;
 
-		if (profileRepository.findByUserId(userEntity.getUserId()).isPresent()){
-			hasProfile=true;
-		}
+		Optional<Profile> profile = profileRepository.findByUserId(userEntity.getUserId());
+		boolean hasProfile = profile.isPresent();
+		boolean hasProfileLocation = profile.map(Profile::getLocation).isPresent();
+		boolean hasProfileImage = profile.map(Profile::getProfileId)
+			.flatMap(profileImageRepository::findFirstByProfile_ProfileId) // 여기 수정
+			.isPresent();
 
-		return new SignInResponseDto(authTokens, 7200L, hasProfile);
+		return new SignInResponseDto(authTokens, 7200L, hasProfile, hasProfileImage, hasProfileLocation);
+
 	}
 
 	public Long getProfileIdByUserId(Long userId) {

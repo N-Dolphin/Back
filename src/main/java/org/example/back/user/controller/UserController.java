@@ -46,15 +46,6 @@ public class UserController implements UserControllerSwagger {
 		return ResponseEntity.ok(responseDto);
 	}
 
-	@PostMapping("/check-certification")
-	@Override
-	public ResponseEntity<CheckCertificationResponseDto> checkCertificationNumber(
-		@RequestBody @Valid final CheckCertificationRequestDto dto) {
-		CheckCertificationResponseDto responseDto = userService.checkCertificationNumber(dto);
-		return ResponseEntity.ok(responseDto);
-	}
-
-	//check 단계에서 인증 번호가 일치하지 않을 시, signup으로 이동하지 못하도록 하는 방법
 	@PostMapping("/sign-up")
 	@Override
 	public ResponseEntity<User> signUp(

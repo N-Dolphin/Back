@@ -10,7 +10,7 @@ public class UserAlreadyExistsException extends ClientErrorException {
 	}
 
 	public UserAlreadyExistsException(String email) {
-		super(HttpStatus.CONFLICT, "User with email" + email + "already exists");
+		super(HttpStatus.CONFLICT, "email" + email + "이 이미 존재합니다");
 	}
 
 }
