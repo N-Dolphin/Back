@@ -9,8 +9,12 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
+
+import org.example.back.swipe.dto.SwipeRequest;
 import org.example.back.swipe.entity.Swipe;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "Swipe API", description = "스와이프 관련 API")
@@ -27,7 +31,7 @@ public interface SwipeControllerSwagger {
 			@ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
 		}
 	)
-	ResponseEntity<Swipe> like(@RequestParam String toUsername, HttpServletRequest request);
+	ResponseEntity<Swipe> like(@Valid @RequestBody SwipeRequest name, HttpServletRequest request);
 
 	@Operation(
 		summary = "싫어요 API",
@@ -40,7 +44,7 @@ public interface SwipeControllerSwagger {
 			@ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
 		}
 	)
-	ResponseEntity<Swipe> dislike(@RequestParam String toUsername, HttpServletRequest request);
+	ResponseEntity<Swipe> dislike(@Valid @RequestBody  SwipeRequest name, HttpServletRequest request);
 
 	@Operation(
 		summary = "좋아요를 누른 목록 조회",

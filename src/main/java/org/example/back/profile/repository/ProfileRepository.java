@@ -46,6 +46,8 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 		@Param("profileId") Long profileId,
 		@Param("radius") double radius);
 
-	Profile findProfileByProfileName(String ProfileName);
+
+
+	Optional<Profile> findProfileByProfileName(String ProfileName);
 
 }

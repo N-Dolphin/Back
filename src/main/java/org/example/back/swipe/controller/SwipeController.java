@@ -3,6 +3,7 @@ package org.example.back.swipe.controller;
 
 import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.profile.service.ProfileService;
+import org.example.back.swipe.dto.SwipeRequest;
 import org.example.back.swipe.entity.Swipe;
 import org.example.back.swipe.service.SwipeService;
 import org.example.back.matching.MatchingEnum;
@@ -11,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -29,9 +31,11 @@ public class SwipeController implements SwipeControllerSwagger{
 	@PostMapping("/like")
 	@Override
 	public ResponseEntity<Swipe> like(
-		@RequestParam String toProfileName,
+		@Valid @RequestBody SwipeRequest name,
 		HttpServletRequest request
 	) {
+
+		String toProfileName = name.toProfileName();
 
 		String token = resolveToken(request);
 		String userIdToken = jwtTokenProvider.extractSubject(token);
@@ -48,9 +52,10 @@ public class SwipeController implements SwipeControllerSwagger{
 	@PostMapping("/dislike")
 	@Override
 	public ResponseEntity<Swipe> dislike(
-		@RequestParam String toProfileName,
+		@Valid @RequestBody  SwipeRequest name,
 		HttpServletRequest request
 	) {
+		String toProfileName = name.toProfileName();
 
 		String token = resolveToken(request);
 		String userIdToken = jwtTokenProvider.extractSubject(token);
