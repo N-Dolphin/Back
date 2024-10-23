@@ -1,5 +1,8 @@
 package org.example.back.profile.service.response;
 
+import java.time.LocalDate;
+import java.time.Period;
+
 import org.example.back.profile.domain.Profile;
 import org.example.back.profile.domain.type.Gender;
 
@@ -28,9 +31,16 @@ public record ProfileCreateResponse(
 		return new ProfileCreateResponse(
 			newProfile.getProfileId(),
 			newProfile.getProfileName(),
-			newProfile.getAge(),
+			calculateAge(newProfile.getDateOfBirth()), // 생년월일로 나이 계산
 			newProfile.getSelfIntroduce(),
 			newProfile.getGender()
 		);
+	}
+
+	private static Integer calculateAge(LocalDate dateOfBirth) {
+		if (dateOfBirth == null) {
+			return null; // 생년월일이 없을 경우 null 반환
+		}
+		return Period.between(dateOfBirth, LocalDate.now()).getYears();
 	}
 }

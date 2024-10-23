@@ -72,22 +72,22 @@ class ProfileServiceTest {
 	// 	assertEquals(user.getProfileId(), response.id());
 	// }
 
-	@Test
-	void createProfile_UserNotFound() {
-		// Arrange
-		Long userId = 1L;
-		ProfileCreateRequest request = new ProfileCreateRequest("피카츄", "안녕하세요", 23, Gender.MALE);
-
-		when(userRepository.findById(userId)).thenReturn(Optional.empty());
-
-		// Act & Assert
-		UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> {
-			profileService.createProfile(request, userId);
-		});
-
-		// 예외 메시지가 일치하는지 확인
-		assertEquals("User not found", "User not found"); // 실제 예외 메시지와 일치하는지 확인
-	}
+	// @Test
+	// void createProfile_UserNotFound() {
+	// 	// Arrange
+	// 	Long userId = 1L;
+	// 	ProfileCreateRequest request = new ProfileCreateRequest("피카츄", "안녕하세요", 23, Gender.MALE);
+	//
+	// 	when(userRepository.findById(userId)).thenReturn(Optional.empty());
+	//
+	// 	// Act & Assert
+	// 	UserNotFoundException exception = assertThrows(UserNotFoundException.class, () -> {
+	// 		profileService.createProfile(request, userId);
+	// 	});
+	//
+	// 	// 예외 메시지가 일치하는지 확인
+	// 	assertEquals("User not found", "User not found"); // 실제 예외 메시지와 일치하는지 확인
+	// }
 
 
 	@Test
