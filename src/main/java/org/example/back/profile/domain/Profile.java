@@ -1,5 +1,8 @@
 package org.example.back.profile.domain;
 
+import java.time.LocalDate;
+import java.time.Period;
+
 import org.example.back.profile.domain.type.Gender;
 
 import jakarta.persistence.Column;
@@ -34,9 +37,6 @@ public class Profile {
 	@Column
 	private String selfIntroduce;
 
-	@Column
-	private Integer age;
-
 	@Enumerated(EnumType.STRING)
 	@Column
 	private Gender gender;
@@ -47,5 +47,14 @@ public class Profile {
 
 	@Embedded
 	private ProfileLocation location;
+
+	// Optional: 생년월일을 저장하는 필드 추가
+	@Column(name = "date_of_birth") // 추가된 생년월일 컬럼
+	private LocalDate dateOfBirth;
+
+	// 나이 계산 메서드
+	public Integer getAge() {
+		return Period.between(dateOfBirth, LocalDate.now()).getYears();
+	}
 
 }

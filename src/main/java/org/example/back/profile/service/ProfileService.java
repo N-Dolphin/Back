@@ -1,5 +1,6 @@
 package org.example.back.profile.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -44,6 +45,7 @@ public class ProfileService {
 
 		// 프로필에 사용자 설정
 		newProfile.setUserId(userId);
+		newProfile.setDateOfBirth(LocalDate.parse(request.dateOfBirth())); // 생년월일 설정
 		profileRepository.save(newProfile);
 
 		user.setProfileId(newProfile.getProfileId());
