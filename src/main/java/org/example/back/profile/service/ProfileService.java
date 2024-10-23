@@ -97,7 +97,9 @@ public class ProfileService {
 
 	public Long findProfileByNickname(String toProfileName) {
 
-		Profile profile= profileRepository.findProfileByProfileName(toProfileName);
+		Profile profile= profileRepository.findProfileByProfileName(toProfileName).orElseThrow(
+			ProfileNotFoundException::new
+		);
 
 		return profile.getProfileId();
 	}
