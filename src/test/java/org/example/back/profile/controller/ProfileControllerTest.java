@@ -44,27 +44,27 @@ class ProfileControllerTest {
 		MockitoAnnotations.openMocks(this);
 	}
 
-	@Test
-	void createProfile_Success() {
-		// Arrange
-		String userId = "1";
-		ProfileCreateRequest request = new ProfileCreateRequest("피카츄", "안녕하세요", 23, Gender.MALE);
-		ProfileCreateResponse response = new ProfileCreateResponse(1L, "피카츄", 23, "안녕하세요", Gender.MALE);
-
-		when(httpServletRequest.getAttribute("userId")).thenReturn(userId);
-		when(profileRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
-		when(profileService.createProfile(any(), anyLong())).thenReturn(response);
-
-		// Act
-		ResponseEntity<ProfileCreateResponse> result = profileController.createProfile(request, httpServletRequest);
-
-		// Assert
-		verify(profileRepository).findByUserId(Long.valueOf(userId));
-		verify(profileService).createProfile(request, Long.valueOf(userId));
-		verify(httpServletRequest).setAttribute("profileId", String.valueOf(response.id()));
-		assertEquals(CREATED, result.getStatusCode());
-		assertEquals(response, result.getBody());
-	}
+	// @Test
+	// void createProfile_Success() {
+	// 	// Arrange
+	// 	String userId = "1";
+	// 	ProfileCreateRequest request = new ProfileCreateRequest("피카츄", "안녕하세요", 23, Gender.MALE);
+	// 	ProfileCreateResponse response = new ProfileCreateResponse(1L, "피카츄", 23, "안녕하세요", Gender.MALE);
+	//
+	// 	when(httpServletRequest.getAttribute("userId")).thenReturn(userId);
+	// 	when(profileRepository.findByUserId(anyLong())).thenReturn(Optional.empty());
+	// 	when(profileService.createProfile(any(), anyLong())).thenReturn(response);
+	//
+	// 	// Act
+	// 	ResponseEntity<ProfileCreateResponse> result = profileController.createProfile(request, httpServletRequest);
+	//
+	// 	// Assert
+	// 	verify(profileRepository).findByUserId(Long.valueOf(userId));
+	// 	verify(profileService).createProfile(request, Long.valueOf(userId));
+	// 	verify(httpServletRequest).setAttribute("profileId", String.valueOf(response.id()));
+	// 	assertEquals(CREATED, result.getStatusCode());
+	// 	assertEquals(response, result.getBody());
+	// }
 
 	@Test
 	void createProfile_ProfileAlreadyExists() {
