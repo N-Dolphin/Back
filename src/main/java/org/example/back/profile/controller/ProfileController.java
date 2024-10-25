@@ -124,7 +124,16 @@ public class ProfileController implements ProfileControllerSwagger {
 
 		Profile userProfile = profileService.findProfileByProfileId(profileId);
 
-		ProfileResponseDto responseDTO = ProfileResponseDto.from(userProfile);
+		// profileId로 프로필 이미지들을 조회하여 다수의 결과 처리
+		List<ProfileImage> profileImages = profileImageRepository.findAllByProfile_ProfileId(profileId);
+
+		// 이미지 URL 리스트 추출
+		List<String> imageUrls = profileImages.stream()
+			.map(ProfileImage::getImageUrl)
+			.toList();
+
+		// 이미지 URL 리스트를 ProfileResponseDto에 전달
+		ProfileResponseDto responseDTO = ProfileResponseDto.from(userProfile, imageUrls);
 
 		return ResponseEntity.ok(responseDTO);
 	}
