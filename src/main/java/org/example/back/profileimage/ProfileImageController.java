@@ -38,7 +38,6 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 
 	@PostMapping()
 	@Override
-	@Parameter(hidden=true)
 	public ResponseEntity<String> uploadProfileImage(@RequestParam("profileImage") List<MultipartFile> file, HttpServletRequest request) {
 		if (file.isEmpty()) {
 			return ResponseEntity.badRequest().body("파일이 없습니다.");
