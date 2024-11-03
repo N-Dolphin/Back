@@ -24,6 +24,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +44,9 @@ class ProfileServiceTest {
 
 	@Mock
 	private GeometryFactory geometryFactory;
+
+	@MockBean
+	private RabbitTemplate rabbitTemplate;
 
 	@BeforeEach
 	void setUp() {

@@ -12,6 +12,7 @@ import org.example.back.user.dto.response.EmailCertificationResponseDto;
 import org.example.back.user.dto.response.SignInResponseDto;
 import org.example.back.user.service.UserService;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -36,6 +37,9 @@ public class UserControllerTest {
 
     @MockBean
     private JwtTokenProvider jwtTokenProvider;
+
+    @MockBean
+    private RabbitTemplate rabbitTemplate;
 
     @Test
     public void testEmailCertification() throws Exception {
