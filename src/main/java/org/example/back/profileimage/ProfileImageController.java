@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.beans.factory.annotation.Value;
 
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 
 	@PostMapping()
 	@Override
+	@Parameter(hidden=true)
 	public ResponseEntity<String> uploadProfileImage(@RequestParam("profileImage") List<MultipartFile> file, HttpServletRequest request) {
 		if (file.isEmpty()) {
 			return ResponseEntity.badRequest().body("파일이 없습니다.");
