@@ -40,9 +40,6 @@ public class SwipeService {
 	@Value("${rabbitmq.exchange.name}")
 	private String exchangeName;
 
-	@Value("${spring.rabbitmq.key}")
-	private String routingKey;
-
 
 	@Transactional
 	public Swipe swipe(Long fromProfileId, Long toProfileId, MatchingEnum matchingEnum) {
