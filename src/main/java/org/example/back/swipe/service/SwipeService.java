@@ -40,7 +40,7 @@ public class SwipeService {
 	@Value("${rabbitmq.exchange.name}")
 	private String exchangeName;
 
-	@Value("${rabbitmq.routing.key}")
+	@Value("${spring.rabbitmq.key}")
 	private String routingKey;
 
 
