@@ -20,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.ResponseEntity;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -38,6 +40,9 @@ class ProfileControllerTest {
 
 	@Mock
 	private HttpServletRequest httpServletRequest;
+
+	@MockBean
+	private RabbitTemplate rabbitTemplate;
 
 	@BeforeEach
 	void setUp() {
