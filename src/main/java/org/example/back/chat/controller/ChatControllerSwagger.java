@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.parameters.RequestBody;
@@ -37,18 +38,25 @@ public interface ChatControllerSwagger {
 
 	@Operation(
 		summary = "채팅방 내 메시지 조회",
-		description = "특정 채팅방 내 메시지를 조회합니다.",
+		description = "특정 채팅방 내 메시지를 페이지로 나눠서 조회합니다.",
 		responses = {
 			@ApiResponse(
 				responseCode = "200",
 				description = "메시지 목록 반환 성공",
-				content = @Content(schema = @Schema(implementation = MessageResponseDto.class))
+				content = @Content(
+					mediaType = "application/json",
+					schema = @Schema(implementation = MessageResponseDto.class)
+				)
 			),
 			@ApiResponse(
 				responseCode = "403",
 				description = "사용자가 채팅방에 속하지 않은 경우",
 				content = @Content
 			)
+		},
+		parameters = {
+			@Parameter(name = "page", description = "페이지 번호 (0부터 시작)", example = "0"),
+			@Parameter(name = "size", description = "페이지당 메시지 수", example = "20")
 		}
 	)
 	ResponseEntity<MessageResponseDto> getMessages(
