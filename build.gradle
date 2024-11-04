@@ -67,3 +67,6 @@ tasks.register('copySecret', Copy) {
 	include "application.yml"  // 복사할 파일들
 	into 'src/main/resources'  // 복사 위치
 }
+tasks.withType(JavaCompile) {
+	options.compilerArgs << "-parameters"
+}
