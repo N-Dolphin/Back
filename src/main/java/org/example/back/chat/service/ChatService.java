@@ -1,30 +1,29 @@
 package org.example.back.chat.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.example.back.chat.config.MessageValidator;
+import org.example.back.chat.dto.ChatRoomDto;
 import org.example.back.chat.entity.ChatMessage;
 import org.example.back.chat.entity.ChatRoom;
+import org.example.back.chat.exception.ChatException;
 import org.example.back.chat.repository.ChatMessageRepository;
 import org.example.back.chat.repository.ChatRoomRepository;
 import org.example.back.rabbitmq.MessageDto;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.BindingBuilder;
-import org.springframework.amqp.core.DirectExchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -33,11 +32,17 @@ public class ChatService {
 	private final RabbitTemplate rabbitTemplate;
 	private final RabbitAdmin rabbitAdmin;
 	private final ObjectMapper objectMapper;
+	private final MessageValidator messageValidator;
 
-
-	public List<ChatRoom> getChatRooms(Long profileId) {
-		return chatRoomRepository.findAllByFromProfileIdOrToProfileId(profileId, profileId);
+	@Cacheable(value = "chatRooms", key = "#profileId")
+	public List<ChatRoomDto> getChatRooms(Long profileId) {
+		return chatRoomRepository.findAllByFromProfileIdOrToProfileId(profileId, profileId)
+			.stream()
+			.map(room -> new ChatRoomDto(room.getId(), room.getFromProfileId(),
+				room.getToProfileId(), room.getCreatedAt()))
+			.toList();
 	}
+
 
 	public boolean isUserInChatRoom(Long profileId, Long chatRoomId) {
 		Optional<ChatRoom> chatRoom = chatRoomRepository.findById(chatRoomId);
@@ -45,32 +50,37 @@ public class ChatService {
 			(chatRoom.get().getFromProfileId().equals(profileId) || chatRoom.get().getToProfileId().equals(profileId));
 	}
 
-	public void sendMessage(Long fromProfileId, Long toProfileId, String content) {
-		MessageDto messageDto = new MessageDto(fromProfileId,toProfileId,content);
+
+	@Transactional
+	public void sendMessage(Long fromProfileId, Long toProfileId, String content, Long chatRoomId) {
+		MessageDto messageDto = new MessageDto(fromProfileId, toProfileId, content, LocalDateTime.now());
+		messageValidator.validateMessage(messageDto);
 
 		try {
-			ObjectMapper objectMapper = new ObjectMapper();
 			String objectToJSON = objectMapper.writeValueAsString(messageDto);
 
-			// 동적 exchange 및 routingKey 설정
-			String dynamicExchangeName = "exchange_" + fromProfileId + "_" + toProfileId;
-			String routingKey = "route_" + fromProfileId + "_" + toProfileId;
+			String exchangeName = getExchangeName(chatRoomId);
+			String routingKey = getRoutingKey(chatRoomId);
 
-			Long chatRoomId = chatRoomRepository.findChatRoomIdByProfileIds(fromProfileId, toProfileId)
-				.orElseThrow(() -> new IllegalArgumentException("채팅방을 찾지 못했습니다."));
 
-			// 메시지 전송
-			rabbitTemplate.convertAndSend(dynamicExchangeName, routingKey, objectToJSON);
-			System.out.println("채팅방 " + chatRoomId + "로 메시지를 전송했습니다: " + content);
+			// 메시지 전송 확인을 위한 콜백 설정
+			rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
+				if (!ack) {
+					log.error("메시지 전송 실패: {}", cause);
+					// 재시도 로직 구현
+				}
+			});
 
-		} catch (JsonProcessingException jpe) {
-			System.out.println("메시지 파싱 오류: " + jpe.getMessage());
+			rabbitTemplate.convertAndSend(exchangeName, routingKey, objectToJSON);
+
+		} catch (Exception e) {
+			throw new ChatException("MESSAGE_SEND_FAILED", "메시지 전송에 실패했습니다: " + e.getMessage());
 		}
 	}
 
 	@Transactional
 	public Long createChatRoom(Long fromProfileId, Long toProfileId) {
-		Optional<ChatRoom> existingRoom = chatRoomRepository.findByFromProfileIdAndToProfileId(fromProfileId, toProfileId);
+		Optional<ChatRoom> existingRoom = chatRoomRepository.findByProfiles(fromProfileId, toProfileId);
 		ChatRoom chatRoom = new ChatRoom();
 
 		if (!existingRoom.isPresent()) {
@@ -93,12 +103,39 @@ public class ChatService {
 		return chatMessageRepository.findByChatRoomId(chatRoomId);
 	}
 
-	// 메시지 처리 메서드 추가
+	@Transactional
 	public void processReceivedMessage(ChatMessage chatMessage) {
-		// 메시지 저장 로직 등 메시지 처리 로직 추가
+		ChatRoom chatRoom = chatMessage.getChatRoom();
+		chatRoom.updateLastActivity(); // 메시지 수신시 lastActivity 업데이트
+		chatRoomRepository.save(chatRoom);
 		chatMessageRepository.save(chatMessage);
-		System.out.println(chatMessage.getId());
-		System.out.println(chatMessage.getContent());
 	}
+
+
+	public List<MessageDto> getMessages(Long chatRoomId, int page, int size) {
+		List<ChatMessage> messages = chatMessageRepository.findByChatRoomId(chatRoomId)
+			.stream()
+			.skip(page * size)
+			.limit(size)
+			.toList();
+		return messages.stream()
+			.map(message -> new MessageDto(message.getSenderId(), message.getReceiverId(), message.getContent(), message.getSentAt()))
+			.toList();
+	}
+
+	public boolean hasMoreMessages(Long chatRoomId, int page, int size) {
+		long count = chatMessageRepository.countByChatRoomId(chatRoomId);
+		return (page + 1) * size < count;
+	}
+
+	// 채팅 관련 이름 생성을 위한 유틸리티 메소드들
+	private String getExchangeName(Long chatRoomId) {
+		return "chat_exchange_" + chatRoomId;
+	}
+
+	private String getRoutingKey(Long chatRoomId) {
+		return "chat_route_" + chatRoomId;
+	}
+
 
 }
