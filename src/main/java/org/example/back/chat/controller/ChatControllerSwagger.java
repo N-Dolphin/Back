@@ -84,5 +84,9 @@ public interface ChatControllerSwagger {
 			)
 		}
 	)
-	ResponseEntity<String> sendMessage(Long chatRoomId, MessageDto messageDto, HttpServletRequest request);
+	ResponseEntity<String> sendMessage(
+		@PathVariable Long chatRoomId,
+		@RequestBody MessageDto messageDto,
+		HttpServletRequest request
+	);
 }

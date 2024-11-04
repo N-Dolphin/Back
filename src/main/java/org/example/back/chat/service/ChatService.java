@@ -30,11 +30,10 @@ public class ChatService {
 	private final ChatMessageRepository chatMessageRepository;
 	private final ChatRoomRepository chatRoomRepository;
 	private final RabbitTemplate rabbitTemplate;
-	private final RabbitAdmin rabbitAdmin;
 	private final ObjectMapper objectMapper;
 	private final MessageValidator messageValidator;
 
-	@Cacheable(value = "chatRooms", key = "#profileId")
+
 	public List<ChatRoomDto> getChatRooms(Long profileId) {
 		return chatRoomRepository.findAllByFromProfileIdOrToProfileId(profileId, profileId)
 			.stream()
@@ -98,10 +97,6 @@ public class ChatService {
 
 	}
 
-	// 특정 채팅방의 모든 메시지 조회
-	public List<ChatMessage> getMessages(Long chatRoomId) {
-		return chatMessageRepository.findByChatRoomId(chatRoomId);
-	}
 
 	@Transactional
 	public void processReceivedMessage(ChatMessage chatMessage) {
@@ -122,6 +117,7 @@ public class ChatService {
 			.map(message -> new MessageDto(message.getSenderId(), message.getReceiverId(), message.getContent(), message.getSentAt()))
 			.toList();
 	}
+
 
 	public boolean hasMoreMessages(Long chatRoomId, int page, int size) {
 		long count = chatMessageRepository.countByChatRoomId(chatRoomId);

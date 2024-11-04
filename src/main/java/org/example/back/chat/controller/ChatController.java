@@ -45,11 +45,11 @@ public class ChatController implements ChatControllerSwagger {
 	}
 
 	@Override
-	@GetMapping("/rooms/{chatRoomId}/messages")
+	@GetMapping("/rooms/{chatRoomId}/getMessages")
 	public ResponseEntity<MessageResponseDto> getMessages(
-		@PathVariable Long chatRoomId,
-		@RequestParam(defaultValue = "0") int page,
-		@RequestParam(defaultValue = "20") int size,
+		@PathVariable("chatRoomId") Long chatRoomId,
+		@RequestParam(name = "page", defaultValue = "0") int page,
+		@RequestParam(name = "size", defaultValue = "20") int size,
 		HttpServletRequest request
 	) {
 		String token = resolveToken(request);
@@ -69,7 +69,7 @@ public class ChatController implements ChatControllerSwagger {
 
 
 	@Override
-	@PostMapping("/rooms/{chatRoomId}/messages")
+	@PostMapping("/rooms/{chatRoomId}/sendMessages")
 	public ResponseEntity<String> sendMessage(
 		@PathVariable("chatRoomId") Long chatRoomId,
 		@RequestBody MessageDto messageDto,
