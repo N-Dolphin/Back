@@ -1,15 +1,31 @@
 package org.example.back.exception;
 
+import org.example.back.chat.exception.ChatException;
 import org.example.back.user.exception.InvalidTokenException;
+import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+
+    @ExceptionHandler(ChatException.class)
+    public ResponseEntity<ClientErrorResponse> handleChatException(ChatException ex) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+    @ExceptionHandler(RedisConnectionFailureException.class)
+    public ResponseEntity<ClientErrorResponse> handleChatException(RedisConnectionFailureException ex) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
 
     @ExceptionHandler(InvalidTokenException.class)
     public ResponseEntity<String> handleInvalidTokenException(InvalidTokenException e) {
