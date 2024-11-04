@@ -6,6 +6,8 @@ import org.example.back.rabbitmq.MessageDto;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -36,6 +38,15 @@ public class ChatMessage {
 	@Column
 	private LocalDateTime sentAt = LocalDateTime.now(); // 메시지 전송 시간
 
+	@Enumerated(EnumType.STRING)
+	private MessageStatus status = MessageStatus.SENT;
+
+	@Column
+	private LocalDateTime deliveredAt;
+
+	@Column
+	private LocalDateTime readAt;
+
 	// ChatRoom과의 다대일 관계 설정
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "chatroom_id", nullable = false)
@@ -48,5 +59,11 @@ public class ChatMessage {
 		chatMessage.setContent(content);
 		chatMessage.setChatRoom(chatRoom);
 		return chatMessage;
+	}
+
+	public enum MessageStatus {
+		SENT,
+		DELIVERED,
+		READ
 	}
 }
