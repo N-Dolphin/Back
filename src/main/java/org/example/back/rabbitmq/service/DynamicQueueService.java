@@ -14,19 +14,30 @@ import java.util.concurrent.ConcurrentHashMap;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class DynamicQueueService {
+public class DynamicQueueService  {
 	private final RabbitAdmin rabbitAdmin;
 	private final RabbitTemplate rabbitTemplate;
 	private final ConsumerService consumerService;
 	private final Jackson2JsonMessageConverter jsonMessageConverter;
-
-
 	private final ConcurrentHashMap<String, SimpleMessageListenerContainer> containers = new ConcurrentHashMap<>();
 
-	public void createQueueAndListener(Long fromProfileId, Long toProfileId, Long chatRoomId) {
-		String exchangeName = "exchange_" + fromProfileId + "_" + toProfileId;
-		String queueName = "chat_room_" + chatRoomId;
-		String routingKey = "route_" + fromProfileId + "_" + toProfileId;
+	// 채팅 관련 이름 생성을 위한 유틸리티 메소드들
+	private String getExchangeName(Long chatRoomId) {
+		return "chat_exchange_" + chatRoomId;
+	}
+
+	private String getQueueName(Long chatRoomId) {
+		return "chat_queue_" + chatRoomId;
+	}
+
+	private String getRoutingKey(Long chatRoomId) {
+		return "chat_route_" + chatRoomId;
+	}
+
+	public void createQueueAndListener(Long chatRoomId) {
+		String exchangeName = getExchangeName(chatRoomId);
+		String queueName = getQueueName(chatRoomId);
+		String routingKey = getRoutingKey(chatRoomId);
 
 		// Exchange, Queue, Binding 생성
 		DirectExchange exchange = new DirectExchange(exchangeName);
@@ -55,7 +66,7 @@ public class DynamicQueueService {
 	}
 
 	public void removeQueueAndListener(Long chatRoomId) {
-		String queueName = "chat_room_" + chatRoomId;
+		String queueName = getQueueName(chatRoomId);
 		SimpleMessageListenerContainer container = containers.remove(queueName);
 
 		if (container != null) {

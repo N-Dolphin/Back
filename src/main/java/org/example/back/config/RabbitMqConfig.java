@@ -42,6 +42,8 @@ public class RabbitMqConfig {
 		return connectionFactory;
 	}
 
+
+
 	/**
 	 * RabbitTemplate 빈을 생성하고 JSON 형식의 메시지를 직렬화/역직렬화 가능하게 설정
 	 */

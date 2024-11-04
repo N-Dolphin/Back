@@ -18,28 +18,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SwipeService {
-
 	private final SwipeRepository swipeRepository;
 	private final RabbitTemplate rabbitTemplate;
 	private final ChatService chatService;
 	private final RabbitAdmin rabbitAdmin;
-	private final ConsumerService consumerService;
 	private final DynamicQueueService dynamicQueueService;
-
-	@Value("${rabbitmq.exchange.name}")
-	private String exchangeName;
-
+	private final ObjectMapper objectMapper;
 
 	@Transactional
 	public Swipe swipe(Long fromProfileId, Long toProfileId, MatchingEnum matchingEnum) {
@@ -58,46 +57,28 @@ public class SwipeService {
 		// 반대 방향의 좋아요 여부 확인
 		Optional<Swipe> reverseSwipe = swipeRepository.findByFromProfileIdAndToProfileId(toProfileId, fromProfileId);
 		if (reverseSwipe.isPresent() && reverseSwipe.get().getMatchingEnum() == MatchingEnum.LIKE) {
-
 			try {
-				// MatchingEvent 객체를 JSON 문자열로 변환
-				ObjectMapper objectMapper = new ObjectMapper();
-
-				MessageDto messageDto= new MessageDto(fromProfileId,toProfileId,"채팅방 생성 완료");
-
-				String objectToJSON = objectMapper.writeValueAsString(messageDto);
-				System.out.println("전송할 매칭 이벤트 JSON: " + objectToJSON);
-
 				// 채팅방 생성
-				Long chatRoomId= chatService.createChatRoom(fromProfileId, toProfileId);
-				dynamicQueueService.createQueueAndListener(fromProfileId, toProfileId, chatRoomId);
+				Long chatRoomId = chatService.createChatRoom(fromProfileId, toProfileId);
 
+				// 매칭 완료 메시지 생성
+				MessageDto messageDto = new MessageDto(fromProfileId, toProfileId, "채팅방 생성 완료", LocalDateTime.now());
+				String messageJson = objectMapper.writeValueAsString(messageDto);
+				log.info("전송할 매칭 이벤트 JSON: {}", messageJson);
+
+				// 큐 리스너 생성
+				dynamicQueueService.createQueueAndListener(chatRoomId);
+
+				// 매칭 상태 업데이트
 				swipe.setMatchingEnum(MatchingEnum.MATCHED);
 				swipeRepository.save(swipe);
 
-
-				// exchange 및 queue 이름을 프로필 ID 조합으로 동적으로 생성
-				String ExchangeName = "exchange_" + fromProfileId + "_" + toProfileId;
-				String queueName = "chat_room_" + chatRoomId; // 큐 이름 정의
-				String routingKey = "route_" + fromProfileId + "_" + toProfileId;
-
-				// Exchange 및 Queue 선언 및 바인딩
-				DirectExchange exchange = new DirectExchange(ExchangeName);
-				Queue queue = new Queue(queueName, true); // durable 큐 생성
-
-				rabbitAdmin.declareExchange(exchange);
-				rabbitAdmin.declareQueue(queue);
-				Binding binding = BindingBuilder.bind(queue).to(exchange).with(routingKey);
-				rabbitAdmin.declareBinding(binding);
-
-
-				System.out.println("채팅방 " + chatRoomId + "에 대한 큐 " + queueName + "가 생성되었습니다.");
-				rabbitTemplate.convertAndSend(exchangeName, routingKey, objectToJSON);
-				System.out.println("성공적으로 매칭 이벤트를 전송했습니다.");
-
+				// 매칭 완료 메시지 전송
+				chatService.sendMessage(fromProfileId, toProfileId, "채팅방 생성 완료", chatRoomId);
+				log.info("성공적으로 매칭 이벤트를 전송했습니다.");
 
 			} catch (JsonProcessingException jpe) {
-				System.out.println("JSON 변환 오류 발생: " + jpe.getMessage());
+				log.error("JSON 변환 오류 발생: {}", jpe.getMessage());
 				throw new RuntimeException("매칭 이벤트 전송 중 오류 발생", jpe);
 			}
 		}

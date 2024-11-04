@@ -40,7 +40,7 @@ public class ConsumerService {
 			log.info("메시지 수신: fromProfileId={}, toProfileId={}, content={}",
 				fromProfileId, toProfileId, messageDto.content());
 
-			ChatRoom chatRoom = chatRoomRepository.findByFromProfileIdAndToProfileId(
+			ChatRoom chatRoom = chatRoomRepository.findByProfiles(
 					fromProfileId, toProfileId)
 				.orElseThrow(() -> new IllegalArgumentException("채팅방이 없습니다!"));
 
