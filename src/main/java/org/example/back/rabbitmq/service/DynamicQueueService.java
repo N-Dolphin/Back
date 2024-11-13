@@ -1,6 +1,7 @@
 package org.example.back.rabbitmq.service;
 
 import org.springframework.amqp.core.*;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -39,32 +40,45 @@ public class DynamicQueueService  {
 		String queueName = getQueueName(chatRoomId);
 		String routingKey = getRoutingKey(chatRoomId);
 
-		// Exchange, Queue, Binding 생성
-		DirectExchange exchange = new DirectExchange(exchangeName);
-		Queue queue = new Queue(queueName, true);
-		Binding binding = BindingBuilder.bind(queue).to(exchange).with(routingKey);
+		log.info("Creating queue - exchange: {}, queue: {}, routing: {}",
+			exchangeName, queueName, routingKey);
 
-		rabbitAdmin.declareExchange(exchange);
-		rabbitAdmin.declareQueue(queue);
-		rabbitAdmin.declareBinding(binding);
+		try {
+			// Exchange, Queue, Binding 생성
+			DirectExchange exchange = new DirectExchange(exchangeName, true, false);
+			Queue queue = new Queue(queueName, true, false, false);
+			Binding binding = BindingBuilder.bind(queue).to(exchange).with(routingKey);
 
-		// MessageListener 설정 - JSON 컨버터 적용
-		MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(consumerService, "receiveMessage");
-		listenerAdapter.setMessageConverter(jsonMessageConverter);
+			rabbitAdmin.declareExchange(exchange);
+			rabbitAdmin.declareQueue(queue);
+			rabbitAdmin.declareBinding(binding);
 
-		// Container 생성 및 시작
-		SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
-		container.setConnectionFactory(rabbitTemplate.getConnectionFactory());
-		container.setQueueNames(queueName);
-		container.setMessageListener(listenerAdapter);
-		container.start();
+			// MessageListener 설정
+			MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(consumerService, "handleMessage");
+			listenerAdapter.setMessageConverter(jsonMessageConverter);
 
-		// 컨테이너 저장
-		containers.put(queueName, container);
+			// 리스너 컨테이너 생성 및 시작
+			SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
+			container.setConnectionFactory(rabbitTemplate.getConnectionFactory());
+			container.setQueueNames(queueName);
+			container.setMessageListener(listenerAdapter);
+			container.setAutoStartup(true);
+			container.start();
 
-		log.info("Created and started listener for queue: {}", queueName);
+			// 컨테이너 저장
+			containers.put(queueName, container);
+
+			log.info("Successfully created and started listener for queue: {}", queueName);
+
+			// 큐 상태 확인
+			Object queueProperties = rabbitAdmin.getQueueProperties(queueName);
+			log.info("Queue {} status: {}", queueName, queueProperties != null ? "exists" : "not found");
+
+		} catch (Exception e) {
+			log.error("Error creating queue and listener: ", e);
+			throw new RuntimeException("Failed to create queue and listener", e);
+		}
 	}
-
 	public void removeQueueAndListener(Long chatRoomId) {
 		String queueName = getQueueName(chatRoomId);
 		SimpleMessageListenerContainer container = containers.remove(queueName);

@@ -160,6 +160,18 @@ public class UserService {
 		}
 	}
 
+
+	public Long getProfileIdByToken(String token) {
+
+		String userIdToken = jwtTokenProvider.extractSubject(token);
+		Long userId = Long.valueOf(userIdToken);
+
+		Long profileId = getProfileIdByUserId(userId);
+
+		return profileId;
+	}
+
+
 	private static class CertificationNumber {
 
 		public static String getCertificationNumber() {

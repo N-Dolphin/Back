@@ -1,5 +1,6 @@
 package org.example.back.swipe.service;
 
+import org.example.back.chat.entity.ChatMessage;
 import org.example.back.chat.service.ChatService;
 import org.example.back.rabbitmq.MessageDto;
 import org.example.back.rabbitmq.service.ConsumerService;
@@ -61,8 +62,21 @@ public class SwipeService {
 				// 채팅방 생성
 				Long chatRoomId = chatService.createChatRoom(fromProfileId, toProfileId);
 
+				// // 매칭 완료 메시지 생성
+				// MessageDto messageDto = new MessageDto(fromProfileId, toProfileId, "채팅방 생성 완료", LocalDateTime.now(),chatRoomId);
 				// 매칭 완료 메시지 생성
-				MessageDto messageDto = new MessageDto(fromProfileId, toProfileId, "채팅방 생성 완료", LocalDateTime.now());
+				MessageDto messageDto = new MessageDto(
+					null,                           // messageId (DB 저장 전)
+					fromProfileId,                  // fromProfileId
+					toProfileId,                    // toProfileId
+					"채팅방 생성 완료",              // content
+					LocalDateTime.now(),            // sendAt
+					chatRoomId,                     // chatRoomId
+					ChatMessage.MessageStatus.SENT,             // status
+					null,                           // deliveredAt
+					null                            // readAt
+				);
+
 				String messageJson = objectMapper.writeValueAsString(messageDto);
 				log.info("전송할 매칭 이벤트 JSON: {}", messageJson);
 
