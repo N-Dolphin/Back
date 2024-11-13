@@ -1,9 +1,15 @@
 package org.example.back.chat.service;
 
+import static org.example.back.chat.entity.ChatMessage.MessageStatus.*;
+
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
+import org.example.back.chat.config.ChatMessageMapper;
 import org.example.back.chat.config.MessageValidator;
 import org.example.back.chat.dto.ChatRoomDto;
 import org.example.back.chat.entity.ChatMessage;
@@ -20,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.micrometer.common.util.StringUtils;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +40,13 @@ public class ChatService {
 	private final RabbitTemplate rabbitTemplate;
 	private final ObjectMapper objectMapper;
 	private final MessageValidator messageValidator;
+	private final ChatMessageMapper chatMessageMapper;
 
+
+
+	// 채팅방 활성화 상태를 추적하기 위한 캐시
+	private final Map<Long, LocalDateTime> roomActivityCache = new ConcurrentHashMap<>();
+	private static final Duration ROOM_INACTIVE_THRESHOLD = Duration.ofHours(24);
 
 	public List<ChatRoomDto> getChatRooms(Long profileId) {
 		return chatRoomRepository.findAllByFromProfileIdOrToProfileId(profileId, profileId)
@@ -49,33 +63,112 @@ public class ChatService {
 			(chatRoom.get().getFromProfileId().equals(profileId) || chatRoom.get().getToProfileId().equals(profileId));
 	}
 
+	// @Transactional
+	// public void sendMessage(Long fromProfileId, Long toProfileId, String content, Long chatRoomId) {
+	// 	log.info("Processing message - from: {}, to: {}, room: {}", fromProfileId, toProfileId, chatRoomId);
+	//
+	// 	// 1. 채팅방 조회
+	// 	ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+	// 		.orElseThrow(() -> {
+	// 			log.error("Chat room not found: {}", chatRoomId);
+	// 			return new ChatException("CHATROOM_NOT_FOUND", "채팅방을 찾을 수 없습니다.");
+	// 		});
+	// 	log.info("Chat room found");
+	//
+	// 	// 2. 메시지 엔티티 생성 및 저장
+	//
+	// 	log.info("현재 fromid는 다음과 같습니다:" + fromProfileId);
+	//
+	//
+	// 	ChatMessage chatMessage = ChatMessage.of(fromProfileId, toProfileId, content, chatRoom);
+	// 	chatMessageRepository.save(chatMessage);
+	// 	log.info("Chat message saved to DB");
+	//
+	// 	// 3. MessageDto 생성
+	// 	MessageDto messageDto = chatMessageMapper.toDto(chatMessage);
+	//
+	// 	try {
+	// 		// 4. RabbitMQ로 메시지 전송
+	// 		String exchangeName = getExchangeName(chatRoomId);
+	// 		String routingKey = getRoutingKey(chatRoomId);
+	// 		log.info("Attempting to send message to RabbitMQ - exchange: {}, routing: {}",
+	// 			exchangeName, routingKey);
+	//
+	// 		String message = objectMapper.writeValueAsString(messageDto);
+	// 		rabbitTemplate.convertAndSend(exchangeName, routingKey, message);
+	// 		log.info("Message sent to RabbitMQ");
+	//
+	// 	} catch (Exception e) {
+	// 		log.error("Failed to send message to RabbitMQ", e);
+	// 		chatMessage.setStatus(FAILED);
+	// 		chatMessageRepository.save(chatMessage);
+	// 		throw new ChatException("MESSAGE_SEND_FAILED", "메시지 전송에 실패했습니다: " + e.getMessage());
+	// 	}
+	// }
 
 	@Transactional
-	public void sendMessage(Long fromProfileId, Long toProfileId, String content, Long chatRoomId) {
-		MessageDto messageDto = new MessageDto(fromProfileId, toProfileId, content, LocalDateTime.now());
-		messageValidator.validateMessage(messageDto);
+	public Long sendMessage(Long fromProfileId, Long toProfileId, String content, Long chatRoomId) {
+		log.info("Processing message - from: {}, to: {}, room: {}",
+			fromProfileId, toProfileId, chatRoomId);
 
-		try {
-			String objectToJSON = objectMapper.writeValueAsString(messageDto);
-
-			String exchangeName = getExchangeName(chatRoomId);
-			String routingKey = getRoutingKey(chatRoomId);
-
-
-			// 메시지 전송 확인을 위한 콜백 설정
-			rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
-				if (!ack) {
-					log.error("메시지 전송 실패: {}", cause);
-					// 재시도 로직 구현
-				}
+		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+			.orElseThrow(() -> {
+				log.error("Chat room not found: {}", chatRoomId);
+				return new ChatException("CHATROOM_NOT_FOUND", "채팅방을 찾을 수 없습니다.");
 			});
 
-			rabbitTemplate.convertAndSend(exchangeName, routingKey, objectToJSON);
+		ChatMessage chatMessage = ChatMessage.of(fromProfileId, toProfileId, content, chatRoom);
+		chatMessage = chatMessageRepository.save(chatMessage);
+		log.info("Chat message saved to DB with ID: {}", chatMessage.getId());
 
+		try {
+			MessageDto messageDto = chatMessageMapper.toDto(chatMessage);
+			String message = objectMapper.writeValueAsString(messageDto);
+			rabbitTemplate.convertAndSend(getExchangeName(chatRoomId),
+				getRoutingKey(chatRoomId), message);
+
+			updateRoomActivity(chatRoomId);
+			return chatMessage.getId();
 		} catch (Exception e) {
-			throw new ChatException("MESSAGE_SEND_FAILED", "메시지 전송에 실패했습니다: " + e.getMessage());
+			log.error("Failed to send message to RabbitMQ", e);
+			chatMessage.setStatus(ChatMessage.MessageStatus.FAILED);
+			chatMessageRepository.save(chatMessage);
+			throw new ChatException("MESSAGE_SEND_FAILED",
+				"메시지 전송에 실패했습니다: " + e.getMessage());
 		}
 	}
+
+	// 메시지 유효성 검사
+	public void validateMessage(MessageDto messageDto) {
+		if (messageDto.fromProfileId() == null || messageDto.toProfileId() == null) {
+			throw new ChatException("INVALID_MESSAGE", "송수신자 정보가 누락되었습니다.");
+		}
+		if (StringUtils.isEmpty(messageDto.content())) {
+			throw new ChatException("INVALID_MESSAGE", "메시지 내용이 비어있습니다.");
+		}
+	}
+
+
+	// 메시지 에러 처리
+	public void handleMessageError(ChatMessage chatMessage, Exception e) {
+		log.error("메시지 처리 중 오류 발생: {}", e.getMessage(), e);
+		chatMessage.setStatus(FAILED);
+		chatMessageRepository.save(chatMessage);
+		throw new ChatException("MESSAGE_SEND_FAILED", "메시지 전송에 실패했습니다: " + e.getMessage());
+	}
+
+	// 채팅방 활동 시간 업데이트
+	private void updateRoomActivity(Long chatRoomId) {
+		LocalDateTime now = LocalDateTime.now();
+		roomActivityCache.put(chatRoomId, now);
+
+		ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
+			.orElseThrow(() -> new ChatException("CHATROOM_NOT_FOUND", "채팅방을 찾을 수 없습니다."));
+		chatRoom.updateLastActivity();
+		chatRoomRepository.save(chatRoom);
+	}
+
+
 
 	@Transactional
 	public Long createChatRoom(Long fromProfileId, Long toProfileId) {
@@ -101,12 +194,11 @@ public class ChatService {
 	@Transactional
 	public void processReceivedMessage(ChatMessage chatMessage) {
 		ChatRoom chatRoom = chatMessage.getChatRoom();
-		chatRoom.updateLastActivity(); // 메시지 수신시 lastActivity 업데이트
+		chatRoom.updateLastActivity();
 		chatRoomRepository.save(chatRoom);
 		chatMessageRepository.save(chatMessage);
+		updateRoomActivity(chatRoom.getId());
 	}
-
-
 	public List<MessageDto> getMessages(Long chatRoomId, int page, int size) {
 		List<ChatMessage> messages = chatMessageRepository.findByChatRoomId(chatRoomId)
 			.stream()
@@ -114,10 +206,18 @@ public class ChatService {
 			.limit(size)
 			.toList();
 		return messages.stream()
-			.map(message -> new MessageDto(message.getSenderId(), message.getReceiverId(), message.getContent(), message.getSentAt()))
+			.map(chatMessageMapper::toDto)  // 매퍼 사용
 			.toList();
 	}
 
+	@Transactional(readOnly = true)
+	public ChatRoom getChatRoom(Long chatRoomId) {
+		return chatRoomRepository.findById(chatRoomId)
+			.orElseThrow(() -> {
+				log.error("Chat room not found: {}", chatRoomId);
+				return new ChatException("CHATROOM_NOT_FOUND", "채팅방을 찾을 수 없습니다.");
+			});
+	}
 
 	public boolean hasMoreMessages(Long chatRoomId, int page, int size) {
 		long count = chatMessageRepository.countByChatRoomId(chatRoomId);
@@ -125,11 +225,11 @@ public class ChatService {
 	}
 
 	// 채팅 관련 이름 생성을 위한 유틸리티 메소드들
-	private String getExchangeName(Long chatRoomId) {
+	public String getExchangeName(Long chatRoomId) {
 		return "chat_exchange_" + chatRoomId;
 	}
 
-	private String getRoutingKey(Long chatRoomId) {
+	public String getRoutingKey(Long chatRoomId) {
 		return "chat_route_" + chatRoomId;
 	}
 
