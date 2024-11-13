@@ -51,34 +51,17 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 		config.setUserDestinationPrefix("/user");
 	}
 
-	// @Override
-	// public void registerStompEndpoints(StompEndpointRegistry registry) {
-	// 	registry.addEndpoint("/api/v1/ws-chat")
-	// 		.addInterceptors(webSocketAuthInterceptor)
-	// 		.setAllowedOriginPatterns(
-	// 			"http://localhost:8080",
-	// 			"http://localhost:3000",
-	// 			"http://127.0.0.1:8080",
-	// 			"http://127.0.0.1:3000"
-	// 		)
-	// 		.withSockJS()
-	// 		.setWebSocketEnabled(true)
-	// 		.setDisconnectDelay(30 * 1000)
-	// 		.setHeartbeatTime(25 * 1000)
-	// 		.setSessionCookieNeeded(false);  // 추가
-	// }
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
 		registry.addEndpoint("/api/v1/ws-chat")
 			.addInterceptors(webSocketAuthInterceptor)
-			.setAllowedOriginPatterns(corsProperties.getAllowedOrigins().toArray(String[]::new))
+			.setAllowedOriginPatterns("*")  // 개발 중에는 모든 origin 허용
 			.withSockJS()
 			.setWebSocketEnabled(true)
 			.setDisconnectDelay(30 * 1000)
 			.setHeartbeatTime(25 * 1000)
 			.setSessionCookieNeeded(false);
 	}
-
 	@Override
 	public void configureClientInboundChannel(ChannelRegistration registration) {
 		registration.interceptors(new ChannelInterceptor() {

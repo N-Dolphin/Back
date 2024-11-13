@@ -375,33 +375,42 @@
     let currentProfileId = null;
     let serverAddress;
 
-    // 페이지 로드 시 서버 주소 가져오기
     fetch('/api/v1/test/config')
         .then(response => response.json())
         .then(config => {
             serverAddress = config.serverAddress;
-            console.log('Server address configured:', serverAddress);
+            serverPort = config.serverPort;  // 포트 정보 저장
+            console.log('Server config loaded:', { serverAddress, serverPort });
         })
         .catch(error => {
             console.error('Failed to fetch server config:', error);
-            showError('서버 설정을 가져오는데 실패했습니다.');
+            // 기본값 설정
+            serverAddress = window.location.hostname;
+            serverPort = window.location.port;
+            console.log('Using default server config:', { serverAddress, serverPort });
         });
+
 
     function connect() {
         const token = document.getElementById('token').value;
         console.log('Attempting to connect with token:', token);
 
+        // URL 구성 수정
         const baseUrl = window.location.hostname === 'localhost'
             ? ''
-            : `http://${serverAddress}:${window.location.port}`;
+            : `http://${serverAddress}:${serverPort}`;  // 포트 번호 추가
+
+        console.log('Base URL:', baseUrl);
 
         const socketUrl = `${baseUrl}/api/v1/ws-chat?token=${encodeURIComponent(token)}`;
+        console.log('WebSocket URL:', socketUrl);
 
         const sockJsOptions = {
             transports: ['websocket'],
             websocket: true,
             debug: true
         };
+
 
         try {
             const socket = new SockJS(socketUrl, null, sockJsOptions);
