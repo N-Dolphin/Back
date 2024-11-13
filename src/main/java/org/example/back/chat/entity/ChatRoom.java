@@ -4,6 +4,8 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -30,6 +32,7 @@ public class ChatRoom {
 	private LocalDateTime lastActivity = LocalDateTime.now();
 
 	@ElementCollection
+	@JsonIgnore
 	private Set<Long> activeParticipants = new HashSet<>();
 
 	@Column
