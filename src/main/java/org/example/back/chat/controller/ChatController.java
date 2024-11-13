@@ -1,5 +1,6 @@
 package org.example.back.chat.controller;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.example.back.chat.dto.ChatRoomDto;
@@ -68,7 +69,6 @@ public class ChatController implements ChatControllerSwagger {
 	}
 
 
-	@Override
 	@PostMapping("/rooms/{chatRoomId}/sendMessages")
 	public ResponseEntity<String> sendMessage(
 		@PathVariable("chatRoomId") Long chatRoomId,
@@ -76,13 +76,9 @@ public class ChatController implements ChatControllerSwagger {
 		HttpServletRequest request
 	) {
 		String token = resolveToken(request);
-		String userIdToken = jwtTokenProvider.extractSubject(token);
-		Long userId = Long.valueOf(userIdToken);
+		String userIdStr = jwtTokenProvider.extractSubject(token);
+		Long userId = Long.valueOf(userIdStr);
 		Long senderProfileId = userService.getProfileIdByUserId(userId);
-
-		if (!chatService.isUserInChatRoom(senderProfileId, chatRoomId)) {
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-		}
 
 		List<Object[]> profileIds = chatRoomRepository.findProfileIdsByChatRoomId(chatRoomId);
 
@@ -90,20 +86,29 @@ public class ChatController implements ChatControllerSwagger {
 			Long fromProfileId = (Long) profileIds.get(0)[0];
 			Long toProfileId = (Long) profileIds.get(0)[1];
 
-			// 현재 사용자의 profileId가 fromProfileId와 일치하면 그대로 사용
-			// 일치하지 않으면 현재 사용자가 수신자이므로 방향을 바꿔서 전송
-			if (senderProfileId.equals(fromProfileId)) {
-				chatService.sendMessage(fromProfileId, toProfileId, messageDto.content(),chatRoomId);
-				System.out.println("그대로 전송");
-			} else if (senderProfileId.equals(toProfileId)) {
-				chatService.sendMessage(toProfileId, fromProfileId, messageDto.content(),chatRoomId);
-				System.out.println("반대로 전송");
-			} else {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-			}			return ResponseEntity.ok("메시지 전송 성공");
+			MessageDto newMessageDto = new MessageDto(
+				null,                           // messageId (DB 저장 전)
+				senderProfileId,                // fromProfileId
+				senderProfileId.equals(fromProfileId) ? toProfileId : fromProfileId,  // toProfileId
+				messageDto.content(),           // content
+				LocalDateTime.now(),            // sendAt
+				chatRoomId,                     // chatRoomId
+				ChatMessage.MessageStatus.SENT,             // status
+				null,                           // deliveredAt
+				null                            // readAt
+			);
+
+			chatService.sendMessage(
+				newMessageDto.fromProfileId(),
+				newMessageDto.toProfileId(),
+				newMessageDto.content(),
+				chatRoomId
+			);
+
+			return ResponseEntity.ok("Message sent successfully");
 		}
 
-		return ResponseEntity.ok("profileId 확인 불가");
+		return ResponseEntity.badRequest().body("Chat room participants not found");
 	}
 
 	private String resolveToken(HttpServletRequest request) {
