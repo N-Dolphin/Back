@@ -6,7 +6,6 @@ import java.util.List;
 import org.example.back.chat.dto.ChatRoomDto;
 import org.example.back.chat.dto.MessageResponseDto;
 import org.example.back.chat.entity.ChatMessage;
-import org.example.back.chat.entity.ChatRoom;
 import org.example.back.chat.repository.ChatRoomRepository;
 import org.example.back.chat.service.ChatRoomService;
 import org.example.back.chat.service.MessageService;

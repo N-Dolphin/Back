@@ -8,6 +8,7 @@ import org.example.back.chat.entity.ChatRoom;
 import org.example.back.chat.exception.ChatException;
 import org.example.back.chat.repository.ChatMessageRepository;
 import org.example.back.rabbitmq.MessageDto;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,11 +47,17 @@ public class MessageService {
 	}
 
 	public List<MessageDto> getMessages(Long chatRoomId, int page, int size) {
-		List<ChatMessage> messages = messageRepository.findByChatRoomId(chatRoomId)
-			.stream()
-			.skip(page * size)
-			.limit(size)
+		PageRequest pageRequest = PageRequest.of(page, size);
+		List<ChatMessage> messages = messageRepository.findByChatRoomId(chatRoomId, pageRequest);
+		return messages.stream()
+			.map(chatMessageMapper::toDto)
 			.toList();
+	}
+
+	public List<MessageDto> getMessagesBefore(Long chatRoomId, Long cursor, int size) {
+		PageRequest pageRequest = PageRequest.of(0, size);
+		List<ChatMessage> messages = messageRepository.findByChatRoomIdAndIdLessThan(
+			chatRoomId, cursor, pageRequest);
 		return messages.stream()
 			.map(chatMessageMapper::toDto)
 			.toList();
@@ -60,5 +67,4 @@ public class MessageService {
 		long count = messageRepository.countByChatRoomId(chatRoomId);
 		return (page + 1) * size < count;
 	}
-
 }
