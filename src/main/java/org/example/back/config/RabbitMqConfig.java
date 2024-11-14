@@ -21,6 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RabbitMqConfig {
 
+	private static final String CHAT_EXCHANGE = "chat.direct.exchange";
+
+
 	@Bean
 	public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(
 		ConnectionFactory connectionFactory) {
@@ -44,17 +47,31 @@ public class RabbitMqConfig {
 		return new Jackson2JsonMessageConverter();
 	}
 
+	// @Bean
+	// public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
+	// 	RabbitTemplate template = new RabbitTemplate(connectionFactory);
+	// 	template.setMessageConverter(jsonMessageConverter());
+	// 	template.setConfirmCallback((correlationData, ack, cause) -> {
+	// 		if (!ack) {
+	// 			log.error("Message send failed: {}", cause);
+	// 		}
+	// 	});
+	// 	return template;
+	// }
+	@Bean
+	public DirectExchange chatExchange() {
+		// 단일 Exchange 생성
+		return new DirectExchange(CHAT_EXCHANGE, true, false);
+	}
+
 	@Bean
 	public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
 		RabbitTemplate template = new RabbitTemplate(connectionFactory);
-		template.setMessageConverter(jsonMessageConverter());
-		template.setConfirmCallback((correlationData, ack, cause) -> {
-			if (!ack) {
-				log.error("Message send failed: {}", cause);
-			}
-		});
+		template.setExchange(CHAT_EXCHANGE);
+		template.setMessageConverter(new Jackson2JsonMessageConverter());
 		return template;
 	}
+
 	@Bean
 	public RabbitAdmin rabbitAdmin(ConnectionFactory connectionFactory) {
 		return new RabbitAdmin(connectionFactory);

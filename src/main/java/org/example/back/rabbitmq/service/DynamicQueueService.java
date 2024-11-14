@@ -1,7 +1,7 @@
 package org.example.back.rabbitmq.service;
 
+import org.example.back.chat.config.ChatMessageHandler;
 import org.springframework.amqp.core.*;
-import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.rabbit.listener.adapter.MessageListenerAdapter;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
@@ -13,72 +13,60 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
-public class DynamicQueueService  {
+@RequiredArgsConstructor
+public class DynamicQueueService {
+	private static final String CHAT_EXCHANGE = "chat.direct.exchange";
 	private final RabbitAdmin rabbitAdmin;
 	private final RabbitTemplate rabbitTemplate;
-	private final ConsumerService consumerService;
+	private final ChatMessageHandler messageHandler;
 	private final Jackson2JsonMessageConverter jsonMessageConverter;
 	private final ConcurrentHashMap<String, SimpleMessageListenerContainer> containers = new ConcurrentHashMap<>();
 
-	// 채팅 관련 이름 생성을 위한 유틸리티 메소드들
-	private String getExchangeName(Long chatRoomId) {
-		return "chat_exchange_" + chatRoomId;
-	}
-
-	private String getQueueName(Long chatRoomId) {
-		return "chat_queue_" + chatRoomId;
-	}
-
-	private String getRoutingKey(Long chatRoomId) {
-		return "chat_route_" + chatRoomId;
-	}
-
 	public void createQueueAndListener(Long chatRoomId) {
-		String exchangeName = getExchangeName(chatRoomId);
 		String queueName = getQueueName(chatRoomId);
 		String routingKey = getRoutingKey(chatRoomId);
 
-		log.info("Creating queue - exchange: {}, queue: {}, routing: {}",
-			exchangeName, queueName, routingKey);
-
 		try {
-			// Exchange, Queue, Binding 생성
-			DirectExchange exchange = new DirectExchange(exchangeName, true, false);
+			// 큐 생성
 			Queue queue = new Queue(queueName, true, false, false);
-			Binding binding = BindingBuilder.bind(queue).to(exchange).with(routingKey);
 
-			rabbitAdmin.declareExchange(exchange);
+			// 단일 Exchange에 binding
+			Binding binding = BindingBuilder.bind(queue)
+				.to(new DirectExchange(CHAT_EXCHANGE))
+				.with(routingKey);
+
+			// 큐와 바인딩 선언
 			rabbitAdmin.declareQueue(queue);
 			rabbitAdmin.declareBinding(binding);
 
-			// MessageListener 설정
-			MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(consumerService, "handleMessage");
+			// 리스너 설정
+			MessageListenerAdapter listenerAdapter = new MessageListenerAdapter(messageHandler, "handleMessage");
 			listenerAdapter.setMessageConverter(jsonMessageConverter);
 
-			// 리스너 컨테이너 생성 및 시작
 			SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
 			container.setConnectionFactory(rabbitTemplate.getConnectionFactory());
 			container.setQueueNames(queueName);
 			container.setMessageListener(listenerAdapter);
-			container.setAutoStartup(true);
 			container.start();
 
-			// 컨테이너 저장
 			containers.put(queueName, container);
-
-			log.info("Successfully created and started listener for queue: {}", queueName);
-
-			// 큐 상태 확인
-			Object queueProperties = rabbitAdmin.getQueueProperties(queueName);
-			log.info("Queue {} status: {}", queueName, queueProperties != null ? "exists" : "not found");
+			log.info("Created queue and binding for chatRoom: {}", chatRoomId);
 
 		} catch (Exception e) {
-			log.error("Error creating queue and listener: ", e);
-			throw new RuntimeException("Failed to create queue and listener", e);
+			log.error("Failed to create queue and binding", e);
+			throw new RuntimeException("Queue creation failed", e);
 		}
 	}
+
+	private String getQueueName(Long chatRoomId) {
+		return String.format("chat.queue.%d", chatRoomId);
+	}
+
+	private String getRoutingKey(Long chatRoomId) {
+		return String.format("chat.room.%d", chatRoomId);
+	}
+
 	public void removeQueueAndListener(Long chatRoomId) {
 		String queueName = getQueueName(chatRoomId);
 		SimpleMessageListenerContainer container = containers.remove(queueName);
@@ -86,7 +74,7 @@ public class DynamicQueueService  {
 		if (container != null) {
 			container.stop();
 			rabbitAdmin.deleteQueue(queueName);
-			log.info("Removed listener and queue: {}", queueName);
+			log.info("Removed queue and listener for chatRoom: {}", chatRoomId);
 		}
 	}
 }
