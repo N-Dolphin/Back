@@ -9,7 +9,8 @@ import org.example.back.chat.dto.ChatMessageDto;
 import org.example.back.chat.entity.ChatMessage;
 import org.example.back.chat.entity.ChatRoom;
 import org.example.back.chat.exception.ChatException;
-import org.example.back.chat.service.ChatService;
+import org.example.back.chat.service.ChatRoomService;
+import org.example.back.chat.service.MessageService;
 import org.example.back.rabbitmq.MessageDto;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
@@ -39,12 +40,9 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @Slf4j
 public class ChatWebSocketController implements ChatWebSocketControllerSwagger {
-	private final ChatService chatService;
+	private final ChatRoomService chatRoomService;
 	private final SimpMessagingTemplate messagingTemplate;
-	private final RabbitTemplate rabbitTemplate;
-	private final ObjectMapper objectMapper;
-	private final RabbitAdmin rabbitAdmin;
-
+	private final MessageService messageService;
 	private final Set<String> connectedSessions = ConcurrentHashMap.newKeySet();
 
 	@Override
@@ -61,7 +59,7 @@ public class ChatWebSocketController implements ChatWebSocketControllerSwagger {
 	) {
 		log.debug("Received message DTO: {}", message);
 		try {
-			ChatRoom chatRoom = chatService.getChatRoom(roomId);
+			ChatRoom chatRoom = chatRoomService.getChatRoom(roomId);
 			Long receiverProfileId = chatRoom.getFromProfileId().equals(message.fromProfileId())
 				? chatRoom.getToProfileId()
 				: chatRoom.getFromProfileId();
@@ -78,7 +76,7 @@ public class ChatWebSocketController implements ChatWebSocketControllerSwagger {
 				null
 			);
 
-			Long savedMessageId = chatService.sendMessage(
+			Long savedMessageId = messageService.sendMessage(
 				completeMessage.fromProfileId(),
 				completeMessage.toProfileId(),
 				completeMessage.content(),
