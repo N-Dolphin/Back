@@ -7,28 +7,6 @@ import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
 
-// @Component
-// @RequiredArgsConstructor
-// public class ChatMessageMapper {
-// 	public MessageDto toDto(ChatMessage message) {
-// 		return new MessageDto(
-// 			message.getSenderId(),
-// 			message.getReceiverId(),
-// 			message.getContent(),
-// 			message.getSentAt(),
-// 			message.getChatRoom().getId()
-// 		);
-// 	}
-//
-// 	public ChatMessage toEntity(MessageDto dto, ChatRoom chatRoom) {
-// 		return ChatMessage.of(
-// 			dto.fromProfileId(),
-// 			dto.toProfileId(),
-// 			dto.content(),
-// 			chatRoom
-// 		);
-// 	}
-// }
 @Component
 @RequiredArgsConstructor
 public class ChatMessageMapper {

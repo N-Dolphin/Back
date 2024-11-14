@@ -63,48 +63,6 @@ public class ChatService {
 			(chatRoom.get().getFromProfileId().equals(profileId) || chatRoom.get().getToProfileId().equals(profileId));
 	}
 
-	// @Transactional
-	// public void sendMessage(Long fromProfileId, Long toProfileId, String content, Long chatRoomId) {
-	// 	log.info("Processing message - from: {}, to: {}, room: {}", fromProfileId, toProfileId, chatRoomId);
-	//
-	// 	// 1. 채팅방 조회
-	// 	ChatRoom chatRoom = chatRoomRepository.findById(chatRoomId)
-	// 		.orElseThrow(() -> {
-	// 			log.error("Chat room not found: {}", chatRoomId);
-	// 			return new ChatException("CHATROOM_NOT_FOUND", "채팅방을 찾을 수 없습니다.");
-	// 		});
-	// 	log.info("Chat room found");
-	//
-	// 	// 2. 메시지 엔티티 생성 및 저장
-	//
-	// 	log.info("현재 fromid는 다음과 같습니다:" + fromProfileId);
-	//
-	//
-	// 	ChatMessage chatMessage = ChatMessage.of(fromProfileId, toProfileId, content, chatRoom);
-	// 	chatMessageRepository.save(chatMessage);
-	// 	log.info("Chat message saved to DB");
-	//
-	// 	// 3. MessageDto 생성
-	// 	MessageDto messageDto = chatMessageMapper.toDto(chatMessage);
-	//
-	// 	try {
-	// 		// 4. RabbitMQ로 메시지 전송
-	// 		String exchangeName = getExchangeName(chatRoomId);
-	// 		String routingKey = getRoutingKey(chatRoomId);
-	// 		log.info("Attempting to send message to RabbitMQ - exchange: {}, routing: {}",
-	// 			exchangeName, routingKey);
-	//
-	// 		String message = objectMapper.writeValueAsString(messageDto);
-	// 		rabbitTemplate.convertAndSend(exchangeName, routingKey, message);
-	// 		log.info("Message sent to RabbitMQ");
-	//
-	// 	} catch (Exception e) {
-	// 		log.error("Failed to send message to RabbitMQ", e);
-	// 		chatMessage.setStatus(FAILED);
-	// 		chatMessageRepository.save(chatMessage);
-	// 		throw new ChatException("MESSAGE_SEND_FAILED", "메시지 전송에 실패했습니다: " + e.getMessage());
-	// 	}
-	// }
 
 	@Transactional
 	public Long sendMessage(Long fromProfileId, Long toProfileId, String content, Long chatRoomId) {
