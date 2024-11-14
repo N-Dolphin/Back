@@ -39,7 +39,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 	private final WebSocketAuthInterceptor webSocketAuthInterceptor;
-	private final CorsProperties corsProperties;
 
 	@Value("${server.serverAddress}")
 	private String serverAddress;

@@ -8,7 +8,8 @@ import org.example.back.chat.dto.MessageResponseDto;
 import org.example.back.chat.entity.ChatMessage;
 import org.example.back.chat.entity.ChatRoom;
 import org.example.back.chat.repository.ChatRoomRepository;
-import org.example.back.chat.service.ChatService;
+import org.example.back.chat.service.ChatRoomService;
+import org.example.back.chat.service.MessageService;
 import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.rabbitmq.MessageDto;
 import org.example.back.user.service.UserService;
@@ -29,10 +30,11 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
 public class ChatController implements ChatControllerSwagger {
-	private final ChatService chatService;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UserService userService;
 	private final ChatRoomRepository chatRoomRepository;
+	private final MessageService messageService;
+	private final ChatRoomService chatRoomService;
 
 	@Override
 	@GetMapping("/rooms")
@@ -41,7 +43,7 @@ public class ChatController implements ChatControllerSwagger {
 		String userIdToken = jwtTokenProvider.extractSubject(token);
 		Long userId = Long.valueOf(userIdToken);
 		Long profileId = userService.getProfileIdByUserId(userId);
-		List<ChatRoomDto> chatRooms = chatService.getChatRooms(profileId);
+		List<ChatRoomDto> chatRooms = chatRoomService.getChatRooms(profileId);
 		return ResponseEntity.ok(chatRooms);
 	}
 
@@ -58,12 +60,12 @@ public class ChatController implements ChatControllerSwagger {
 		Long userId = Long.valueOf(userIdToken);
 		Long profileId = userService.getProfileIdByUserId(userId);
 
-		if (!chatService.isUserInChatRoom(profileId, chatRoomId)) {
+		if (!chatRoomService.isUserInChatRoom(profileId, chatRoomId)) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 
-		List<MessageDto> messages = chatService.getMessages(chatRoomId, page, size);
-		boolean hasMore = chatService.hasMoreMessages(chatRoomId, page, size);
+		List<MessageDto> messages = messageService.getMessages(chatRoomId, page, size);
+		boolean hasMore = messageService.hasMoreMessages(chatRoomId, page, size);
 
 		return ResponseEntity.ok(new MessageResponseDto(messages, hasMore));
 	}
@@ -98,7 +100,7 @@ public class ChatController implements ChatControllerSwagger {
 				null                            // readAt
 			);
 
-			chatService.sendMessage(
+			messageService.sendMessage(
 				newMessageDto.fromProfileId(),
 				newMessageDto.toProfileId(),
 				newMessageDto.content(),

@@ -1,7 +1,9 @@
 package org.example.back.swipe.service;
 
 import org.example.back.chat.entity.ChatMessage;
-import org.example.back.chat.service.ChatService;
+import org.example.back.chat.entity.ChatRoom;
+import org.example.back.chat.service.ChatRoomService;
+import org.example.back.chat.service.MessageService;
 import org.example.back.rabbitmq.MessageDto;
 import org.example.back.rabbitmq.service.ConsumerService;
 import org.example.back.rabbitmq.service.DynamicQueueService;
@@ -35,9 +37,8 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 @RequiredArgsConstructor
 public class SwipeService {
 	private final SwipeRepository swipeRepository;
-	private final RabbitTemplate rabbitTemplate;
-	private final ChatService chatService;
-	private final RabbitAdmin rabbitAdmin;
+	private final MessageService messageService;
+	private final ChatRoomService chatRoomService;
 	private final DynamicQueueService dynamicQueueService;
 	private final ObjectMapper objectMapper;
 
@@ -60,7 +61,7 @@ public class SwipeService {
 		if (reverseSwipe.isPresent() && reverseSwipe.get().getMatchingEnum() == MatchingEnum.LIKE) {
 			try {
 				// 채팅방 생성
-				Long chatRoomId = chatService.createChatRoom(fromProfileId, toProfileId);
+				Long chatRoomId = chatRoomService.createChatRoom(fromProfileId, toProfileId);
 
 				// // 매칭 완료 메시지 생성
 				// MessageDto messageDto = new MessageDto(fromProfileId, toProfileId, "채팅방 생성 완료", LocalDateTime.now(),chatRoomId);
@@ -88,7 +89,7 @@ public class SwipeService {
 				swipeRepository.save(swipe);
 
 				// 매칭 완료 메시지 전송
-				chatService.sendMessage(fromProfileId, toProfileId, "채팅방 생성 완료", chatRoomId);
+				messageService.sendMessage(fromProfileId, toProfileId, "채팅방 생성 완료", chatRoomId);
 				log.info("성공적으로 매칭 이벤트를 전송했습니다.");
 
 			} catch (JsonProcessingException jpe) {

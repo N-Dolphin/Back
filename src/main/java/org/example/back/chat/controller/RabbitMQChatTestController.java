@@ -3,7 +3,7 @@ package org.example.back.chat.controller;
 import java.util.List;
 
 import org.example.back.chat.dto.ChatRoomDto;
-import org.example.back.chat.service.ChatService;
+import org.example.back.chat.service.ChatRoomService;
 import org.example.back.matching.MatchingEnum;
 import org.example.back.swipe.service.SwipeService;
 import org.springframework.http.ResponseEntity;
@@ -23,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class RabbitMQChatTestController {
 
 	private final SwipeService swipeService;
-	private final ChatService chatService;
+	private final ChatRoomService chatRoomService;
 
 	@GetMapping("/match")
 	public ModelAndView matchTest() {
@@ -48,7 +48,7 @@ public class RabbitMQChatTestController {
 	@GetMapping("/rooms/{profileId}")
 	@ResponseBody
 	public ResponseEntity<?> getChatRooms(@PathVariable("profileId") Long profileId) {  // 변수 이름 명시
-		List<ChatRoomDto> rooms = chatService.getChatRooms(profileId);
+		List<ChatRoomDto> rooms = chatRoomService.getChatRooms(profileId);
 		return ResponseEntity.ok(rooms);
 	}
 }
