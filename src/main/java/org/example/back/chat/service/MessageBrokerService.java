@@ -10,44 +10,68 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+//
+// @Service
+// @RequiredArgsConstructor
+// @Slf4j
+// public class MessageBrokerService {
+// 	private final RabbitTemplate rabbitTemplate;
+// 	private final ObjectMapper objectMapper;
+// 	private final DynamicQueueService dynamicQueueService;
+//
+// 	public void publishMessage(Long chatRoomId, MessageDto messageDto) {
+// 		try {
+// 			String message = objectMapper.writeValueAsString(messageDto);
+// 			rabbitTemplate.convertAndSend(
+// 				getExchangeName(chatRoomId),
+// 				getRoutingKey(chatRoomId),
+// 				message
+// 			);
+// 			log.info("Message published to RabbitMQ for room: {}", chatRoomId);
+// 		} catch (Exception e) {
+// 			log.error("Failed to publish message to RabbitMQ", e);
+// 			throw new ChatException("MESSAGE_PUBLISH_FAILED",
+// 				"메시지 발행에 실패했습니다: " + e.getMessage());
+// 		}
+// 	}
+//
+// 	public void setupMessageQueue(Long chatRoomId) {
+// 		dynamicQueueService.createQueueAndListener(chatRoomId);
+// 	}
+//
+// 	public void removeMessageQueue(Long chatRoomId) {
+// 		dynamicQueueService.removeQueueAndListener(chatRoomId);
+// 	}
+//
+// 	private String getExchangeName(Long chatRoomId) {
+// 		return "chat_exchange_" + chatRoomId;
+// 	}
+//
+// 	private String getRoutingKey(Long chatRoomId) {
+// 		return "chat_route_" + chatRoomId;
+// 	}
+// }
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class MessageBrokerService {
+	private static final String CHAT_EXCHANGE = "chat.direct.exchange";
 	private final RabbitTemplate rabbitTemplate;
 	private final ObjectMapper objectMapper;
-	private final DynamicQueueService dynamicQueueService;
 
 	public void publishMessage(Long chatRoomId, MessageDto messageDto) {
 		try {
 			String message = objectMapper.writeValueAsString(messageDto);
-			rabbitTemplate.convertAndSend(
-				getExchangeName(chatRoomId),
-				getRoutingKey(chatRoomId),
-				message
-			);
-			log.info("Message published to RabbitMQ for room: {}", chatRoomId);
+			String routingKey = String.format("chat.room.%d", chatRoomId);
+
+			rabbitTemplate.convertAndSend(CHAT_EXCHANGE, routingKey, message);
+			log.info("Message published to exchange: {} with routing key: {}",
+				CHAT_EXCHANGE, routingKey);
+
 		} catch (Exception e) {
-			log.error("Failed to publish message to RabbitMQ", e);
-			throw new ChatException("MESSAGE_PUBLISH_FAILED",
-				"메시지 발행에 실패했습니다: " + e.getMessage());
+			log.error("Failed to publish message", e);
+			throw new ChatException("MESSAGE_PUBLISH_FAILED", e.getMessage());
 		}
-	}
-
-	public void setupMessageQueue(Long chatRoomId) {
-		dynamicQueueService.createQueueAndListener(chatRoomId);
-	}
-
-	public void removeMessageQueue(Long chatRoomId) {
-		dynamicQueueService.removeQueueAndListener(chatRoomId);
-	}
-
-	private String getExchangeName(Long chatRoomId) {
-		return "chat_exchange_" + chatRoomId;
-	}
-
-	private String getRoutingKey(Long chatRoomId) {
-		return "chat_route_" + chatRoomId;
 	}
 }
