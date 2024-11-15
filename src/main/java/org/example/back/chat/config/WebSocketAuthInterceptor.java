@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WebSocketAuthInterceptor implements HandshakeInterceptor {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UserService userService;
+	
 
 	@Override
 	public boolean beforeHandshake(ServerHttpRequest request, ServerHttpResponse response,

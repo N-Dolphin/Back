@@ -47,17 +47,6 @@ public class RabbitMqConfig {
 		return new Jackson2JsonMessageConverter();
 	}
 
-	// @Bean
-	// public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
-	// 	RabbitTemplate template = new RabbitTemplate(connectionFactory);
-	// 	template.setMessageConverter(jsonMessageConverter());
-	// 	template.setConfirmCallback((correlationData, ack, cause) -> {
-	// 		if (!ack) {
-	// 			log.error("Message send failed: {}", cause);
-	// 		}
-	// 	});
-	// 	return template;
-	// }
 	@Bean
 	public DirectExchange chatExchange() {
 		// 단일 Exchange 생성
