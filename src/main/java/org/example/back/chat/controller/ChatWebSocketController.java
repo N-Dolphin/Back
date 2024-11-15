@@ -64,28 +64,13 @@ public class ChatWebSocketController implements ChatWebSocketControllerSwagger {
 				? chatRoom.getToProfileId()
 				: chatRoom.getFromProfileId();
 
-			MessageDto completeMessage = new MessageDto(
-				null,
+			// 메시지 발행만 수행 (DB 저장 및 WebSocket 브로드캐스트는 Consumer에서 처리)
+			messageService.sendMessage(
 				message.fromProfileId(),
 				receiverProfileId,
 				message.content(),
-				LocalDateTime.now(),
-				roomId,
-				ChatMessage.MessageStatus.SENT,
-				null,
-				null
-			);
-
-			Long savedMessageId = messageService.sendMessage(
-				completeMessage.fromProfileId(),
-				completeMessage.toProfileId(),
-				completeMessage.content(),
 				roomId
 			);
-
-			completeMessage = completeMessage.withMessageId(savedMessageId);
-			messagingTemplate.convertAndSend("/topic/chat/" + roomId, completeMessage);
-			log.info("Message broadcast to subscribers");
 
 		} catch (Exception e) {
 			log.error("Message processing failed: ", e);

@@ -1,5 +1,6 @@
 package org.example.back.chat.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.example.back.chat.config.ChatMessageMapper;
@@ -24,25 +25,33 @@ public class MessageService {
 	private final ChatRoomService chatRoomService;
 	private final ChatMessageMapper chatMessageMapper;
 
+
 	@Transactional
-	public Long sendMessage(Long fromProfileId, Long toProfileId, String content, Long chatRoomId) {
+	public void sendMessage(Long fromProfileId, Long toProfileId, String content, Long chatRoomId) {
 		log.info("Processing message - from: {}, to: {}, room: {}",
 			fromProfileId, toProfileId, chatRoomId);
 
+		// DB 저장 없이 메시지 발행만 수행
 		ChatRoom chatRoom = chatRoomService.getChatRoom(chatRoomId);
-		ChatMessage chatMessage = ChatMessage.of(fromProfileId, toProfileId, content, chatRoom);
-		chatMessage = messageRepository.save(chatMessage);
+		MessageDto messageDto = new MessageDto(
+			null,                    // messageId는 Consumer에서 저장 후 설정
+			fromProfileId,
+			toProfileId,
+			content,
+			LocalDateTime.now(),
+			chatRoomId,
+			ChatMessage.MessageStatus.SENT,
+			null,
+			null
+		);
 
 		try {
-			MessageDto messageDto = chatMessageMapper.toDto(chatMessage);
 			messageBrokerService.publishMessage(chatRoomId, messageDto);
 			chatRoomService.updateRoomActivity(chatRoomId);
-			return chatMessage.getId();
 		} catch (Exception e) {
 			log.error("Failed to send message", e);
-			chatMessage.setStatus(ChatMessage.MessageStatus.FAILED);
-			messageRepository.save(chatMessage);
-			throw new ChatException("MESSAGE_SEND_FAILED", "메시지 전송에 실패했습니다: " + e.getMessage());
+			throw new ChatException("MESSAGE_SEND_FAILED",
+				"메시지 전송에 실패했습니다: " + e.getMessage());
 		}
 	}
 
