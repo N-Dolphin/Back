@@ -2,7 +2,6 @@ package org.example.back.config;
 
 import lombok.RequiredArgsConstructor;
 
-import org.example.back.chat.config.CorsProperties;
 import org.example.back.config.interceptor.JwtInterceptor;
 import org.example.back.config.interceptor.LogInterceptor;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +13,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
     private final LogInterceptor logInterceptor;
     private final JwtInterceptor jwtInterceptor;
-    private final CorsProperties corsProperties;
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
@@ -37,22 +35,17 @@ public class WebConfig implements WebMvcConfigurer {
                 "/api/v1/auth/email-certification",
                 "/api/v1/auth/check-certification",
                 "/api/v1/auth/kakao",
-                // WebSocket 관련 경로 추가
-                "/api/v1/test/**",
-                "/api/v1/ws-chat/**",
-                "/topic/**",
-                "/queue/**",
-                "/app/**"
+                "/api/v1/chat/rooms"  // 채팅방 목록 API는 인증 예외 처리
             );
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-            .allowedOriginPatterns(corsProperties.getAllowedOrigins().toArray(String[]::new))
+            .allowedOrigins("http://localhost:3000")  // Vite 개발 서버 주소
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
-            .exposedHeaders("*")
+            .exposedHeaders("Authorization")  // Authorization 헤더 노출
             .allowCredentials(true)
             .maxAge(3600);
     }

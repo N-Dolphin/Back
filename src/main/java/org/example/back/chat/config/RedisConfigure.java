@@ -1,4 +1,4 @@
-package org.example.back.chat.rabbitmq;
+package org.example.back.chat.config;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -75,6 +75,15 @@ public class RedisConfigure {
 		RedisTemplate<Long, Long> redisTemplate = new RedisTemplate<>();
 		redisTemplate.setConnectionFactory(redisConnectionFactory());
 		redisTemplate.setKeySerializer(new Jackson2JsonRedisSerializer<>(Long.class));
+		redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Long.class));
+		return redisTemplate;
+	}
+
+	@Bean
+	public RedisTemplate<String, Long> refreshTokenTemplate() {
+		RedisTemplate<String, Long> redisTemplate = new RedisTemplate<>();
+		redisTemplate.setConnectionFactory(redisConnectionFactory());
+		redisTemplate.setKeySerializer(new StringRedisSerializer());
 		redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Long.class));
 		return redisTemplate;
 	}
