@@ -4,6 +4,7 @@ import org.locationtech.jts.geom.Point;
 import java.util.List;
 
 public record ProfileResponseDto(
+	Long profileId,
 	String profileName,
 	String selfIntroduce,
 	Integer age,
@@ -13,6 +14,7 @@ public record ProfileResponseDto(
 ) {
 	public static ProfileResponseDto from(Profile profile, List<String> imageUrls) {
 		return new ProfileResponseDto(
+			profile.getProfileId(),
 			profile.getProfileName(),
 			profile.getSelfIntroduce(),
 			profile.getAge(),
