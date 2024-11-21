@@ -1,90 +1,74 @@
 package org.example.back.chat.config;
 
-import java.security.Principal;
-import java.util.Map;
 
+import lombok.RequiredArgsConstructor;
+
+import org.example.back.chat.common.interceptor.JwtAuthenticationInterceptor;
 import org.example.back.config.interceptor.JwtInterceptor;
-import org.example.back.config.interceptor.LogInterceptor;
+import org.example.back.config.provider.JwtTokenProvider;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.server.ServerHttpRequest;
-import org.springframework.http.server.ServerHttpResponse;
-import org.springframework.http.server.ServletServerHttpRequest;
-import org.springframework.messaging.Message;
-import org.springframework.messaging.MessageChannel;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.config.ChannelRegistration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
-import org.springframework.messaging.simp.stomp.StompCommand;
-import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
-import org.springframework.messaging.support.ChannelInterceptor;
-import org.springframework.messaging.support.MessageHeaderAccessor;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.socket.WebSocketHandler;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketTransportRegistration;
-import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
-import org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Configuration
 @EnableWebSocketMessageBroker
 @RequiredArgsConstructor
-@Slf4j
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
-	private final WebSocketAuthInterceptor webSocketAuthInterceptor;
 
-	@Value("${server.serverAddress}")
-	private String serverAddress;
+	private final JwtAuthenticationInterceptor jwtAuthenticationInterceptor;
 
-	@Override
-	public void configureMessageBroker(MessageBrokerRegistry config) {
-		config.enableSimpleBroker("/topic", "/queue");
-		config.setApplicationDestinationPrefixes("/app");
-		config.setUserDestinationPrefix("/user");
-	}
+	@Value("${spring.rabbitmq.relay.host}")
+	private String relayHost;
+
+	@Value("${spring.rabbitmq.relay.port}")
+	private Integer relayPort;
+
+	@Value("${spring.rabbitmq.relay.client-login}")
+	private String clientLogin;
+
+	@Value("${spring.rabbitmq.relay.client-passcode}")
+	private String clientPasscode;
+
+	@Value("${spring.rabbitmq.relay.system-login}")
+	private String systemLogin;
+
+	@Value("${spring.rabbitmq.relay.system-passcode}")
+	private String systemPasscode;
+
 
 	@Override
 	public void registerStompEndpoints(StompEndpointRegistry registry) {
-		registry.addEndpoint("/api/v1/ws-chat")
-			.addInterceptors(webSocketAuthInterceptor)
-			.setAllowedOriginPatterns("*")  // 개발 중에는 모든 origin 허용
-			.withSockJS()
-			.setWebSocketEnabled(true)
-			.setDisconnectDelay(30 * 1000)
-			.setHeartbeatTime(25 * 1000)
-			.setSessionCookieNeeded(false);
+		// socketJs 클라이언트가 WebSocket 핸드셰이크를 하기 위해 연결할 endpoint를 지정할 수 있다.
+		registry.addEndpoint("/chat/inbox")
+			.setAllowedOriginPatterns("*"); // cors 허용을 위해 꼭 설정해주어야 함. setCredential() 설정시에 AllowedOrigin 과 같이 사용될 경우 오류가 날 수 있으므로 OriginPatterns 설정으로 사용하였음
 	}
+
+	@Override
+	public void configureMessageBroker(MessageBrokerRegistry registry) {
+		// 메시지 브로커 설정
+		registry.setPathMatcher(new AntPathMatcher(".")); // url을 chat/room/3 -> chat.room.3으로 참조하기 위한 설정
+
+		registry.enableStompBrokerRelay("/queue", "/topic", "/exchange", "/amq/queue")
+			.setRelayHost(relayHost)
+			.setRelayPort(relayPort)
+			.setSystemLogin(systemLogin)
+			.setSystemPasscode(systemPasscode)
+			.setClientLogin(clientLogin)
+			.setClientPasscode(clientPasscode);
+
+		// 클라이언트로부터 메시지를 받을 api의 prefix를 설정함
+		// publish
+		registry.setApplicationDestinationPrefixes("/pub");
+
+	}
+
 	@Override
 	public void configureClientInboundChannel(ChannelRegistration registration) {
-		registration.interceptors(new ChannelInterceptor() {
-			@Override
-			public Message<?> preSend(Message<?> message, MessageChannel channel) {
-				StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
-
-				if (StompCommand.CONNECT.equals(accessor.getCommand())) {
-					Object raw = message.getHeaders().get(SimpMessageHeaderAccessor.NATIVE_HEADERS);
-					if (raw instanceof Map) {
-						Object profileId = accessor.getSessionAttributes().get("profileId");
-						if (profileId != null) {
-							accessor.setUser(new Principal() {
-								@Override
-								public String getName() {
-									return profileId.toString();
-								}
-							});
-							log.debug("Set user principal with profile ID: {}", profileId);
-						}
-					}
-				}
-				return message;
-			}
-		});
+		registration.interceptors(jwtAuthenticationInterceptor);
 	}
 }

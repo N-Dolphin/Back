@@ -1,12 +1,8 @@
 package org.example.back.swipe.service;
 
-import org.example.back.chat.entity.ChatMessage;
-import org.example.back.chat.entity.ChatRoom;
-import org.example.back.chat.service.ChatRoomService;
-import org.example.back.chat.service.MessageService;
-import org.example.back.rabbitmq.MessageDto;
-import org.example.back.rabbitmq.service.ConsumerService;
-import org.example.back.rabbitmq.service.DynamicQueueService;
+
+import org.example.back.chat.chatRoom.ChatRoomService;
+import org.example.back.chat.chatRoom.ChatRoomServiceImpl;
 import org.example.back.swipe.dto.MatchingEvent;
 import org.example.back.swipe.repository.SwipeRepository;
 import org.example.back.swipe.entity.Swipe;
@@ -37,10 +33,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 @RequiredArgsConstructor
 public class SwipeService {
 	private final SwipeRepository swipeRepository;
-	private final MessageService messageService;
-	private final ChatRoomService chatRoomService;
-	private final DynamicQueueService dynamicQueueService;
-	private final ObjectMapper objectMapper;
+	private final ChatRoomServiceImpl chatRoomService;
 
 	@Transactional
 	public Swipe swipe(Long fromProfileId, Long toProfileId, MatchingEnum matchingEnum) {
@@ -59,44 +52,11 @@ public class SwipeService {
 		// 반대 방향의 좋아요 여부 확인
 		Optional<Swipe> reverseSwipe = swipeRepository.findByFromProfileIdAndToProfileId(toProfileId, fromProfileId);
 		if (reverseSwipe.isPresent() && reverseSwipe.get().getMatchingEnum() == MatchingEnum.LIKE) {
-			try {
-				// 채팅방 생성
-				Long chatRoomId = chatRoomService.createChatRoom(fromProfileId, toProfileId);
-
-				// // 매칭 완료 메시지 생성
-				// MessageDto messageDto = new MessageDto(fromProfileId, toProfileId, "채팅방 생성 완료", LocalDateTime.now(),chatRoomId);
-				// 매칭 완료 메시지 생성
-				MessageDto messageDto = new MessageDto(
-					null,                           // messageId (DB 저장 전)
-					fromProfileId,                  // fromProfileId
-					toProfileId,                    // toProfileId
-					"채팅방 생성 완료",              // content
-					LocalDateTime.now(),            // sendAt
-					chatRoomId,                     // chatRoomId
-					ChatMessage.MessageStatus.SENT,             // status
-					null,                           // deliveredAt
-					null                            // readAt
-				);
-
-				String messageJson = objectMapper.writeValueAsString(messageDto);
-				log.info("전송할 매칭 이벤트 JSON: {}", messageJson);
-
-				// 큐 리스너 생성
-				dynamicQueueService.createQueueAndListener(chatRoomId);
-
-				// 매칭 상태 업데이트
+				// 매칭 성공 시 채팅방 생성만 호출
+				chatRoomService.createMatchedChatRoom(fromProfileId, toProfileId);
 				swipe.setMatchingEnum(MatchingEnum.MATCHED);
-				swipeRepository.save(swipe);
-
-				// 매칭 완료 메시지 전송
-				messageService.sendMessage(fromProfileId, toProfileId, "채팅방 생성 완료", chatRoomId);
-				log.info("성공적으로 매칭 이벤트를 전송했습니다.");
-
-			} catch (JsonProcessingException jpe) {
-				log.error("JSON 변환 오류 발생: {}", jpe.getMessage());
-				throw new RuntimeException("매칭 이벤트 전송 중 오류 발생", jpe);
 			}
-		}
+
 		return swipe;
 	}
 
