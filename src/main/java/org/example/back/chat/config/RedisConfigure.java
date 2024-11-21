@@ -1,4 +1,4 @@
-package org.example.back.redis;
+package org.example.back.chat.rabbitmq;
 
 import java.time.Duration;
 import java.util.HashMap;
@@ -15,6 +15,7 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
@@ -65,5 +66,16 @@ public class RedisConfigure {
 			.serializeValuesWith(
 				RedisSerializationContext.SerializationPair.fromSerializer(new GenericJackson2JsonRedisSerializer()))
 			.entryTtl(Duration.ofMinutes(10));
+	}
+
+
+	// chatRoomId -> SET {memberId_01, memberId_02, ...}
+	@Bean
+	public RedisTemplate<Long, Long> LongLongRedisTemplate() {
+		RedisTemplate<Long, Long> redisTemplate = new RedisTemplate<>();
+		redisTemplate.setConnectionFactory(redisConnectionFactory());
+		redisTemplate.setKeySerializer(new Jackson2JsonRedisSerializer<>(Long.class));
+		redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(Long.class));
+		return redisTemplate;
 	}
 }
