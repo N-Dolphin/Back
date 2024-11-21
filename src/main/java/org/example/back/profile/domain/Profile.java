@@ -13,6 +13,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -25,6 +26,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
+@Table(name = "profile")  // 테이블 이름을 소문자로 지정
 public class Profile {
 
 	@Id

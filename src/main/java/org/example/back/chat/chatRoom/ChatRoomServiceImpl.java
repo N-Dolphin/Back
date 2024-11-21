@@ -14,7 +14,6 @@ import org.example.back.chat.chatroommember.ChatRoomParticipantRepository;
 import org.example.back.chat.common.dto.ChatDto;
 import org.example.back.chat.common.dto.ChatMessageRes;
 import org.example.back.chat.common.dto.ChatRoomRes;
-import org.example.back.chat.user.Member;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
