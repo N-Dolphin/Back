@@ -1,6 +1,7 @@
 package org.example.back.chat.util;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.SetOperations;
@@ -11,26 +12,34 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Component
 public class RedisChatUtil {
+	private final RedisTemplate<String, String> redisTemplate;
 
-	private final RedisTemplate<Long, Long> chatRoom2Members;
+	// 채팅방 키 prefix 추가
+	private String getChatRoomKey(Long chatRoomId) {
+		return "chat:room:" + chatRoomId;
+	}
 
 	public void addChatRoom2Member(Long chatRoomId, Long memberId) {
-		SetOperations<Long, Long> ops = chatRoom2Members.opsForSet();
-		ops.add(chatRoomId, memberId);
+		SetOperations<String, String> ops = redisTemplate.opsForSet();
+		ops.add(getChatRoomKey(chatRoomId), String.valueOf(memberId));
 	}
 
 	public Set<Long> getOnlineMembers(Long chatRoomId) {
-		SetOperations<Long, Long> ops = chatRoom2Members.opsForSet();
-		return ops.members(chatRoomId);
+		SetOperations<String, String> ops = redisTemplate.opsForSet();
+		Set<String> members = ops.members(getChatRoomKey(chatRoomId));
+		return members.stream()
+			.map(Long::parseLong)
+			.collect(Collectors.toSet());
 	}
 
 	public int getOnlineMemberCntInChatRoom(Long chatRoomId) {
-		SetOperations<Long, Long> ops = chatRoom2Members.opsForSet();
-		return ops.members(chatRoomId).size();
+		SetOperations<String, String> ops = redisTemplate.opsForSet();
+		Set<String> members = ops.members(getChatRoomKey(chatRoomId));
+		return members != null ? members.size() : 0;
 	}
 
 	public void removeChatRoom2Member(Long chatRoomId, Long memberId) {
-		SetOperations<Long, Long> ops = chatRoom2Members.opsForSet();
-		ops.remove(chatRoomId, memberId);
+		SetOperations<String, String> ops = redisTemplate.opsForSet();
+		ops.remove(getChatRoomKey(chatRoomId), String.valueOf(memberId));
 	}
 }
