@@ -5,6 +5,8 @@ import java.util.List;
 import org.example.back.chat.common.dto.ChatDto;
 import org.example.back.chat.common.dto.ChatRoomParticipantsRecord;
 import org.example.back.chat.common.dto.SimpleChatRoomRecord;
+import org.example.back.config.provider.JwtTokenProvider;
+import org.example.back.user.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,36 +15,39 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-class ChatRoomController {
+class ChatRoomController implements  ChatRoomControllerSwagger{
 
 	private final ChatRoomServiceImpl chatRoomService;
-
-	// @PostMapping("/chat-rooms")
-	// public ResponseEntity<ChatDto.ChatRoomCreateRes> createChatRoom(@RequestParam Long loginId,
-	// 	@RequestBody ChatDto.ChatRoomCreateReq request) {
-	// 	return ResponseEntity.ok(chatRoomService.createChatRoomForPersonal(loginId, request));
-	// }
-
-	@GetMapping("/chat-rooms")
-	public ResponseEntity getChatRooms(@RequestParam Long loginId) {
-		return ResponseEntity.ok(chatRoomService.getChatRooms(loginId));
-	}
+	private final JwtTokenProvider jwtTokenProvider;
+	private final UserService userService;
 
 	@GetMapping("/chat-rooms/simple")
-	public ResponseEntity<List<SimpleChatRoomRecord>> getSimpleChatRooms(@RequestParam Long loginId) {
-		return ResponseEntity.ok(chatRoomService.getSimpleChatRooms(loginId));
+	public ResponseEntity<List<SimpleChatRoomRecord>> getSimpleChatRooms(HttpServletRequest request) {
+		String token = resolveToken(request);
+		String userIdToken = jwtTokenProvider.extractSubject(token);
+		Long userId = Long.valueOf(userIdToken);
+		Long profileId = userService.getProfileIdByUserId(userId);
+
+		return ResponseEntity.ok(chatRoomService.getSimpleChatRooms(profileId));
 	}
 
 	@GetMapping("/chat-rooms/{roomId}/participants")
-	public ResponseEntity<ChatRoomParticipantsRecord> getChatRoomParticipants(@PathVariable Long roomId) {
+	public ResponseEntity<ChatRoomParticipantsRecord> getChatRoomParticipants(@PathVariable("roomId") Long roomId) {
 		return ResponseEntity.ok(chatRoomService.getChatRoomParticipants(roomId));
 	}
 
-
+	private String resolveToken(HttpServletRequest request) {
+		String bearerToken = request.getHeader("Authorization");
+		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+			return bearerToken.substring(7);
+		}
+		return null;
+	}
 }
