@@ -3,7 +3,9 @@ package org.example.back.chat.chatRoom;
 import java.util.List;
 
 import org.example.back.chat.common.dto.ChatDto;
+import org.example.back.chat.common.dto.ChatRoomParticipantsRecord;
 import org.example.back.chat.common.dto.ChatRoomRes;
+import org.example.back.chat.common.dto.SimpleChatRoomRecord;
 
 public interface ChatRoomService {
 	ChatDto.ChatRoomCreateRes createChatRoomForPersonal(Long id, ChatDto.ChatRoomCreateReq request);
@@ -13,4 +15,8 @@ public interface ChatRoomService {
 	ChatDto.ChatRoomCreateRes createMatchedChatRoom(Long fromProfileId, Long toProfileId);
 
 	List<ChatRoomRes> getChatRoomsByProfileId(Long profileId);
+
+	List<SimpleChatRoomRecord> getSimpleChatRooms(Long profileId);
+
+	ChatRoomParticipantsRecord getChatRoomParticipants(Long roomId);
 }
