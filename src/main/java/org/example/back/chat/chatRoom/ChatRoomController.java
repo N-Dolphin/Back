@@ -29,6 +29,7 @@ class ChatRoomController implements  ChatRoomControllerSwagger{
 	private final UserService userService;
 
 	@GetMapping("/chat-rooms/simple")
+	@Override
 	public ResponseEntity<List<SimpleChatRoomRecord>> getSimpleChatRooms(HttpServletRequest request) {
 		String token = resolveToken(request);
 		String userIdToken = jwtTokenProvider.extractSubject(token);
@@ -39,6 +40,7 @@ class ChatRoomController implements  ChatRoomControllerSwagger{
 	}
 
 	@GetMapping("/chat-rooms/{roomId}/participants")
+	@Override
 	public ResponseEntity<ChatRoomParticipantsRecord> getChatRoomParticipants(@PathVariable("roomId") Long roomId) {
 		return ResponseEntity.ok(chatRoomService.getChatRoomParticipants(roomId));
 	}
