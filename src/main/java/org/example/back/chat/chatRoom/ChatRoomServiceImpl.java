@@ -13,7 +13,9 @@ import org.example.back.chat.chatroommember.ChatRoomParticipant;
 import org.example.back.chat.chatroommember.ChatRoomParticipantRepository;
 import org.example.back.chat.common.dto.ChatDto;
 import org.example.back.chat.common.dto.ChatMessageRes;
+import org.example.back.chat.common.dto.ChatRoomParticipantsRecord;
 import org.example.back.chat.common.dto.ChatRoomRes;
+import org.example.back.chat.common.dto.SimpleChatRoomRecord;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
@@ -81,5 +83,29 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 				);
 			})
 			.toList();
+	}
+
+	public List<SimpleChatRoomRecord> getSimpleChatRooms(Long profileId) {
+		List<ChatRoomParticipant> participants =
+			chatRoomParticipantRepository.findAllByProfileId(profileId);
+
+		return participants.stream()
+			.map(participant -> new SimpleChatRoomRecord(
+				participant.getChatRoom().getId(),
+				profileId,
+				participant.getPartnerProfileId()
+			))
+			.toList();
+	}
+
+	public ChatRoomParticipantsRecord getChatRoomParticipants(Long roomId) {
+		ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(roomId)
+			.orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
+
+		List<Long> participantIds = chatRoom.getParticipants().stream()
+			.map(ChatRoomParticipant::getProfileId)
+			.toList();
+
+		return new ChatRoomParticipantsRecord(roomId, participantIds);
 	}
 }
