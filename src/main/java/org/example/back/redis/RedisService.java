@@ -6,4 +6,6 @@ public interface RedisService {
 
 	void saveRefreshToken(String key, String refreshToken, long duration);
 
+	// 추가
+	String getRefreshToken(String key);
 }

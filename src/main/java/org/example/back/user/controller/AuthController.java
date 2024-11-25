@@ -54,6 +54,8 @@ public final class AuthController implements AuthControllerSwagger{
 		);
 		response.sendRedirect(redirectUrl);
 	}
+
+
 }
 
 
