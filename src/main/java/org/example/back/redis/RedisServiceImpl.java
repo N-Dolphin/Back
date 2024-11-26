@@ -58,4 +58,12 @@ public class RedisServiceImpl implements RedisService {
 		}
 	}
 
+
+	// RedisService에 메소드 추가
+	public void saveOAuthTokens(String userId, String springRefreshToken, String kakaoRefreshToken, long springDuration, long kakaoDuration) {
+		ValueOperations<String, Object> operations = redisTemplate.opsForValue();
+		operations.set(userId + ":spring", springRefreshToken, springDuration, TimeUnit.MILLISECONDS);
+		operations.set(userId + ":kakao", kakaoRefreshToken, kakaoDuration, TimeUnit.MILLISECONDS);
+	}
+
 }

@@ -41,20 +41,19 @@ public final class AuthController implements AuthControllerSwagger{
 	public ResponseEntity<?> loginKakao(@RequestBody KakaoLoginParams params) {
 		return ResponseEntity.ok(oAuthLoginService.login(params));
 	}
-
+	
 
 	@GetMapping
 	@Override
 	public void redirectToKakaoLogin(HttpServletResponse response) throws IOException {
 		String redirectUrl = String.format(
-			"%s?client_id=%s&redirect_uri=%s&response_type=code",
+			"%s?client_id=%s&redirect_uri=%s&response_type=code&prompt=login",
 			AUTHORIZATION_ENDPOINT,
 			CLIENT_ID,
 			REDIRECT_URI
 		);
 		response.sendRedirect(redirectUrl);
 	}
-
 
 }
 

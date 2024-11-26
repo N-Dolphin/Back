@@ -8,4 +8,6 @@ public interface RedisService {
 
 	// 추가
 	String getRefreshToken(String key);
+
+	void saveOAuthTokens(String userId, String springRefreshToken, String kakaoRefreshToken, long springDuration, long kakaoDuration);
 }
