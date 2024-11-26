@@ -1,45 +1,50 @@
 package org.example.back.healthCheck;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.annotation.PostConstruct;
+import java.util.Map;
+import java.util.TreeMap;
+
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
-@Slf4j
 public class HealthCheckController {
 
 	@Value("${server.env}")
 	private String env;
 
-	@PostConstruct
-	public void init() {
-		log.info("HealthCheckController initialized with env: {}", env);
-	}
+	@Value("${server.port}")
+	private String serverPort;
+
+	@Value("${server.serverAddress}")
+	private String serverAddress;
+
+	@Value("${serverName}")
+	private String serverName;
+
 
 	@GetMapping("/hc")
-	public ResponseEntity<String> healthCheck() {
-		try {
-			log.info("Health check called. Current env value: {}", env);
-			if (env == null || env.isEmpty()) {
-				log.error("Environment value is null or empty");
-				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body("Environment not properly configured");
-			}
-			return ResponseEntity.ok()
-				.contentType(MediaType.TEXT_PLAIN)
-				.body(env);
-		} catch (Exception e) {
-			log.error("Health check failed with error", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body("Error: " + e.getMessage());
-		}
+	public ResponseEntity<?> healthCheck() {
+		Map<String,String> response = new TreeMap<>();
+		// nginx가 블루 - 그린 배포를 하는데 이떄 해당 서버가 잘 열려있는지 확인
+
+		response.put("serverName", serverName);
+		response.put("serverAddress", serverAddress);
+		response.put("serverPort", serverPort);
+		response.put("env", env);
+
+
+		return ResponseEntity.ok(response);
 	}
+
+	@GetMapping("/env")
+	public ResponseEntity<?> getEnv() {
+		return ResponseEntity.ok(env);
+
+	}
+
 }
