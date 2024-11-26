@@ -1,7 +1,6 @@
 package org.example.back.healthCheck;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -10,21 +9,42 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequiredArgsConstructor
-@Slf4j
 public class HealthCheckController {
 
+	@Value("${server.env}")
+	private String env;
+
+	@Value("${server.port}")
+	private String serverPort;
+
+	@Value("${server.serverAddress}")
+	private String serverAddress;
+
+	@Value("${serverName}")
+	private String serverName;
+
+
 	@GetMapping("/hc")
-	public ResponseEntity<String> healthCheck() {
-		try {
-			// 가장 단순한 응답만 반환
-			return ResponseEntity.ok("UP");
-		} catch (Exception e) {
-			log.error("Health check failed", e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("DOWN");
-		}
+	public ResponseEntity<?> healthCheck() {
+		Map<String,String> response = new TreeMap<>();
+		// nginx가 블루 - 그린 배포를 하는데 이떄 해당 서버가 잘 열려있는지 확인
+
+		response.put("serverName", serverName);
+		response.put("serverAddress", serverAddress);
+		response.put("serverPort", serverPort);
+		response.put("env", env);
+
+
+		return ResponseEntity.ok(response);
 	}
+
+	@GetMapping("/env")
+	public ResponseEntity<?> getEnv() {
+		return ResponseEntity.ok(env);
+
+	}
+
 }
