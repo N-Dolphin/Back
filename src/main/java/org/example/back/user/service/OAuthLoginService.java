@@ -48,7 +48,8 @@ public class OAuthLoginService {
 		);
 	}
 
-	private UserEntity newMember(OAuthInfoResponse oAuthInfoResponse) {
+	@Transactional
+	public UserEntity newMember(OAuthInfoResponse oAuthInfoResponse) {
 
 		Optional<UserEntity> existingUser = userRepository.findByEmail(oAuthInfoResponse.getEmail());
 		if (existingUser.isPresent()) {
