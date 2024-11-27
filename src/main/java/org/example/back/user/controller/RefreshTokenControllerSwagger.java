@@ -1,6 +1,7 @@
 package org.example.back.user.controller;
 
 import org.example.back.config.provider.AuthTokens;
+import org.example.back.user.dto.request.RefreshTokenRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -39,6 +40,6 @@ public interface RefreshTokenControllerSwagger {
 			description = "HttpServletRequest with Authorization header containing Refresh Token",
 			required = true
 		)
-		HttpServletRequest request
+		RefreshTokenRequest request
 	);
 }

@@ -9,9 +9,11 @@ import org.example.back.config.provider.AuthTokens;
 import org.example.back.config.provider.AuthTokensGenerator;
 import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.redis.RedisService;
+import org.example.back.user.dto.request.RefreshTokenRequest;
 import org.example.back.user.exception.InvalidTokenException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,19 +35,14 @@ public class RefreshTokenController implements RefreshTokenControllerSwagger{
 	private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 120;            // 120분
 	private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;  // 7일
 
-
 	@PostMapping("/refresh")
 	@Override
-	public ResponseEntity<AuthTokens> refreshAccessToken(HttpServletRequest request) {
+	public ResponseEntity<AuthTokens> refreshAccessToken(@RequestBody RefreshTokenRequest request) {
 		try {
-			String expiredToken = resolveToken(request);
-			String userId = jwtTokenProvider.extractSubject(expiredToken);
+			String refreshToken = request.getRefreshToken();
 
-			// 기존 Refresh Token 확인
-			String oldRefreshToken = redisService.getRefreshToken(userId);
-			if (oldRefreshToken == null) {
-				throw new InvalidTokenException("Refresh token not found");
-			}
+			String userId = redisService.getRefreshToken(refreshToken);
+			System.out.println("유저아이디는:" + userId);
 
 			// 새로운 Access Token 생성
 			Date accessTokenExpiredAt = new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRE_TIME);
