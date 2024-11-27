@@ -10,4 +10,7 @@ public interface RedisService {
 	String getRefreshToken(String key);
 
 	void saveOAuthTokens(String userId, String springRefreshToken, String kakaoRefreshToken, long springDuration, long kakaoDuration);
+
+	boolean setIfAbsent(String key, String value, long timeoutSeconds);
+	void delete(String key);
 }

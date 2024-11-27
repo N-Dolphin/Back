@@ -79,11 +79,31 @@ public class RedisServiceImpl implements RedisService {
 		}
 	}
 
+
+	@Override
 	// RedisService에 메소드 추가
 	public void saveOAuthTokens(String userId, String springRefreshToken, String kakaoRefreshToken, long springDuration, long kakaoDuration) {
 		ValueOperations<String, Object> operations = redisTemplate.opsForValue();
 		operations.set(userId + ":spring", springRefreshToken, springDuration, TimeUnit.MILLISECONDS);
 		operations.set(userId + ":kakao", kakaoRefreshToken, kakaoDuration, TimeUnit.MILLISECONDS);
+	}
+
+
+	@Override
+	public boolean setIfAbsent(String key, String value, long timeoutSeconds) {
+		ValueOperations<String, Object> operations = redisTemplate.opsForValue();
+		return Boolean.TRUE.equals(operations.setIfAbsent(key, value, timeoutSeconds, TimeUnit.SECONDS));
+	}
+
+	@Override
+	public void delete(String key) {
+		try {
+			redisTemplate.delete(key);
+			log.info("Key deleted from Redis: {}", key);
+		} catch (Exception e) {
+			log.error("Failed to delete key from Redis: {}", key, e);
+			throw e;
+		}
 	}
 
 }
