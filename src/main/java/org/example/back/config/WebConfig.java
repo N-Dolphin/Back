@@ -36,7 +36,8 @@ public class WebConfig implements WebMvcConfigurer {
                 "/api/v1/auth/email-certification",
                 "/api/v1/auth/check-certification",
                 "/api/v1/auth/kakao",
-                "/api/v1/chat/rooms"  // 채팅방 목록 API는 인증 예외 처리
+                "/api/v1/chat/rooms",
+                "/api/v1/auth/refresh"
             );
     }
 
