@@ -14,6 +14,7 @@ import org.example.back.user.oauth.OAuthLoginParams;
 import org.example.back.user.oauth.OAuthProvider;
 import org.example.back.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
 
@@ -40,13 +41,20 @@ public class OAuthLoginService {
 		return new SignInResponseDto(authTokensGenerator.generate(userEntity.getUserId()),3600L, hasProfile,hasProfileImage,hasProfileLocation);
 	}
 
-	private UserEntity findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
+	@Transactional
+	public UserEntity findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
 		return userRepository.findByEmail(oAuthInfoResponse.getEmail()).orElse(
 			newMember(oAuthInfoResponse)
 		);
 	}
 
 	private UserEntity newMember(OAuthInfoResponse oAuthInfoResponse) {
+
+		Optional<UserEntity> existingUser = userRepository.findByEmail(oAuthInfoResponse.getEmail());
+		if (existingUser.isPresent()) {
+			return existingUser.get();
+		}
+
 		UserEntity userEntity = UserEntity.ofOauth("Oauth", oAuthInfoResponse.getEmail(),null,"USER",
 			OAuthProvider.KAKAO);
 		return userRepository.save(userEntity);

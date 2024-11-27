@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletResponse;
@@ -39,7 +40,11 @@ public final class AuthController implements AuthControllerSwagger{
 	@PostMapping("/kakao")
 	@Override
 	public ResponseEntity<?> loginKakao(@RequestBody KakaoLoginParams params) {
-		return ResponseEntity.ok(oAuthLoginService.login(params));
+		try {
+			return ResponseEntity.ok(oAuthLoginService.login(params));
+		} catch (HttpClientErrorException.BadRequest e) {
+			return ResponseEntity.badRequest().body("인증 코드가 만료되었거나 유효하지 않습니다. 다시 로그인해주세요.");
+		}
 	}
 	
 
