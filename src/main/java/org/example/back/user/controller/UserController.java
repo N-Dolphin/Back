@@ -21,47 +21,46 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/v1/auth")
 @Tag(name = "User", description = "User 관련 API")
-
 public class UserController implements UserControllerSwagger {
 
 	private final UserService userService;
 
-	@PostMapping("/email-certification")
 	@Override
-	public ResponseEntity<EmailCertificationResponseDto> emailCertification(
+	@PostMapping("/email-certification")
+	public ResponseEntity<Void> emailCertification(
 		@RequestBody @Valid final EmailCertificationRequestDto dto
 	) {
-		EmailCertificationResponseDto responseDto = userService.emailCertification(dto);
-		return ResponseEntity.ok(responseDto);
+		userService.emailCertification(dto);
+		return ResponseEntity.ok().build();
 	}
 
-	@PostMapping("/sign-up")
 	@Override
+	@PostMapping("/sign-up")
 	public ResponseEntity<User> signUp(
-		@RequestBody @Valid final SignUpRequestDto dto) {
+		@RequestBody @Valid final SignUpRequestDto dto
+	) {
 		User user = userService.signUp(dto);
 		return ResponseEntity.ok(user);
 	}
 
-	@PostMapping("/sign-in")
 	@Override
-	public ResponseEntity<?> signIn(
-		@RequestBody @Valid final SignInRequestDto dto) {
+	@PostMapping("/sign-in")
+	public ResponseEntity<SignInResponseDto> signIn(
+		@RequestBody @Valid final SignInRequestDto dto
+	) {
 		SignInResponseDto responseDto = userService.signIn(dto);
 		return ResponseEntity.ok(responseDto);
 	}
-
-
-
 }
