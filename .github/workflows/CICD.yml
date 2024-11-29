@@ -39,11 +39,16 @@ jobs:
       - name: CheckOut Repository
         uses: actions/checkout@v4
         with:
-          submodules: true
+          #submodules: true
+          submodules: 'recursive'
           fetch-depth: 0
-          token: ${{ secrets.GH_TOKEN }}
-       #   token: ${{ secrets.GITHUB_TOKEN }}
+       #   token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
 
+      - name: Git Submodule Config  # 이 단계 추가
+        run: |
+          git config --global url."https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/".insteadOf "https://github.com/"
+          git submodule update --init --recursive
 
       - name: Verify application.yml from submodule
         run: cat secure-submodule/application.yml
