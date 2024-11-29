@@ -2,6 +2,7 @@ package org.example.back.user.service;
 
 import java.util.Optional;
 
+import org.example.back.config.PasswordEncryptor;
 import org.example.back.config.provider.AuthTokens;
 import org.example.back.config.provider.AuthTokensGenerator;
 import org.example.back.config.provider.EmailProvider;
@@ -21,6 +22,8 @@ import org.example.back.user.dto.response.SignInResponseDto;
 import org.example.back.user.entity.CertificationEntity;
 import org.example.back.user.entity.UserEntity;
 import org.example.back.user.exception.CertificationNotAllowedException;
+import org.example.back.user.exception.EmailSendFailedException;
+import org.example.back.user.exception.InvalidPasswordException;
 import org.example.back.user.exception.UserAlreadyExistsException;
 import org.example.back.user.exception.UserEmailNotAllowedException;
 import org.example.back.user.exception.UserNotFoundException;
@@ -38,10 +41,10 @@ public class UserService {
 	private final UserRepository userRepository;
 	private final EmailProvider emailProvider;
 	private final CertificationRepository certificationRepository;
-	private final JwtTokenProvider jwtTokenProvider;
 	private final AuthTokensGenerator authTokensGenerator;
 	private final ProfileRepository profileRepository;
 	private final ProfileImageRepository profileImageRepository;
+	private final PasswordEncryptor passwordEncryptor;
 
 	public EmailCertificationResponseDto emailCertification(EmailCertificationRequestDto requestBody) {
 
@@ -57,9 +60,9 @@ public class UserService {
 		boolean isSucceed = emailProvider.sendCertification(email, certificationNumber);
 
 		if (!isSucceed) {
-			return new EmailCertificationResponseDto("실패", "메일 전송에 실패했습니다");
-
+			throw new EmailSendFailedException();
 		}
+
 		CertificationEntity certificationEntity = new CertificationEntity(email , certificationNumber);
 		certificationRepository.save(certificationEntity);
 
@@ -111,9 +114,9 @@ public class UserService {
 			throw new UserEmailNotAllowedException(email);
 		}
 
-		String password = dto.password();
-		String encodedPassword = password;
+		String encodedPassword = passwordEncryptor.encrypt(dto.password());
 		UserEntity user = UserEntity.ofBase("Base", email, encodedPassword, "USER");
+
 
 		userRepository.save(user);
 		certificationRepository.deleteByEmail(email);
@@ -121,24 +124,25 @@ public class UserService {
 		return User.from(user);
 	}
 
+	@Transactional
 	public SignInResponseDto signIn(SignInRequestDto dto) {
 
-		AuthTokens authTokens=null;
 		String email= dto.email();
-
 		UserEntity userEntity = userRepository.findByEmail(email).orElseThrow(
 			() -> new UserNotFoundException(email)
 		);
 
-		// AuthTokens 생성, 유저 ID와 리프레시 토큰,
-		authTokens = authTokensGenerator.generate(userEntity.getUserId());
+		if (!passwordEncryptor.matches(dto.password(), userEntity.getPassword())) {
+			throw new InvalidPasswordException();
+		}
 
-
+		AuthTokens authTokens = authTokensGenerator.generate(userEntity.getUserId());
 		Optional<Profile> profile = profileRepository.findByUserId(userEntity.getUserId());
+
 		boolean hasProfile = profile.isPresent();
 		boolean hasProfileLocation = profile.map(Profile::getLocation).isPresent();
 		boolean hasProfileImage = profile.map(Profile::getProfileId)
-			.flatMap(profileImageRepository::findFirstByProfile_ProfileId) // 여기 수정
+			.flatMap(profileImageRepository::findFirstByProfile_ProfileId)
 			.isPresent();
 
 		return new SignInResponseDto(authTokens, 7200L, hasProfile, hasProfileImage, hasProfileLocation);
@@ -161,19 +165,7 @@ public class UserService {
 	}
 
 
-	public Long getProfileIdByToken(String token) {
-
-		String userIdToken = jwtTokenProvider.extractSubject(token);
-		Long userId = Long.valueOf(userIdToken);
-
-		Long profileId = getProfileIdByUserId(userId);
-
-		return profileId;
-	}
-
-
 	private static class CertificationNumber {
-
 		public static String getCertificationNumber() {
 			String certificationNumber = "";
 
