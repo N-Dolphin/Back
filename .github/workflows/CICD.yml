@@ -44,7 +44,7 @@ jobs:
 #          token: ${{ secrets.GH_TOKEN }}
            submodules: 'recursive'    # true 대신 'recursive' 사용
            fetch-depth: 0
-           token: ${{ secrets.GH_TOKEN }}  # 기본 제공되는 GITHUB_TOKEN 사용
+           token: ${{ secrets.GITHUB_TOKEN }}  # 기본 제공되는 GITHUB_TOKEN 사용
 
       - name: Verify application.yml from submodule
         run: cat secure-submodule/application.yml
