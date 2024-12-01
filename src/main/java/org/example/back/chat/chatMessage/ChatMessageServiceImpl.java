@@ -89,17 +89,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 		return messageResponse;
 	}
 
-	// @Override
-	// public void sendMessage(ChatMessage chatMessage, int unreadCnt, ChatRoom chatRoom) {
-	// 	MessageRes messageRes = ChatMessageRes.createRes(chatMessage, unreadCnt);
-	// 	String destination = "/exchange/chat.exchange/room." + chatRoom.getId();
-	//
-	// 	System.out.println("Sending to RabbitMQ - Routing Key: " + destination);
-	// 	System.out.println("Message: " + messageRes);
-	//
-	// 	messagingTemplate.convertAndSend(destination, messageRes);
-	// }
-
 	private int calculateUnreadCnt(ChatRoom chatRoom) {
 		int onlineMemberCnt = redisChatUtil.getOnlineMemberCntInChatRoom(chatRoom.getId());
 		int unreadCnt = chatRoom.getParticipantCount() - onlineMemberCnt;
@@ -125,19 +114,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
 		return messageResList;
 	}
-
-	// @Transactional
-	// public void handleConnectMessage(StompHeaderAccessor accessor) {
-	// 	Long profileId = stompHeaderAccessorUtil.getMemberIdInSession(accessor);
-	// 	Long chatRoomId = stompHeaderAccessorUtil.getChatRoomIdInSession(accessor);
-	//
-	// 	ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
-	// 		.orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
-	//
-	// 	enterChatRoom(chatRoom.getId(), profileId);
-	// 	readUnreadMessages(chatRoom, profileId);
-	// }
-
 
 	private void enterChatRoom(Long chatRoomId, Long memberId) {
 		redisChatUtil.addChatRoom2Member(chatRoomId, memberId);

@@ -18,32 +18,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-// @Getter
-// @Setter
-// @Builder
-// @NoArgsConstructor
-// @AllArgsConstructor
-// @Document(collection = "chat_message")
-// @ToString
-// public class ChatMessage {
-//
-// 	@Id
-// 	private String id;
-//
-// 	private Long chatRoomId;
-//
-// 	private Long profileId;
-//
-// 	private String content;
-//
-// 	@CreatedDate
-// 	@Column(name = "createdAt", updatable = false)
-// 	private LocalDateTime createdAt;
-//
-// 	private MessageType messageType;
-// 	private FileInfo fileInfo;  // 추가
-// }
-
 @Getter
 @Setter
 @Builder

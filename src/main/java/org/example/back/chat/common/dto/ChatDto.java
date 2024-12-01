@@ -16,23 +16,7 @@ public class ChatDto {
 	/**
 	 * 웹소켓 접속시 요청 Dto
 	 */
-	// @Data
-	// @Builder
-	// @NoArgsConstructor
-	// @AllArgsConstructor
-	// public static class ChatMessageReq {
-	// 	private String content;
-	//
-	// 	public ChatMessage createChatMessage(Long chatRoomId, Long profileId) {
-	// 		ChatMessage chatMessage = ChatMessage.builder()
-	// 			.chatRoomId(chatRoomId)
-	// 			.profileId(profileId)
-	// 			.content(content)
-	// 			.createdAt(LocalDateTime.now())
-	// 			.build();
-	// 		return chatMessage;
-	// 	}
-	// }
+
 	@Data
 	@Builder
 	@NoArgsConstructor

@@ -22,8 +22,6 @@ public interface ChatMessageService {
 
 	List<MessageRes> getChatMessages(Long chatRoomId);
 
-	// void handleConnectMessage(StompHeaderAccessor accessor);
-
 	void handleDisconnectMessage(StompHeaderAccessor accessor);
 
 	void exitChatRoom(ChatRoom chatRoom, Long profileId);
