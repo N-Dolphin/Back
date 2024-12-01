@@ -42,7 +42,7 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName; // S3 버킷 이름
 
-	
+
 	@PostMapping()
 	@Override
 	public ResponseEntity<String> uploadProfileImage(@RequestParam("profileImage") List<MultipartFile> file, HttpServletRequest request) {
