@@ -143,7 +143,7 @@ public class ProfileController implements ProfileControllerSwagger {
 	}
 
 
-	@GetMapping("/getProfileInfo")
+	@PostMapping("/getProfileInfo")
 	@Override
 	public ResponseEntity<ProfileDto> getProfileInfo(HttpServletRequest request, @RequestBody Long getProfileId) {
 
