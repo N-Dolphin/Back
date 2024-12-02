@@ -3,6 +3,7 @@ package org.example.back.profile.controller;
 import org.example.back.location.LocationRequest;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
 import org.example.back.profile.domain.ProfileDto;
+import org.example.back.profile.domain.ProfileInfoDto;
 import org.example.back.profile.domain.ProfileResponseDto;
 import org.example.back.profile.service.response.ProfileCreateResponse;
 import org.example.back.profile.domain.Profile;
@@ -129,4 +130,4 @@ public interface ProfileControllerSwagger {
 			)
 		}
 	)
-	ResponseEntity<ProfileDto> getProfileInfo(HttpServletRequest request, @RequestBody Long getProfileId);}
+	ResponseEntity<ProfileInfoDto> getProfileInfo(HttpServletRequest request, @RequestBody Long getProfileId);}

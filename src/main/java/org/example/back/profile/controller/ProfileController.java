@@ -10,6 +10,7 @@ import org.example.back.profile.controller.request.ProfileCreateRequest;
 import org.example.back.profile.domain.Profile;
 import org.example.back.profile.domain.ProfileDistance;
 import org.example.back.profile.domain.ProfileDto;
+import org.example.back.profile.domain.ProfileInfoDto;
 import org.example.back.profile.domain.ProfileResponseDto;
 import org.example.back.profile.exception.BadRequestException;
 import org.example.back.profile.exception.ConflictException;
@@ -145,7 +146,7 @@ public class ProfileController implements ProfileControllerSwagger {
 
 	@PostMapping("/getProfileInfo")
 	@Override
-	public ResponseEntity<ProfileDto> getProfileInfo(HttpServletRequest request, @RequestBody Long getProfileId) {
+	public ResponseEntity<ProfileInfoDto> getProfileInfo(HttpServletRequest request, @RequestBody Long getProfileId) {
 
 
 
@@ -170,7 +171,7 @@ public class ProfileController implements ProfileControllerSwagger {
 		Long profileId = userService.getProfileIdByUserId(userId);
 
 
-		ProfileDto profileDto = profileService.getProfileInfo(getProfileId);
+		ProfileInfoDto profileDto = profileService.getProfileInfo(getProfileId);
 
 		return ResponseEntity.ok(profileDto);
 	}

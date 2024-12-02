@@ -9,6 +9,7 @@ import org.example.back.exception.ClientErrorException;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
 import org.example.back.profile.domain.Profile;
 import org.example.back.profile.domain.ProfileDto;
+import org.example.back.profile.domain.ProfileInfoDto;
 import org.example.back.profile.domain.ProfileLocation;
 import org.example.back.profile.exception.ProfileNotFoundException;
 import org.example.back.profile.repository.ProfileRepository;
@@ -98,7 +99,7 @@ public class ProfileService {
 	}
 
 
-	public ProfileDto getProfileInfo(Long profileId) {
+	public ProfileInfoDto getProfileInfo(Long profileId) {
 		// 해당 프로필 찾기
 		Profile profile = profileRepository.findByProfileId(profileId)
 			.orElseThrow(() -> new IllegalArgumentException("Invalid profile ID"));
@@ -107,7 +108,7 @@ public class ProfileService {
 			()-> new ClientErrorException(HttpStatus.NOT_FOUND,"이미지가 없어요")
 		);
 
-		return new ProfileDto(firstImage.getImageUrl(),profile.getProfileName(),profile.getAge());
+		return new ProfileInfoDto(firstImage.getImageUrl(),profile.getProfileName(),profile.getAge());
 	}
 
 	public Long findProfileByNickname(String toProfileName) {
