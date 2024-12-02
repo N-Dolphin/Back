@@ -106,7 +106,7 @@ public interface ProfileControllerSwagger {
 		description = "JWT 토큰과 프로필 ID를 이용해 해당 유저의 프로필 정보를 반환합니다.",
 		parameters = {
 			@Parameter(
-				name = "getProfileId",
+				name = "profileId",
 				description = "조회하려는 프로필 ID",
 				required = true,
 				schema = @Schema(type = "integer", format = "int64")
@@ -116,7 +116,7 @@ public interface ProfileControllerSwagger {
 			@ApiResponse(
 				responseCode = "200",
 				description = "프로필 반환 성공",
-				content = @Content(schema = @Schema(implementation = ProfileDto.class))
+				content = @Content(schema = @Schema(implementation = ProfileInfoDto.class))
 			),
 			@ApiResponse(
 				responseCode = "401",
