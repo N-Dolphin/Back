@@ -19,4 +19,7 @@ public interface SwipeRepository extends JpaRepository<Swipe, Long> {
 	boolean existsByFromProfileIdAndToProfileId(Long fromProfileId, Long toProfileId);
 
 	Optional<Swipe> findByFromProfileIdAndToProfileId(Long toProfileId, Long fromProfileId);
+
+	List<Swipe> findByFromProfileIdOrToProfileId(Long fromProfileId, Long toProfileId);
+
 }

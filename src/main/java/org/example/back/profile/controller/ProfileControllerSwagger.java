@@ -99,5 +99,5 @@ public interface ProfileControllerSwagger {
 	ResponseEntity<ProfileResponseDto> getProfile(HttpServletRequest request);
 
 
-	ResponseEntity<ProfileDto> getProfileInfo(HttpServletRequest request);
+	ResponseEntity<ProfileDto> getProfileInfo(HttpServletRequest request, @org.springframework.web.bind.annotation.RequestBody Long getProfileId);
 }

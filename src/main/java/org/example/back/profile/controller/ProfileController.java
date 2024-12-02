@@ -21,6 +21,8 @@ import org.example.back.profile.service.ProfileService;
 import org.example.back.profile.service.response.ProfileCreateResponse;
 import org.example.back.profileimage.entity.ProfileImage;
 import org.example.back.profileimage.repository.ProfileImageRepository;
+import org.example.back.swipe.entity.Swipe;
+import org.example.back.swipe.repository.SwipeRepository;
 import org.example.back.user.entity.UserEntity;
 import org.example.back.user.exception.InvalidTokenException;
 import org.example.back.user.exception.UserNotFoundException;
@@ -54,7 +56,7 @@ public class ProfileController implements ProfileControllerSwagger {
 	private final ProfileRepository profileRepository;
 	private final UserService userService;
 	private final ProfileImageRepository profileImageRepository;
-
+	private final SwipeRepository swipeRepository;
 	@PostMapping
 	@Override
 	public ResponseEntity<ProfileDto> createProfile(@Valid @RequestBody final ProfileCreateRequest request,
@@ -143,18 +145,37 @@ public class ProfileController implements ProfileControllerSwagger {
 
 	@GetMapping("/getProfileInfo")
 	@Override
-	public ResponseEntity<ProfileDto> getProfileInfo(HttpServletRequest request) {
+	public ResponseEntity<ProfileDto> getProfileInfo(HttpServletRequest request, @RequestBody Long getProfileId) {
 
+
+
+		// 1. 토큰 검증
 		String token = resolveToken(request);
-		String userIdToken = jwtTokenProvider.extractSubject(token);
+		if (token == null) {
+			throw new UnauthorizedException("토큰이 없습니다");
+		}
+
+		// 2. 토큰에서 userId 추출
+		String userIdToken;
+		try {
+			userIdToken = jwtTokenProvider.extractSubject(token);
+		} catch (ExpiredJwtException e) {
+			throw new UnauthorizedException("만료된 토큰입니다");
+		} catch (JwtException e) {
+			throw new UnauthorizedException("유효하지 않은 토큰입니다");
+		}
+
 		Long userId = Long.valueOf(userIdToken);
 
 		Long profileId = userService.getProfileIdByUserId(userId);
 
-		ProfileDto profileDto = profileService.getProfileInfo(profileId);
+
+		ProfileDto profileDto = profileService.getProfileInfo(getProfileId);
 
 		return ResponseEntity.ok(profileDto);
 	}
+
+
 
 
 	private String resolveToken(HttpServletRequest request) {
@@ -190,4 +211,14 @@ public class ProfileController implements ProfileControllerSwagger {
 		return ResponseEntity.ok(responseDTO);
 	}
 
+
+	private boolean checkProfileMatch(Long profileId, Long getProfileId) {
+		List<Swipe> swipes = swipeRepository.findByFromProfileIdOrToProfileId(profileId, getProfileId);
+
+		return swipes.stream()
+			.anyMatch(swipe ->
+				(swipe.getFromProfileId().equals(profileId) && swipe.getToProfileId().equals(getProfileId)) ||
+					(swipe.getFromProfileId().equals(getProfileId) && swipe.getToProfileId().equals(profileId))
+			);
+	}
 }
