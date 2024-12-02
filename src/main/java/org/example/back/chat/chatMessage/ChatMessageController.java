@@ -205,10 +205,16 @@ public class ChatMessageController {
 	}
 
 
-	@MessageMapping("chat.delete")  // HTTP DELETE 매핑 대신 메시지 매핑
+	// @MessageMapping("chat.delete")  // HTTP DELETE 매핑 대신 메시지 매핑
+	// public void deleteMessage(StompHeaderAccessor accessor, ChatMessageDeleteRequest request) {
+	// 	Long profileId = stompHeaderAccessorUtil.getMemberIdInSession(accessor);
+	// 	chatMessageService.deleteMessage(request.getChatRoomId(), profileId, request.getTimestamp());
+	// }
+
+	@MessageMapping("chat.delete")
 	public void deleteMessage(StompHeaderAccessor accessor, ChatMessageDeleteRequest request) {
 		Long profileId = stompHeaderAccessorUtil.getMemberIdInSession(accessor);
-		chatMessageService.deleteMessage(request.getChatRoomId(), profileId, request.getTimestamp());
+		chatMessageService.deleteMessage(request.getChatRoomId(), profileId, request.getMessageId());
 	}
 
 

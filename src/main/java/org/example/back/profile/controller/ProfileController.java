@@ -151,8 +151,6 @@ public class ProfileController implements ProfileControllerSwagger {
 		HttpServletRequest request,
 		@PathVariable("profileId") Long profileId
 	) {
-
-
 		// 1. 토큰 검증
 		String token = resolveToken(request);
 		if (token == null) {
@@ -169,11 +167,8 @@ public class ProfileController implements ProfileControllerSwagger {
 			throw new UnauthorizedException("유효하지 않은 토큰입니다");
 		}
 
-
 		ProfileInfoDto profileDto = profileService.getProfileInfo(profileId);
-
 		System.out.println(profileDto);
-
 		return ResponseEntity.ok(profileDto);
 	}
 

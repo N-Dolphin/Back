@@ -27,7 +27,8 @@ public interface ChatMessageService {
 
 	void exitChatRoom(ChatRoom chatRoom, Long profileId);
 
-	void deleteMessage(Long chatRoomId, Long profileId, LocalDateTime timestamp);
+	//void deleteMessage(Long chatRoomId, Long profileId, LocalDateTime timestamp);
 
+	void deleteMessage(Long chatRoomId, Long profileId, String messageId);
 	void leaveChatRoom(Long chatRoomId, Long profileId);
 }

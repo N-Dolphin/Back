@@ -23,4 +23,10 @@ public interface ChatMessageRepository extends MongoRepository<ChatMessage, Stri
 		Long profileId,
 		LocalDateTime createdAt
 	);
+
+	Optional<ChatMessage> findByChatRoomIdAndProfileIdAndId(
+		Long chatRoomId,
+		Long profileId,
+		String id
+	);
 }

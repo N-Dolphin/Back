@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class ChatMessageDeleteRequest {
 	private Long chatRoomId;
-	private LocalDateTime timestamp;
+	private String messageId;
 }
 
 
