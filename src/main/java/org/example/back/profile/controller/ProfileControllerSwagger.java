@@ -8,6 +8,8 @@ import org.example.back.profile.domain.ProfileResponseDto;
 import org.example.back.profile.service.response.ProfileCreateResponse;
 import org.example.back.profile.domain.Profile;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+
 import java.util.List;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,8 +62,8 @@ public interface ProfileControllerSwagger {
 			)
 		}
 	)
-	ResponseEntity<ProfileDto> saveLocation(@RequestBody LocationRequest locationRequest, HttpServletRequest httpServletRequest);
-
+	ResponseEntity<ProfileDto> saveLocation(@RequestBody LocationRequest locationRequest,
+		HttpServletRequest httpServletRequest);
 
 	@Operation(
 		summary = "유저와의 프로필 계산",
@@ -75,7 +77,6 @@ public interface ProfileControllerSwagger {
 		}
 	)
 	ResponseEntity<List<ProfileDto>> findProfiles(HttpServletRequest httpServletRequest);
-
 
 	@Operation(
 		summary = "유저 프로필 조회",
@@ -99,7 +100,6 @@ public interface ProfileControllerSwagger {
 		}
 	)
 	ResponseEntity<ProfileResponseDto> getProfile(HttpServletRequest request);
-
 
 	@Operation(
 		summary = "특정 유저 프로필 조회",
@@ -130,4 +130,8 @@ public interface ProfileControllerSwagger {
 			)
 		}
 	)
-	ResponseEntity<ProfileInfoDto> getProfileInfo(HttpServletRequest request, @RequestBody Long getProfileId);}
+	public ResponseEntity<ProfileInfoDto> getProfileInfo(
+		HttpServletRequest request,
+		@PathVariable("profileId") Long profileId
+	);
+}

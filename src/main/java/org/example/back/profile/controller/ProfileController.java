@@ -35,6 +35,7 @@ import org.locationtech.jts.geom.Point;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -144,10 +145,12 @@ public class ProfileController implements ProfileControllerSwagger {
 	}
 
 
-	@PostMapping("/getProfileInfo")
+	@GetMapping("/profiles/{profileId}")
 	@Override
-	public ResponseEntity<ProfileInfoDto> getProfileInfo(HttpServletRequest request, @RequestBody Long getProfileId) {
-
+	public ResponseEntity<ProfileInfoDto> getProfileInfo(
+		HttpServletRequest request,
+		@PathVariable("profileId") Long profileId
+	) {
 
 
 		// 1. 토큰 검증
@@ -165,13 +168,9 @@ public class ProfileController implements ProfileControllerSwagger {
 		} catch (JwtException e) {
 			throw new UnauthorizedException("유효하지 않은 토큰입니다");
 		}
+		
 
-		Long userId = Long.valueOf(userIdToken);
-
-		Long profileId = userService.getProfileIdByUserId(userId);
-
-
-		ProfileInfoDto profileDto = profileService.getProfileInfo(getProfileId);
+		ProfileInfoDto profileDto = profileService.getProfileInfo(profileId);
 
 		return ResponseEntity.ok(profileDto);
 	}
