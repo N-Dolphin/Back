@@ -17,4 +17,10 @@ public interface ChatMessageRepository extends MongoRepository<ChatMessage, Stri
 	Optional<ChatMessage> findTopByChatRoomIdOrderByCreatedAtDesc(Long chatRoomId);
 
 	int countByChatRoomIdAndCreatedAtAfter(Long id, LocalDateTime lastEntryTime);
+
+	Optional<ChatMessage> findByChatRoomIdAndProfileIdAndCreatedAt(
+		Long chatRoomId,
+		Long profileId,
+		LocalDateTime createdAt
+	);
 }

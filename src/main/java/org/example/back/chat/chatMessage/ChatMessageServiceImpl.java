@@ -7,6 +7,7 @@ import java.util.Set;
 import org.example.back.chat.chatRoom.ChatRoom;
 import org.example.back.chat.chatRoom.ChatRoomRepository;
 import org.example.back.chat.chatroommember.ChatRoomParticipant;
+import org.example.back.chat.common.constant.MessageType;
 import org.example.back.chat.common.dto.ChatDto;
 import org.example.back.chat.common.dto.ChatMessageRes;
 import org.example.back.chat.common.dto.ChatRoomEnterRequest;
@@ -89,17 +90,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 		return messageResponse;
 	}
 
-	// @Override
-	// public void sendMessage(ChatMessage chatMessage, int unreadCnt, ChatRoom chatRoom) {
-	// 	MessageRes messageRes = ChatMessageRes.createRes(chatMessage, unreadCnt);
-	// 	String destination = "/exchange/chat.exchange/room." + chatRoom.getId();
-	//
-	// 	System.out.println("Sending to RabbitMQ - Routing Key: " + destination);
-	// 	System.out.println("Message: " + messageRes);
-	//
-	// 	messagingTemplate.convertAndSend(destination, messageRes);
-	// }
-
 	private int calculateUnreadCnt(ChatRoom chatRoom) {
 		int onlineMemberCnt = redisChatUtil.getOnlineMemberCntInChatRoom(chatRoom.getId());
 		int unreadCnt = chatRoom.getParticipantCount() - onlineMemberCnt;
@@ -125,19 +115,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
 		return messageResList;
 	}
-
-	// @Transactional
-	// public void handleConnectMessage(StompHeaderAccessor accessor) {
-	// 	Long profileId = stompHeaderAccessorUtil.getMemberIdInSession(accessor);
-	// 	Long chatRoomId = stompHeaderAccessorUtil.getChatRoomIdInSession(accessor);
-	//
-	// 	ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
-	// 		.orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
-	//
-	// 	enterChatRoom(chatRoom.getId(), profileId);
-	// 	readUnreadMessages(chatRoom, profileId);
-	// }
-
 
 	private void enterChatRoom(Long chatRoomId, Long memberId) {
 		redisChatUtil.addChatRoom2Member(chatRoomId, memberId);
@@ -184,5 +161,40 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 	@Override
 	public void exitChatRoom(ChatRoom chatRoom, Long profileId) {
 		redisChatUtil.removeChatRoom2Member(chatRoom.getId(), profileId);
+	}
+
+
+	@Override
+	@Transactional
+	public void deleteMessage(Long chatRoomId, Long profileId, LocalDateTime timestamp) {
+		ChatMessage message = chatMessageRepository
+			.findByChatRoomIdAndProfileIdAndCreatedAt(chatRoomId, profileId, timestamp)
+			.orElseThrow(() -> new RuntimeException("메시지를 찾을 수 없습니다."));
+
+		// 기존 메시지를 수정
+		message.setContent("삭제된 메시지입니다.");
+		message.setMessageType(MessageType.DELETED_MESSAGE);
+		chatMessageRepository.save(message);
+
+		// 동일한 메시지를 다시 보내지 않고, 수정된 메시지만 전송
+		MessageRes deleteNotification = ChatMessageRes.createRes(message, 0);
+		messagingTemplate.convertAndSend(
+			"/exchange/chat.exchange/room." + chatRoomId,
+			deleteNotification
+		);
+	}
+
+	@Override
+	@Transactional
+	public void leaveChatRoom(Long chatRoomId, Long profileId) {
+		ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
+			.orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
+
+		// 채팅방 참가자 삭제
+		ChatRoomParticipant participant = chatRoom.getParticipant(profileId);
+		chatRoom.getParticipants().remove(participant);
+
+		// Redis에서도 참가자 정보 삭제
+		redisChatUtil.removeChatRoom2Member(chatRoomId, profileId);
 	}
 }

@@ -7,6 +7,7 @@ import org.example.back.chat.common.dto.ChatRoomEnterRequest;
 import org.example.back.chat.common.dto.MessageRes;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ChatMessageService {
@@ -22,9 +23,11 @@ public interface ChatMessageService {
 
 	List<MessageRes> getChatMessages(Long chatRoomId);
 
-	// void handleConnectMessage(StompHeaderAccessor accessor);
-
 	void handleDisconnectMessage(StompHeaderAccessor accessor);
 
 	void exitChatRoom(ChatRoom chatRoom, Long profileId);
+
+	void deleteMessage(Long chatRoomId, Long profileId, LocalDateTime timestamp);
+
+	void leaveChatRoom(Long chatRoomId, Long profileId);
 }

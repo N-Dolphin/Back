@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.back.config.interceptor.JwtInterceptor;
 import org.example.back.config.interceptor.LogInterceptor;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -38,12 +39,14 @@ public class WebConfig implements WebMvcConfigurer {
                 "/api/v1/auth/kakao",
                 "/api/v1/chat/rooms",
                 "/api/v1/auth/refresh"
-            );
+            )
+            .excludePathPatterns("/**", HttpMethod.OPTIONS.name());  // OPTIONS 요청 제외
+
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
+        registry.addMapping("/api/**")
             .allowedOriginPatterns("*")  // "*" 대신 이것을 사용
             .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
             .allowedHeaders("*")
