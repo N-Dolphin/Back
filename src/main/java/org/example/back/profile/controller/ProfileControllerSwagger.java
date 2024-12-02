@@ -97,4 +97,7 @@ public interface ProfileControllerSwagger {
 		}
 	)
 	ResponseEntity<ProfileResponseDto> getProfile(HttpServletRequest request);
+
+
+	ResponseEntity<ProfileDto> getProfileInfo(HttpServletRequest request);
 }

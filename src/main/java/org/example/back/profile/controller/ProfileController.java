@@ -102,8 +102,27 @@ public class ProfileController implements ProfileControllerSwagger {
 
 		List<ProfileDto> profiles = profileService.getProfiles(profileId);
 
+		//여기다 매칭된 유저는 제외
+
 		return ResponseEntity.ok(profiles);
 	}
+
+
+	@GetMapping("/findProfileInfo")
+	@Override
+	public ResponseEntity<ProfileDto> getProfileInfo(HttpServletRequest request) {
+
+		String token = resolveToken(request);
+		String userIdToken = jwtTokenProvider.extractSubject(token);
+		Long userId = Long.valueOf(userIdToken);
+
+		Long profileId = userService.getProfileIdByUserId(userId);
+
+		ProfileDto profileDto = profileService.getProfileInfo(profileId);
+
+		return ResponseEntity.ok(profileDto);
+	}
+
 
 	private String resolveToken(HttpServletRequest request) {
 		String bearerToken = request.getHeader("Authorization");
