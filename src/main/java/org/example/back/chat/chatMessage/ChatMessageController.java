@@ -2,6 +2,7 @@ package org.example.back.chat.chatMessage;
 
 
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -11,19 +12,27 @@ import org.example.back.chat.chatRoom.ChatRoomRepository;
 import org.example.back.chat.chatroommember.ChatRoomParticipant;
 import org.example.back.chat.common.constant.MessageType;
 import org.example.back.chat.common.dto.ChatDto;
+import org.example.back.chat.common.dto.ChatMessageDeleteRequest;
 import org.example.back.chat.common.dto.ChatRoomEnterRequest;
 import org.example.back.chat.common.dto.EnterConfirmRes;
 import org.example.back.chat.common.dto.FileInfo;
 import org.example.back.chat.common.dto.MessageRes;
 import org.example.back.chat.util.StompHeaderAccessorUtil;
+import org.example.back.config.provider.JwtTokenProvider;
+import org.example.back.user.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
@@ -39,12 +48,16 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")  // React 앱의 origin 허용
+
 public class ChatMessageController {
 
 	private final ChatMessageServiceImpl chatMessageService;
 	private final StompHeaderAccessorUtil stompHeaderAccessorUtil;
 	private final SimpMessagingTemplate messagingTemplate;
 	private final ChatRoomRepository chatRoomRepository;
+	private final UserService userService;
+	private final JwtTokenProvider jwtTokenProvider;
 	private final AmazonS3 amazonS3;
 
 	@Value("${cloud.aws.s3.bucket}")
@@ -189,6 +202,36 @@ public class ChatMessageController {
 			case "image/gif": return ".gif";
 			default: return "";
 		}
+	}
+
+
+	@MessageMapping("chat.delete")  // HTTP DELETE 매핑 대신 메시지 매핑
+	public void deleteMessage(StompHeaderAccessor accessor, ChatMessageDeleteRequest request) {
+		Long profileId = stompHeaderAccessorUtil.getMemberIdInSession(accessor);
+		chatMessageService.deleteMessage(request.getChatRoomId(), profileId, request.getTimestamp());
+	}
+
+
+	@DeleteMapping("/api/v1/chat-rooms/{chatRoomId}/leave")
+	public ResponseEntity<Void> leaveChatRoom(
+		@PathVariable("chatRoomId") Long chatRoomId,
+		HttpServletRequest request
+	) {
+		String token = resolveToken(request);
+		String userIdToken = jwtTokenProvider.extractSubject(token);
+		Long userId = Long.valueOf(userIdToken);
+		Long profileId = userService.getProfileIdByUserId(userId);
+
+		chatMessageService.leaveChatRoom(chatRoomId, profileId);
+		return ResponseEntity.ok().build();
+	}
+
+	private String resolveToken(HttpServletRequest request) {
+		String bearerToken = request.getHeader("Authorization");
+		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
+			return bearerToken.substring(7);
+		}
+		return null;
 	}
 }
 
