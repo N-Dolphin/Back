@@ -145,7 +145,7 @@ public class ProfileController implements ProfileControllerSwagger {
 	}
 
 
-	@GetMapping("/profiles/{profileId}")
+	@GetMapping("/{profileId}")
 	@Override
 	public ResponseEntity<ProfileInfoDto> getProfileInfo(
 		HttpServletRequest request,
@@ -171,6 +171,8 @@ public class ProfileController implements ProfileControllerSwagger {
 
 
 		ProfileInfoDto profileDto = profileService.getProfileInfo(profileId);
+
+		System.out.println(profileDto);
 
 		return ResponseEntity.ok(profileDto);
 	}
