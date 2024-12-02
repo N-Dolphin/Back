@@ -108,7 +108,7 @@ public class ProfileController implements ProfileControllerSwagger {
 	}
 
 
-	@GetMapping("/findProfileInfo")
+	@GetMapping("/getProfileInfo")
 	@Override
 	public ResponseEntity<ProfileDto> getProfileInfo(HttpServletRequest request) {
 
