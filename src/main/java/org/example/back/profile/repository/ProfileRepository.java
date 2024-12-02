@@ -50,4 +50,6 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 
 	Optional<Profile> findProfileByProfileName(String ProfileName);
 
+	Optional<Profile> findProfileByProfileId(Long profileId);
+
 }

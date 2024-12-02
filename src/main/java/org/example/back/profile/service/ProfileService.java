@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.example.back.exception.ClientErrorException;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
 import org.example.back.profile.domain.Profile;
 import org.example.back.profile.domain.ProfileDto;
@@ -20,6 +21,7 @@ import org.example.back.user.repository.UserRepository;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -93,6 +95,19 @@ public class ProfileService {
 			.collect(Collectors.toList());
 
 		return profileDtos;
+	}
+
+
+	public ProfileDto getProfileInfo(Long profileId) {
+		// 해당 프로필 찾기
+		Profile profile = profileRepository.findByProfileId(profileId)
+			.orElseThrow(() -> new IllegalArgumentException("Invalid profile ID"));
+
+		ProfileImage firstImage = profileImageRepository.findFirstByProfile_ProfileId(profileId).orElseThrow(
+			()-> new ClientErrorException(HttpStatus.NOT_FOUND,"이미지가 없어요")
+		);
+
+		return new ProfileDto(firstImage.getImageUrl(),profile.getProfileName(),profile.getAge());
 	}
 
 	public Long findProfileByNickname(String toProfileName) {
