@@ -11,7 +11,11 @@ import org.example.back.profile.domain.Profile;
 import org.example.back.profile.domain.ProfileDistance;
 import org.example.back.profile.domain.ProfileDto;
 import org.example.back.profile.domain.ProfileResponseDto;
+import org.example.back.profile.exception.BadRequestException;
+import org.example.back.profile.exception.ConflictException;
+import org.example.back.profile.exception.InternalServerErrorException;
 import org.example.back.profile.exception.ProfileNotFoundException;
+import org.example.back.profile.exception.UnauthorizedException;
 import org.example.back.profile.repository.ProfileRepository;
 import org.example.back.profile.service.ProfileService;
 import org.example.back.profile.service.response.ProfileCreateResponse;
@@ -34,6 +38,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -54,15 +60,42 @@ public class ProfileController implements ProfileControllerSwagger {
 	public ResponseEntity<ProfileDto> createProfile(@Valid @RequestBody final ProfileCreateRequest request,
 		HttpServletRequest httpServletRequest) {
 
-			String userId = (String) httpServletRequest.getAttribute("userId");
+		// 1. 토큰 검증
+		String token = resolveToken(httpServletRequest);
+		if (token == null) {
+			throw new UnauthorizedException("토큰이 없습니다");
+		}
 
-			if (profileRepository.findByUserId(Long.valueOf(userId)).isPresent()){
-				System.out.println(userId);
-				throw  new ClientErrorException(HttpStatus.CONFLICT,"이미 프로필이 존재합니다");
-			}
-			ProfileDto profileDto = profileService.createProfile(request, Long.valueOf(userId));
+		// 2. 토큰에서 userId 추출
+		String userIdToken;
+		try {
+			userIdToken = jwtTokenProvider.extractSubject(token);
+		} catch (ExpiredJwtException e) {
+			throw new UnauthorizedException("만료된 토큰입니다");
+		} catch (JwtException e) {
+			throw new UnauthorizedException("유효하지 않은 토큰입니다");
+		}
 
-		return ResponseEntity.status(HttpStatus.CREATED).body(profileDto);
+		// 3. userId 변환
+		Long userId;
+		try {
+			userId = Long.valueOf(userIdToken);
+		} catch (NumberFormatException e) {
+			throw new BadRequestException("유효하지 않은 사용자 ID 형식입니다");
+		}
+
+		// 4. 중복 프로필 체크
+		if (profileRepository.findByUserId(userId).isPresent()) {
+			throw new ConflictException("이미 프로필이 존재합니다");
+		}
+
+		// 5. 프로필 생성
+		try {
+			ProfileDto profileDto = profileService.createProfile(request, userId);
+			return ResponseEntity.status(HttpStatus.CREATED).body(profileDto);
+		} catch (Exception e) {
+			throw new InternalServerErrorException("프로필 생성 중 오류가 발생했습니다: " + e.getMessage());
+		}
 	}
 
 	@PostMapping("/saveLocation")

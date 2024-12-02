@@ -1,5 +1,11 @@
 package org.example.back.exception;
 
+import java.util.stream.Collectors;
+
+import org.example.back.profile.exception.BadRequestException;
+import org.example.back.profile.exception.ConflictException;
+import org.example.back.profile.exception.InternalServerErrorException;
+import org.example.back.profile.exception.UnauthorizedException;
 import org.example.back.user.exception.InvalidTokenException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpStatus;
@@ -55,4 +61,36 @@ public class GlobalExceptionHandler {
 
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ClientErrorResponse> handleUnauthorized(UnauthorizedException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage()),
+            HttpStatus.UNAUTHORIZED
+        );
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ClientErrorResponse> handleBadRequest(BadRequestException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage()),
+            HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<ClientErrorResponse> handleConflict(ConflictException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(HttpStatus.CONFLICT, e.getMessage()),
+            HttpStatus.CONFLICT
+        );
+    }
+
+    @ExceptionHandler(InternalServerErrorException.class)
+    public ResponseEntity<ClientErrorResponse> handleInternalServerError(InternalServerErrorException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage()),
+            HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
 }
+
