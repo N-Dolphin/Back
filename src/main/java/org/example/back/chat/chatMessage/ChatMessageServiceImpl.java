@@ -70,8 +70,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 		// 채팅 메시지 생성 및 저장
 		ChatMessage chatMessage = req.createChatMessage(chatRoom.getId(), profileId);
 		ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
-		System.out.println("Saved message ID: " + savedMessage.getId());
-		
+
 		System.out.println("Received message: " + req.getContent());
 		System.out.println(chatMessage);
 
@@ -80,6 +79,10 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
 		// ChatMessageRes로 캐스팅하여 반환
 		ChatMessageRes messageResponse = (ChatMessageRes) ChatMessageRes.createRes(chatMessage, unreadCount);
+
+
+		System.out.println("Saved message ID: " + messageResponse.getId());
+
 
 		// RabbitMQ로 메시지 전송
 		String destination = "/exchange/chat.exchange/room." + chatRoomId;
