@@ -52,4 +52,23 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 
 	Optional<Profile> findProfileByProfileId(Long profileId);
 
+
+	@Query(value = """
+    SELECT p.* FROM profile p 
+    WHERE ST_DWithin(geography(p.location), geography(:currentLocation), :radius) 
+    AND p.profileid != :profileId 
+    AND p.profileid NOT IN (
+        SELECT toprofileid    
+        FROM swipe 
+        WHERE fromprofileid = :profileId   
+    )
+    ORDER BY ST_Distance(geography(p.location), geography(:currentLocation)) ASC
+    """,
+		nativeQuery = true)
+	List<Profile> findUnswipedProfilesSortedByDistance(
+		@Param("currentLocation") Point currentLocation,
+		@Param("profileId") Long profileId,
+		@Param("radius") double radius
+	);
+
 }
