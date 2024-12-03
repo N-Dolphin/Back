@@ -16,6 +16,7 @@ import org.example.back.profile.repository.ProfileRepository;
 import org.example.back.profile.service.response.ProfileCreateResponse;
 import org.example.back.profileimage.entity.ProfileImage;
 import org.example.back.profileimage.repository.ProfileImageRepository;
+import org.example.back.swipe.repository.SwipeRepository;
 import org.example.back.user.entity.UserEntity;
 import org.example.back.user.exception.UserNotFoundException;
 import org.example.back.user.repository.UserRepository;
@@ -37,6 +38,7 @@ public class ProfileService {
 	private final UserRepository userRepository;
 	private final GeometryFactory geometryFactory;
 	private final ProfileImageRepository profileImageRepository;
+	private final SwipeRepository swipeRepository;  // 추가
 
 
 	public ProfileDto createProfile(final ProfileCreateRequest request, Long userId) {
@@ -85,7 +87,13 @@ public class ProfileService {
 		Point currentLocation = profile.getLocation().getLocation();
 
 		// 반경 3km 이내의 프로필을 찾고, 본인 제외, 거리 순으로 정렬
-		List<Profile> profilesList = profileRepository.findProfilesSortedByDistance(currentLocation, profileId, 3000);
+		// List<Profile> profilesList = profileRepository.findProfilesSortedByDistance(currentLocation, profileId, 3000);
+
+		List<Profile> profilesList = profileRepository.findUnswipedProfilesSortedByDistance(
+			currentLocation,
+			profileId,
+			3000
+		);
 
 		// 각 프로필에 대한 첫 번째 이미지를 함께 조회하여 ProfileDto로 변환
 		List<ProfileDto> profileDtos = profilesList.stream()
