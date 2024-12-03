@@ -3,8 +3,10 @@ package org.example.back.chat.common.dto;
 import org.example.back.chat.common.constant.MessageType;
 
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 public abstract class MessageRes {
 	MessageType messageType;
 

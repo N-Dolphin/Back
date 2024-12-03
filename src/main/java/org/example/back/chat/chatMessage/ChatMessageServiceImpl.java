@@ -2,6 +2,7 @@ package org.example.back.chat.chatMessage;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.example.back.chat.chatRoom.ChatRoom;
@@ -69,10 +70,13 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
 		// 채팅 메시지 생성 및 저장
 		ChatMessage chatMessage = req.createChatMessage(chatRoom.getId(), profileId);
-		ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
 
-		System.out.println("Received message: " + req.getContent());
-		System.out.println(chatMessage);
+		//원래 파일의 타입 정해놓기
+		chatMessage.setMessageType(req.getMessageType());
+
+		// 저장하고 저장된 객체를 다시 받아야 함
+		ChatMessage savedMessage = chatMessageRepository.save(chatMessage);
+		System.out.println("Saved message with ID: " + savedMessage.getId());
 
 		// 안읽은 메시지 수 계산
 		int unreadCount = calculateUnreadCnt(chatRoom);
@@ -169,39 +173,33 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 		redisChatUtil.removeChatRoom2Member(chatRoom.getId(), profileId);
 	}
 
-	//
-	// @Override
-	// @Transactional
-	// public void deleteMessage(Long chatRoomId, Long profileId, LocalDateTime timestamp) {
-	// 	ChatMessage message = chatMessageRepository
-	// 		.findByChatRoomIdAndProfileIdAndCreatedAt(chatRoomId, profileId, timestamp)
-	// 		.orElseThrow(() -> new RuntimeException("메시지를 찾을 수 없습니다."));
-	//
-	// 	// 기존 메시지를 수정
-	// 	message.setContent("삭제된 메시지입니다.");
-	// 	message.setMessageType(MessageType.DELETED_MESSAGE);
-	// 	chatMessageRepository.save(message);
-	//
-	// 	// 동일한 메시지를 다시 보내지 않고, 수정된 메시지만 전송
-	// 	MessageRes deleteNotification = ChatMessageRes.createRes(message, 0);
-	// 	messagingTemplate.convertAndSend(
-	// 		"/exchange/chat.exchange/room." + chatRoomId,
-	// 		deleteNotification
-	// 	);
-	// }
+
 
 	@Override
 	@Transactional
 	public void deleteMessage(Long chatRoomId, Long profileId, String messageId) {
+
+		System.out.println("Attempting to find message with:");
+		System.out.println("chatRoomId: " + chatRoomId);
+		System.out.println("profileId: " + profileId);
+		System.out.println("messageId: " + messageId);
+
+
+		// ID로만 먼저 찾아보기
+		Optional<ChatMessage> messageById = chatMessageRepository.findById(messageId);
+		System.out.println("Message found by ID only: " + messageById.isPresent());
+
+
 		ChatMessage message = chatMessageRepository
 			.findByChatRoomIdAndProfileIdAndId(chatRoomId, profileId, messageId)
 			.orElseThrow(() -> new RuntimeException("메시지를 찾을 수 없습니다."));
 
-		message.setContent("삭제된 메시지입니다.");
 		message.setMessageType(MessageType.DELETED_MESSAGE);
 		chatMessageRepository.save(message);
 
 		MessageRes deleteNotification = ChatMessageRes.createRes(message, 0);
+		deleteNotification.setMessageType(MessageType.DELETED_MESSAGE);
+
 		messagingTemplate.convertAndSend(
 			"/exchange/chat.exchange/room." + chatRoomId,
 			deleteNotification
