@@ -32,6 +32,7 @@ import org.example.back.user.service.UserService;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -59,6 +60,10 @@ public class ProfileController implements ProfileControllerSwagger {
 	private final UserService userService;
 	private final ProfileImageRepository profileImageRepository;
 	private final SwipeRepository swipeRepository;
+
+	@Value("${app.profile.default-image-url}")
+	private String defaultProfileImageUrl;
+
 	@PostMapping
 	@Override
 	public ResponseEntity<ProfileDto> createProfile(@Valid @RequestBody final ProfileCreateRequest request,
@@ -116,12 +121,23 @@ public class ProfileController implements ProfileControllerSwagger {
 			ProfileNotFoundException::new
 		);
 
-		Optional<ProfileImage> image= profileImageRepository.findFirstByProfile_ProfileId(profileId);
+		// Optional<ProfileImage> image= profileImageRepository.findFirstByProfile_ProfileId(profileId);
+
+		ProfileImage profileImage = profileImageRepository.findFirstByProfile_ProfileId(profileId)
+			.orElseGet(() -> {
+				// 기본 이미지로 새 ProfileImage 생성
+				ProfileImage defaultImage = ProfileImage.of(
+					profile,
+					defaultProfileImageUrl,
+					0  // 기본 이미지 크기
+				);
+				return profileImageRepository.save(defaultImage);
+			});
 
 		profileService.updateProfileLocation(profileId, locationRequest.longitude(),
 			locationRequest.latitude());
 
-		return ResponseEntity.ok(new ProfileDto(image.get().getImageUrl(),profile.getProfileName(),profile.getAge()));
+		return ResponseEntity.ok(new ProfileDto(profileImage.getImageUrl(),profile.getProfileName(),profile.getAge()));
 	}
 
 
