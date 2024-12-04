@@ -199,6 +199,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 
 		MessageRes deleteNotification = ChatMessageRes.createRes(message, 0);
 		deleteNotification.setMessageType(MessageType.DELETED_MESSAGE);
+		//여기서 deleteNotification 에 String Id 추가해서 전송
 
 		messagingTemplate.convertAndSend(
 			"/exchange/chat.exchange/room." + chatRoomId,

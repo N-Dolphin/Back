@@ -9,6 +9,7 @@ import lombok.Setter;
 @Setter
 public abstract class MessageRes {
 	MessageType messageType;
+	//String id 추가
 
 	protected MessageRes() {  // 기본 생성자 추가
 		this.messageType = MessageType.CHAT_MESSAGE;

@@ -15,4 +15,6 @@ public enum MessageType {
 	VIDEO_MESSAGE,
 	@JsonProperty("DELETE")
 	DELETED_MESSAGE
+
+
 }
