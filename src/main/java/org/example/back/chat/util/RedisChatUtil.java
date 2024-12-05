@@ -19,11 +19,6 @@ public class RedisChatUtil {
 		return "chat:room:" + chatRoomId;
 	}
 
-	public void addChatRoom2Member(Long chatRoomId, Long memberId) {
-		SetOperations<String, String> ops = redisTemplate.opsForSet();
-		ops.add(getChatRoomKey(chatRoomId), String.valueOf(memberId));
-	}
-
 	public Set<Long> getOnlineMembers(Long chatRoomId) {
 		SetOperations<String, String> ops = redisTemplate.opsForSet();
 		Set<String> members = ops.members(getChatRoomKey(chatRoomId));
@@ -32,14 +27,16 @@ public class RedisChatUtil {
 			.collect(Collectors.toSet());
 	}
 
-	public int getOnlineMemberCntInChatRoom(Long chatRoomId) {
-		SetOperations<String, String> ops = redisTemplate.opsForSet();
-		Set<String> members = ops.members(getChatRoomKey(chatRoomId));
-		return members != null ? members.size() : 0;
-	}
 
 	public void removeChatRoom2Member(Long chatRoomId, Long memberId) {
 		SetOperations<String, String> ops = redisTemplate.opsForSet();
 		ops.remove(getChatRoomKey(chatRoomId), String.valueOf(memberId));
+	}
+
+	// 채팅방 완전 삭제
+	public void deleteChatRoom(Long chatRoomId) {
+		String chatRoomKey = getChatRoomKey(chatRoomId);
+		// 채팅방 관련 모든 Redis 데이터 삭제
+		redisTemplate.delete(chatRoomKey);
 	}
 }

@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 
 import org.example.back.chat.chatRoom.ChatRoom;
 import org.example.back.chat.chatRoom.ChatRoomRepository;
+import org.example.back.chat.chatRoom.ChatRoomService;
+import org.example.back.chat.chatRoom.ChatRoomServiceImpl;
 import org.example.back.chat.chatroommember.ChatRoomParticipant;
 import org.example.back.chat.common.constant.MessageType;
 import org.example.back.chat.common.dto.ChatDto;
@@ -17,6 +19,10 @@ import org.example.back.chat.common.dto.ChatRoomEnterRequest;
 import org.example.back.chat.common.dto.EnterConfirmRes;
 import org.example.back.chat.common.dto.FileInfo;
 import org.example.back.chat.common.dto.MessageRes;
+import org.example.back.chat.exception.ChatRoomAccessDeniedException;
+import org.example.back.chat.exception.ChatRoomNotFoundException;
+import org.example.back.chat.exception.ChatRoomNotValidException;
+import org.example.back.chat.exception.dto.WebSocketErrorResponse;
 import org.example.back.chat.util.StompHeaderAccessorUtil;
 import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.user.service.UserService;
@@ -27,11 +33,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
@@ -59,6 +67,8 @@ public class ChatMessageController {
 	private final UserService userService;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final AmazonS3 amazonS3;
+	private final ChatRoomServiceImpl chatRoomServiceImpl;
+	private final ChatRoomService chatRoomService;
 
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
@@ -121,9 +131,14 @@ public class ChatMessageController {
 			// 채팅방 ID를 세션에 저장
 			stompHeaderAccessorUtil.setChatRoomIdInSession(accessor, chatRoomId);
 
+			// 채팅방 존재 여부 및 참가 자격 확인
+			if (!chatRoomService.isAccessibleChatRoom(chatRoomId, profileId)) {
+				throw new ChatRoomAccessDeniedException("접근할 수 없는 채팅방입니다.");
+			}
+
 			// 채팅방 조회 및 참가자 구분
 			ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
-				.orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
+				.orElseThrow(() -> new ChatRoomNotFoundException("채팅방을 찾을 수 없습니다."));
 
 			List<Long> participantIds = chatRoom.getParticipants().stream()
 				.map(ChatRoomParticipant::getProfileId)
@@ -131,7 +146,7 @@ public class ChatMessageController {
 				.toList();
 
 			if (participantIds.size() != 2) {
-				throw new RuntimeException("잘못된 채팅방 구성입니다.");
+				throw new ChatRoomNotValidException("잘못된 채팅방 구성입니다.");
 			}
 
 			// 방장(RoomMaker)과 게스트(Guest) 정보 생성
@@ -155,7 +170,18 @@ public class ChatMessageController {
 
 			System.out.println("Chat room entered - Room ID: " + chatRoomId + ", Profile ID: " + profileId);
 
-		} catch (Exception e) {
+		}
+		catch (ChatRoomAccessDeniedException e) {
+			// 클라이언트에게 에러 메시지 전송
+			messagingTemplate.convertAndSendToUser(
+				accessor.getSessionId(),
+				"/queue/errors",
+				new WebSocketErrorResponse(
+					"CHAT_ROOM_ACCESS_DENIED",
+					e.getMessage()
+				)
+			);
+		}catch (Exception e) {
 			e.printStackTrace();
 			throw e;
 		}
@@ -167,9 +193,14 @@ public class ChatMessageController {
 		chatMessageService.handleDisconnectMessage(accessor);
 	}
 
+
 	@GetMapping("/chat-messages/chat-rooms/{chatRoomId}")
-	public ResponseEntity getChatMessages(@PathVariable("chatRoomId") Long chatRoomId) {
-		List<MessageRes> chatMessageResList = chatMessageService.getChatMessages(chatRoomId);
+	public ResponseEntity<List<MessageRes>> getChatMessages(
+		@PathVariable("chatRoomId") Long chatRoomId,
+		@RequestParam(defaultValue = "0") int page,
+		@RequestParam(defaultValue = "100") int size
+	) {
+		List<MessageRes> chatMessageResList = chatMessageService.getChatMessages(chatRoomId, page, size);
 		return ResponseEntity.ok(chatMessageResList);
 	}
 
@@ -205,11 +236,6 @@ public class ChatMessageController {
 	}
 
 
-	// @MessageMapping("chat.delete")  // HTTP DELETE 매핑 대신 메시지 매핑
-	// public void deleteMessage(StompHeaderAccessor accessor, ChatMessageDeleteRequest request) {
-	// 	Long profileId = stompHeaderAccessorUtil.getMemberIdInSession(accessor);
-	// 	chatMessageService.deleteMessage(request.getChatRoomId(), profileId, request.getTimestamp());
-	// }
 
 	@MessageMapping("chat.delete")
 	public void deleteMessage(StompHeaderAccessor accessor, ChatMessageDeleteRequest request) {
@@ -228,7 +254,7 @@ public class ChatMessageController {
 		Long userId = Long.valueOf(userIdToken);
 		Long profileId = userService.getProfileIdByUserId(userId);
 
-		chatMessageService.leaveChatRoom(chatRoomId, profileId);
+		chatRoomServiceImpl.leaveChatRoom(chatRoomId, profileId);
 		return ResponseEntity.ok().build();
 	}
 
