@@ -8,15 +8,9 @@ import org.example.back.chat.common.dto.ChatRoomRes;
 import org.example.back.chat.common.dto.SimpleChatRoomRecord;
 
 public interface ChatRoomService {
-	ChatDto.ChatRoomCreateRes createChatRoomForPersonal(Long id, ChatDto.ChatRoomCreateReq request);
-
-	List<ChatRoomRes> getChatRooms(Long loginId);
-
 	ChatDto.ChatRoomCreateRes createMatchedChatRoom(Long fromProfileId, Long toProfileId);
-
-	List<ChatRoomRes> getChatRoomsByProfileId(Long profileId);
-
 	List<SimpleChatRoomRecord> getSimpleChatRooms(Long profileId);
+	void leaveChatRoom(Long chatRoomId, Long profileId);
 
-	ChatRoomParticipantsRecord getChatRoomParticipants(Long roomId);
+	boolean isAccessibleChatRoom(Long chatRoomId, Long profileId);
 }

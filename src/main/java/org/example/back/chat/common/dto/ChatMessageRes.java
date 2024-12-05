@@ -11,7 +11,7 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class ChatMessageRes extends MessageRes {
-	private String id;
+	// id 제거 (상위 클래스에서 상속받음)
 	private Long profileId;
 	private String content;
 	private LocalDateTime createdAt;
@@ -21,8 +21,7 @@ public class ChatMessageRes extends MessageRes {
 	public ChatMessageRes(MessageType messageType, String id, Long profileId,
 		String content, LocalDateTime createdAt,
 		int unreadCnt, FileInfo fileInfo) {
-		super(messageType);
-		this.id = id;
+		super(messageType, id);  // 부모 클래스의 생성자 호출
 		this.profileId = profileId;
 		this.content = content;
 		this.createdAt = createdAt;

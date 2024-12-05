@@ -65,16 +65,29 @@ public class ChatRoom {
 			.orElseThrow(() -> new RuntimeException("채팅방 참가자를 찾을 수 없습니다"));
 	}
 
+	// public int getUnreadCount(Set<Long> onlineProfiles, LocalDateTime messageCreatedAt) {
+	// 	List<LocalDateTime> lastEntryTimes = getLastEntryTimesExcludingOnlineProfiles(onlineProfiles);
+	//
+	// 	int unreadCount = (int) lastEntryTimes.stream()
+	// 		.filter(time -> time.isAfter(messageCreatedAt))
+	// 		.count();
+	//
+	// 	return getParticipantCount() - onlineProfiles.size() - unreadCount;
+	// }
+	// ChatRoom 클래스에서
 	public int getUnreadCount(Set<Long> onlineProfiles, LocalDateTime messageCreatedAt) {
-		List<LocalDateTime> lastEntryTimes = getLastEntryTimesExcludingOnlineProfiles(onlineProfiles);
+		// Set<Long> 타입을 그대로 사용하도록 수정
+		List<LocalDateTime> lastEntryTimes = participants.stream()
+			.filter(participant -> !onlineProfiles.contains(participant.getProfileId()))
+			.map(ChatRoomParticipant::getLastEntryTime)
+			.toList();
 
 		int unreadCount = (int) lastEntryTimes.stream()
 			.filter(time -> time.isAfter(messageCreatedAt))
 			.count();
 
-		return getParticipantCount() - onlineProfiles.size() - unreadCount;
+		return participants.size() - onlineProfiles.size() - unreadCount;
 	}
-
 	private List<LocalDateTime> getLastEntryTimesExcludingOnlineProfiles(Set<Long> onlineProfileIds) {
 		return participants.stream()
 			.filter(participant -> !onlineProfileIds.contains(participant.getProfileId()))

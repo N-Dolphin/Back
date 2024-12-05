@@ -11,24 +11,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ChatMessageService {
-	// 초기 연결 처리 - 토큰 검증 및 기본 설정만 수행
 	void handleInitialConnect(StompHeaderAccessor accessor);
-
-	// 실제 채팅방 입장 처리
-	void handleChatRoomEnter(StompHeaderAccessor accessor, ChatRoomEnterRequest request);
-
 	ChatMessageRes sendMessage(StompHeaderAccessor accessor, ChatDto.ChatMessageReq req);
-
-	// void sendMessage(ChatMessage chatMessage, int unreadCnt, ChatRoom chatRoom);
-
-	List<MessageRes> getChatMessages(Long chatRoomId);
-
 	void handleDisconnectMessage(StompHeaderAccessor accessor);
-
 	void exitChatRoom(ChatRoom chatRoom, Long profileId);
-
-	//void deleteMessage(Long chatRoomId, Long profileId, LocalDateTime timestamp);
-
 	void deleteMessage(Long chatRoomId, Long profileId, String messageId);
-	void leaveChatRoom(Long chatRoomId, Long profileId);
+	List<MessageRes> getChatMessages(Long chatRoomId, int page, int size);
 }
