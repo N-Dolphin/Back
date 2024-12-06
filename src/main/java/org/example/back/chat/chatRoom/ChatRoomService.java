@@ -3,8 +3,6 @@ package org.example.back.chat.chatRoom;
 import java.util.List;
 
 import org.example.back.chat.common.dto.ChatDto;
-import org.example.back.chat.common.dto.ChatRoomParticipantsRecord;
-import org.example.back.chat.common.dto.ChatRoomRes;
 import org.example.back.chat.common.dto.SimpleChatRoomRecord;
 
 public interface ChatRoomService {

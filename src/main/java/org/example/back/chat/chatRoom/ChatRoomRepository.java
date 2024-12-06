@@ -11,4 +11,5 @@ import org.springframework.stereotype.Repository;
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
 	@Query("SELECT c FROM ChatRoom c LEFT JOIN FETCH c.participants WHERE c.id = :chatRoomId")
 	Optional<ChatRoom> findByIdWithParticipants(@Param("chatRoomId") Long chatRoomId);
+
 }

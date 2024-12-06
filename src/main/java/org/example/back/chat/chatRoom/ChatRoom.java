@@ -9,7 +9,6 @@ import org.example.back.chat.chatroommember.ChatRoomParticipant;
 import org.hibernate.annotations.DynamicUpdate;
 
 import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -65,16 +64,6 @@ public class ChatRoom {
 			.orElseThrow(() -> new RuntimeException("채팅방 참가자를 찾을 수 없습니다"));
 	}
 
-	// public int getUnreadCount(Set<Long> onlineProfiles, LocalDateTime messageCreatedAt) {
-	// 	List<LocalDateTime> lastEntryTimes = getLastEntryTimesExcludingOnlineProfiles(onlineProfiles);
-	//
-	// 	int unreadCount = (int) lastEntryTimes.stream()
-	// 		.filter(time -> time.isAfter(messageCreatedAt))
-	// 		.count();
-	//
-	// 	return getParticipantCount() - onlineProfiles.size() - unreadCount;
-	// }
-	// ChatRoom 클래스에서
 	public int getUnreadCount(Set<Long> onlineProfiles, LocalDateTime messageCreatedAt) {
 		// Set<Long> 타입을 그대로 사용하도록 수정
 		List<LocalDateTime> lastEntryTimes = participants.stream()

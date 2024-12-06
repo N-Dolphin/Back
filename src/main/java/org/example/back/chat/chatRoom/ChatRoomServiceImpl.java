@@ -14,11 +14,13 @@ import org.example.back.chat.chatroommember.ChatRoomParticipantRepository;
 import org.example.back.chat.common.constant.MessageType;
 import org.example.back.chat.common.dto.ChatDto;
 import org.example.back.chat.common.dto.ChatMessageRes;
+import org.example.back.chat.common.dto.ChatRoomAccessResponse;
 import org.example.back.chat.common.dto.ChatRoomParticipantsRecord;
-import org.example.back.chat.common.dto.ChatRoomRes;
 import org.example.back.chat.common.dto.MessageRes;
 import org.example.back.chat.common.dto.SimpleChatRoomRecord;
+import org.example.back.chat.exception.ChatRoomAccessDeniedException;
 import org.example.back.chat.exception.ChatRoomNotFoundException;
+import org.example.back.chat.exception.ChatRoomNotValidException;
 import org.example.back.chat.util.RedisChatUtil;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -55,6 +57,7 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 			.content("매칭되었습니다. 대화를 시작해보세요!")
 			.createdAt(LocalDateTime.now())
 			.build();
+
 
 		chatMessageRepository.save(chatMessage);
 		rabbitTemplate.convertAndSend(ROUTING_KEY_PREFIX + newRoom.getId(),
@@ -130,16 +133,41 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 		);
 	}
 
-	public boolean isAccessibleChatRoom(Long chatRoomId, Long profileId) {
-		// 채팅방 존재 여부 확인
-		Optional<ChatRoom> chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId);
-		if (chatRoom.isEmpty()) {
-			return false;
+
+
+
+	@Transactional(readOnly = true)
+	public ChatRoomAccessResponse validateAccess(Long chatRoomId, Long profileId) {
+		// 상세 검증 로직
+		ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
+			.orElseThrow(() -> new ChatRoomNotFoundException("채팅방을 찾을 수 없습니다."));
+
+		if (chatRoom.getParticipantCount() != 2) {
+			throw new ChatRoomNotValidException("잘못된 채팅방 구성입니다.");
 		}
 
-		// 참가자인지 확인
-		return chatRoom.get().getParticipants().stream()
-			.anyMatch(participant -> participant.getProfileId().equals(profileId));
+		ChatRoomParticipant participant = getParticipant(chatRoom, profileId);
+
+		return new ChatRoomAccessResponse(
+			chatRoom.getId(),
+			participant.getPartnerProfileId(),
+			true
+		);
 	}
 
+	@Transactional(readOnly = true)
+	public boolean isAccessibleChatRoom(Long chatRoomId, Long profileId) {
+		// 간단한 존재 여부 체크 (DB 쿼리 한 번으로 해결)
+		return chatRoomParticipantRepository.existsByChatRoom_IdAndProfileId(
+			chatRoomId,
+			profileId
+		);
+	}
+
+	private ChatRoomParticipant getParticipant(ChatRoom chatRoom, Long profileId) {
+		return chatRoom.getParticipants().stream()
+			.filter(p -> p.getProfileId().equals(profileId))
+			.findFirst()
+			.orElseThrow(() -> new ChatRoomAccessDeniedException("접근 권한이 없습니다."));
+	}
 }
