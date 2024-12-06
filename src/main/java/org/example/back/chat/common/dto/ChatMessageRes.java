@@ -5,15 +5,20 @@ import java.time.LocalDateTime;
 import org.example.back.chat.chatMessage.ChatMessage;
 import org.example.back.chat.common.constant.MessageType;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
 @AllArgsConstructor
 public class ChatMessageRes extends MessageRes {
-	// id 제거 (상위 클래스에서 상속받음)
 	private Long profileId;
 	private String content;
+	@JsonSerialize(using = LocalDateTimeSerializer.class)  // Jackson 직렬화 방식 지정
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSS")
 	private LocalDateTime createdAt;
 	private int unreadCnt;
 	private FileInfo fileInfo;
@@ -21,7 +26,7 @@ public class ChatMessageRes extends MessageRes {
 	public ChatMessageRes(MessageType messageType, String id, Long profileId,
 		String content, LocalDateTime createdAt,
 		int unreadCnt, FileInfo fileInfo) {
-		super(messageType, id);  // 부모 클래스의 생성자 호출
+		super(messageType, id);
 		this.profileId = profileId;
 		this.content = content;
 		this.createdAt = createdAt;
