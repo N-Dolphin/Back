@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import org.example.back.chat.chatRoom.ChatRoom;
 import org.example.back.chat.chatRoom.ChatRoomRepository;
@@ -57,7 +58,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 @RestController
 @RequiredArgsConstructor
 @CrossOrigin(origins = "http://localhost:3000")  // React 앱의 origin 허용
-
+@Slf4j
 public class ChatMessageController {
 
 	private final ChatMessageServiceImpl chatMessageService;
@@ -68,7 +69,6 @@ public class ChatMessageController {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final AmazonS3 amazonS3;
 	private final ChatRoomServiceImpl chatRoomServiceImpl;
-	private final ChatRoomService chatRoomService;
 
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
@@ -125,14 +125,27 @@ public class ChatMessageController {
 	@MessageMapping("chat.enter")
 	public void  enterChatRoom(StompHeaderAccessor accessor, ChatRoomEnterRequest request) {
 		try {
-			Long profileId = stompHeaderAccessorUtil.getMemberIdInSession(accessor); // 접속한 사용자의 Profile ID
+
+
+			log.info("Enter chat room attempt - roomId: {}", request.getChatRoomId());
+
+			Long profileId = stompHeaderAccessorUtil.getMemberIdInSession(accessor);
+			log.info("Profile ID from session: {}", profileId);
+
 			Long chatRoomId = request.getChatRoomId();
+			log.info("Attempting to enter chat room: {}", chatRoomId);
+
+			// 채팅방 ID를 세션에 저장
+			stompHeaderAccessorUtil.setChatRoomIdInSession(accessor, chatRoomId);
+			log.info("Chat room ID saved in session");
+
+
 
 			// 채팅방 ID를 세션에 저장
 			stompHeaderAccessorUtil.setChatRoomIdInSession(accessor, chatRoomId);
 
 			// 채팅방 존재 여부 및 참가 자격 확인
-			if (!chatRoomService.isAccessibleChatRoom(chatRoomId, profileId)) {
+			if (!chatRoomServiceImpl.isAccessibleChatRoom(chatRoomId, profileId)) {
 				throw new ChatRoomAccessDeniedException("접근할 수 없는 채팅방입니다.");
 			}
 

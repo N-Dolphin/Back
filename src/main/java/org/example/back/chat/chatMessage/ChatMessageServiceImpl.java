@@ -29,6 +29,10 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+
 import lombok.RequiredArgsConstructor;
 
 @Transactional
@@ -42,7 +46,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 	private final StompHeaderAccessorUtil stompHeaderAccessorUtil;
 	private final ChatRoomRepository chatRoomRepository;
 
-	private static final String ROUTING_KEY_PREFIX = "exchange/chat.exchange/room.";
+	private static final String ROUTING_KEY_PREFIX = "/exchange/chat.exchange/room.";
 
 
 	// 초기 연결 처리 - 토큰 검증 및 기본 설정만 수행
@@ -80,7 +84,18 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 		// 수신자가 온라인인지 확인
 		Set<Long> onlineMembers = redisChatUtil.getOnlineMembers(chatRoomId);
 		int unreadCount = onlineMembers.contains(receiverId) ? 0 : 1;
-		ChatMessageRes messageResponse = (ChatMessageRes) ChatMessageRes.createRes(savedMessage, unreadCount);
+
+		MessageRes messageRes = ChatMessageRes.createRes(savedMessage, unreadCount);
+		ChatMessageRes messageResponse = (ChatMessageRes) messageRes;
+
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			objectMapper.registerModule(new JavaTimeModule()); // LocalDateTime 직렬화를 위해
+			String jsonMessage = objectMapper.writeValueAsString(messageResponse);
+			System.out.println("Sending message format: " + jsonMessage);
+		} catch (JsonProcessingException e) {
+			System.err.println("Error printing message format: " + e.getMessage());
+		}
 
 		String destination = ROUTING_KEY_PREFIX + chatRoomId;
 		messagingTemplate.convertAndSend(destination, messageResponse);
@@ -127,7 +142,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 		}
 
 		ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
-			.orElseThrow(() -> new ChatRoomNotFoundException("채팅방을 찾을 수 없습니다."));
+			.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("채팅방을 찾을 수 없습니다."));
 
 		ChatRoomParticipant chatRoomParticipant = chatRoom.getParticipant(profileId);
 		chatRoomParticipant.updateLastEntryTime();
