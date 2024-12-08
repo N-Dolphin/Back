@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.example.back.exception.ClientErrorException;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
+import org.example.back.profile.controller.request.ProfileUpdateRequest;
 import org.example.back.profile.domain.Profile;
 import org.example.back.profile.domain.ProfileDto;
 import org.example.back.profile.domain.ProfileInfoDto;
@@ -20,6 +21,7 @@ import org.example.back.swipe.repository.SwipeRepository;
 import org.example.back.user.entity.UserEntity;
 import org.example.back.user.exception.UserNotFoundException;
 import org.example.back.user.repository.UserRepository;
+import org.example.back.user.service.UserService;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
@@ -38,19 +40,18 @@ public class ProfileService {
 	private final UserRepository userRepository;
 	private final GeometryFactory geometryFactory;
 	private final ProfileImageRepository profileImageRepository;
-	private final SwipeRepository swipeRepository;  // 추가
+	private final UserService userService;
 
 
+	@Transactional
 	public ProfileDto createProfile(final ProfileCreateRequest request, Long userId) {
 		final Profile newProfile = request.toProfile();
 
-		// 사용자 ID로 UserEntity 조회
 		UserEntity user = userRepository.findById(userId)
 			.orElseThrow(() -> new UserNotFoundException("User not found"));
 
-		// 프로필에 사용자 설정
 		newProfile.setUserId(userId);
-		newProfile.setDateOfBirth(LocalDate.parse(request.dateOfBirth())); // 생년월일 설정
+		newProfile.setDateOfBirth(LocalDate.parse(request.dateOfBirth()));
 		profileRepository.save(newProfile);
 
 		user.setProfileId(newProfile.getProfileId());
@@ -61,6 +62,25 @@ public class ProfileService {
 		return ProfileDto.of(newProfile,url);
 	}
 
+
+	@Transactional
+	public ProfileDto updateProfile(final ProfileUpdateRequest request, Long userId) {
+
+		Long profileId= userService.getProfileIdByUserId(userId);
+		Profile newProfile= profileRepository.findByProfileId(profileId).orElseThrow(
+			ProfileNotFoundException::new
+		);
+
+		// 프로필 수정
+		newProfile.setProfileName(request.profileName());
+		newProfile.setSelfIntroduce(request.selfIntroduction());
+		profileRepository.save(newProfile);
+
+
+		String url= String.valueOf(profileImageRepository.findFirstByProfile_ProfileId(newProfile.getProfileId()));
+
+		return ProfileDto.of(newProfile,url);
+	}
 
 
 	public Profile updateProfileLocation(Long profileId, double longitude, double latitude) {

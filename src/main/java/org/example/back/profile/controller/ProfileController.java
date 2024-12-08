@@ -7,6 +7,7 @@ import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.exception.ClientErrorException;
 import org.example.back.location.LocationRequest;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
+import org.example.back.profile.controller.request.ProfileUpdateRequest;
 import org.example.back.profile.domain.Profile;
 import org.example.back.profile.domain.ProfileDistance;
 import org.example.back.profile.domain.ProfileDto;
@@ -36,6 +37,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -101,6 +103,45 @@ public class ProfileController implements ProfileControllerSwagger {
 		// 5. 프로필 생성
 		try {
 			ProfileDto profileDto = profileService.createProfile(request, userId);
+			return ResponseEntity.status(HttpStatus.CREATED).body(profileDto);
+		} catch (Exception e) {
+			throw new InternalServerErrorException("프로필 생성 중 오류가 발생했습니다: " + e.getMessage());
+		}
+	}
+
+
+	@PatchMapping("/update")
+	@Override
+	public ResponseEntity<ProfileDto> updateProfile(@Valid @RequestBody final ProfileUpdateRequest request,
+		HttpServletRequest httpServletRequest) {
+
+		// 1. 토큰 검증
+		String token = resolveToken(httpServletRequest);
+		if (token == null) {
+			throw new UnauthorizedException("토큰이 없습니다");
+		}
+
+		// 2. 토큰에서 userId 추출
+		String userIdToken;
+		try {
+			userIdToken = jwtTokenProvider.extractSubject(token);
+		} catch (ExpiredJwtException e) {
+			throw new UnauthorizedException("만료된 토큰입니다");
+		} catch (JwtException e) {
+			throw new UnauthorizedException("유효하지 않은 토큰입니다");
+		}
+
+		// 3. userId 변환
+		Long userId;
+		try {
+			userId = Long.valueOf(userIdToken);
+		} catch (NumberFormatException e) {
+			throw new BadRequestException("유효하지 않은 사용자 ID 형식입니다");
+		}
+
+		// 5. 프로필 생성
+		try {
+			ProfileDto profileDto = profileService.updateProfile(request, userId);
 			return ResponseEntity.status(HttpStatus.CREATED).body(profileDto);
 		} catch (Exception e) {
 			throw new InternalServerErrorException("프로필 생성 중 오류가 발생했습니다: " + e.getMessage());

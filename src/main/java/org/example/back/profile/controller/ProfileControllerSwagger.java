@@ -2,11 +2,13 @@ package org.example.back.profile.controller;
 
 import org.example.back.location.LocationRequest;
 import org.example.back.profile.controller.request.ProfileCreateRequest;
+import org.example.back.profile.controller.request.ProfileUpdateRequest;
 import org.example.back.profile.domain.ProfileDto;
 import org.example.back.profile.domain.ProfileInfoDto;
 import org.example.back.profile.domain.ProfileResponseDto;
 import org.example.back.profile.service.response.ProfileCreateResponse;
 import org.example.back.profile.domain.Profile;
+import org.example.back.profile.service.response.ProfileUpdateResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 
@@ -20,6 +22,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 @Tag(name = "Profile API", description = "프로필 관련 API")
 public interface ProfileControllerSwagger {
@@ -62,7 +65,40 @@ public interface ProfileControllerSwagger {
 			)
 		}
 	)
+
 	ResponseEntity<ProfileDto> saveLocation(@RequestBody LocationRequest locationRequest,
+		HttpServletRequest httpServletRequest);
+
+
+	@Operation(
+		summary = "프로필 수정",  // "프로필 생성" -> "프로필 수정"으로 변경
+		description = "주어진 요청을 기반으로 프로필을 수정합니다.",
+		requestBody = @RequestBody(content =
+		@Content(schema = @Schema(implementation = ProfileUpdateRequest.class))),
+		responses = {
+			@ApiResponse(
+				responseCode = "201",
+				description = "프로필 수정 성공",
+				content = @Content(schema = @Schema(implementation = ProfileUpdateResponse.class))
+			),
+			@ApiResponse(
+				responseCode = "401",
+				description = "토큰이 없거나 유효하지 않은 경우",
+				content = @Content
+			),
+			@ApiResponse(
+				responseCode = "409",
+				description = "이미 프로필이 존재하는 경우",
+				content = @Content
+			),
+			@ApiResponse(
+				responseCode = "500",
+				description = "프로필 수정 중 서버 오류 발생",
+				content = @Content
+			)
+		}
+	)
+	ResponseEntity<ProfileDto> updateProfile(@Valid @org.springframework.web.bind.annotation.RequestBody final ProfileUpdateRequest request,
 		HttpServletRequest httpServletRequest);
 
 	@Operation(
