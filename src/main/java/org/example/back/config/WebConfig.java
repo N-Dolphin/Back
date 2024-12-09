@@ -41,7 +41,6 @@ public class WebConfig implements WebMvcConfigurer {
                 "/api/v1/auth/refresh"
             )
             .excludePathPatterns("/**", HttpMethod.OPTIONS.name());  // OPTIONS 요청 제외
-
     }
 
     @Override
