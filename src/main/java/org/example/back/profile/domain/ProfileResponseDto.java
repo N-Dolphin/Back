@@ -6,7 +6,7 @@ import java.util.List;
 public record ProfileResponseDto(
 	Long profileId,
 	String profileName,
-	String selfIntroduce,
+	String selfIntroduction,
 	Integer age,
 	String gender,
 	LocationDto location,
@@ -16,7 +16,7 @@ public record ProfileResponseDto(
 		return new ProfileResponseDto(
 			profile.getProfileId(),
 			profile.getProfileName(),
-			profile.getSelfIntroduce(),
+			profile.getSelfIntroduction(),
 			profile.getAge(),
 			profile.getGender().toString(),
 			profile.getLocation() != null ? LocationDto.from(profile.getLocation().getLocation()) : null,

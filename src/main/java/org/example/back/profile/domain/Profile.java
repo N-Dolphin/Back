@@ -37,7 +37,7 @@ public class Profile {
 	private String profileName;
 
 	@Column
-	private String selfIntroduce;
+	private String selfIntroduction;
 
 	@Enumerated(EnumType.STRING)
 	@Column

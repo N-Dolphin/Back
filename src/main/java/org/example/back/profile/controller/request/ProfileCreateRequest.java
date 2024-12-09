@@ -35,7 +35,7 @@ public record ProfileCreateRequest(
 		LocalDate birthDate = LocalDate.parse(this.dateOfBirth); // 생년월일을 LocalDate로 변환
 		return Profile.builder()
 			.profileName(this.profileName)
-			.selfIntroduce(this.selfIntroduction)
+			.selfIntroduction(this.selfIntroduction)
 			.dateOfBirth(birthDate) // 생년월일을 설정
 			.gender(this.gender)
 			.build();

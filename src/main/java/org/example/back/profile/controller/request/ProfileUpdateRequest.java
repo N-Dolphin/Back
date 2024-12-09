@@ -26,7 +26,7 @@ public record ProfileUpdateRequest(
 	public Profile toUpdateProfile(Profile profile) {
 		return Profile.builder()
 			.profileName(this.profileName)
-			.selfIntroduce(this.selfIntroduction)
+			.selfIntroduction(this.selfIntroduction)
 			.build();
 	}
 }

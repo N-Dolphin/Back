@@ -32,7 +32,7 @@ public record ProfileUpdateResponse(
 			newProfile.getProfileId(),
 			newProfile.getProfileName(),
 			calculateAge(newProfile.getDateOfBirth()), // 생년월일로 나이 계산
-			newProfile.getSelfIntroduce(),
+			newProfile.getSelfIntroduction(),
 			newProfile.getGender()
 		);
 	}

@@ -73,7 +73,7 @@ public class ProfileService {
 
 		// 프로필 수정
 		newProfile.setProfileName(request.profileName());
-		newProfile.setSelfIntroduce(request.selfIntroduction());
+		newProfile.setSelfIntroduction(request.selfIntroduction());
 		profileRepository.save(newProfile);
 
 
