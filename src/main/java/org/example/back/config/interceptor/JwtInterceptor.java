@@ -20,16 +20,12 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // OPTIONS 요청은 가장 먼저 체크하고 통과시킴
+        if (HttpMethod.OPTIONS.matches(request.getMethod())) {
+            return true;
+        }
+
         if (handler instanceof SimpMessageHeaderAccessor) {
-
-            if (HttpMethod.OPTIONS.matches(request.getMethod())) {
-                return true;
-            }
-            // // OPTIONS 요청은 통과
-            // if (request.getMethod().equals("OPTIONS")) {
-            //     return true;
-            // }
-
             // WebSocket 연결 처리
             SimpMessageHeaderAccessor headerAccessor = (SimpMessageHeaderAccessor) handler;
             String token = headerAccessor.getFirstNativeHeader("Authorization");
