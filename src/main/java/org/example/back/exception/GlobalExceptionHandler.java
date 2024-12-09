@@ -12,6 +12,7 @@ import org.example.back.profile.exception.ConflictException;
 import org.example.back.profile.exception.InternalServerErrorException;
 import org.example.back.profile.exception.UnauthorizedException;
 import org.example.back.user.exception.InvalidTokenException;
+import org.example.back.user.exception.TokenExpiredException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,10 +41,12 @@ public class GlobalExceptionHandler {
 
 
     @ExceptionHandler(InvalidTokenException.class)
-    public ResponseEntity<String> handleInvalidTokenException(InvalidTokenException e) {
-        return ResponseEntity.status(401).body(e.getMessage());
+    public ResponseEntity<ClientErrorResponse> handleInvalidToken(InvalidTokenException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(HttpStatus.UNAUTHORIZED, e.getMessage()),
+            HttpStatus.UNAUTHORIZED
+        );
     }
-
     @ExceptionHandler(ClientErrorException.class)
     public ResponseEntity<ClientErrorResponse> handleClientErrorException(ClientErrorException e){
         return new ResponseEntity<>(new ClientErrorResponse(e.getStatus(),e.getMessage()),e.getStatus());
@@ -136,5 +139,14 @@ public class GlobalExceptionHandler {
             e.getStatus()
         );
     }
+
+    @ExceptionHandler(TokenExpiredException.class)
+    public ResponseEntity<ClientErrorResponse> handleTokenExpired(TokenExpiredException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(e.getStatus(), e.getMessage()),
+            e.getStatus()
+        );
+    }
+
 }
 

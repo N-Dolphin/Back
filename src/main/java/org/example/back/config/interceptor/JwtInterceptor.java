@@ -7,10 +7,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.user.exception.InvalidTokenException;
+import org.example.back.user.exception.TokenExpiredException;
 import org.springframework.http.HttpMethod;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -39,9 +42,9 @@ public class JwtInterceptor implements HandlerInterceptor {
 
             try {
                 String userId = jwtTokenProvider.extractSubject(token);
-                headerAccessor.getSessionAttributes().put("profileId", Long.valueOf(userId));
-            } catch (ExpiredJwtException e) {
-                throw new InvalidTokenException("토큰이 만료되었습니다. 다시 로그인하세요.");
+                request.setAttribute("userId", userId);
+            } catch (TokenExpiredException e) {
+                throw e;
             } catch (Exception e) {
                 throw new InvalidTokenException("토큰이 유효하지 않습니다. 다시 로그인하세요.");
             }
@@ -60,8 +63,8 @@ public class JwtInterceptor implements HandlerInterceptor {
                 String userId = jwtTokenProvider.extractSubject(token);
                 request.setAttribute("userId", userId);
             } catch (ExpiredJwtException e) {
-                throw new InvalidTokenException("토큰이 만료되었습니다. 다시 로그인하세요.");
-            } catch (Exception e) {
+                throw new TokenExpiredException();
+            }  catch (Exception e) {
                 throw new InvalidTokenException("토큰이 유효하지 않습니다. 다시 로그인하세요.");
             }
         }

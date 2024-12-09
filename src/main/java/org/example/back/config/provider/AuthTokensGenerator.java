@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.UUID;
 
 import org.example.back.redis.RedisService;
+import org.example.back.redis.RedisServiceImpl;
 import org.springframework.stereotype.Component;
 
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,7 @@ public class AuthTokensGenerator {
 	private static final long REFRESH_TOKEN_EXPIRE_TIME_TMP = 1000 * 60;
 
 	private final JwtTokenProvider jwtTokenProvider;
-	private final RedisService redisService;
+	private final RedisServiceImpl redisService;
 
 	public AuthTokens generate(Long memberId) {
 		long now = (new Date()).getTime();

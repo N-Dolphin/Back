@@ -4,6 +4,7 @@ import java.security.Key;
 import java.util.Date;
 
 import org.example.back.user.exception.InvalidTokenException; // Import the InvalidTokenException
+import org.example.back.user.exception.TokenExpiredException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -46,21 +47,19 @@ public class JwtTokenProvider {
 				.parseClaimsJws(accessToken)
 				.getBody();
 		} catch (ExpiredJwtException e) {
-			return e.getClaims();
+			throw new TokenExpiredException();  // 새로운 예외 타입 사용
 		} catch (JwtException e) {
-			// JWT 파싱 중 발생한 다른 예외 처리
-			throw new InvalidTokenException("유효하지 않은 토큰"); // 유효하지 않은 토큰 예외 던짐
+			throw new InvalidTokenException("유효하지 않은 토큰");
 		}
 	}
 
-	// 토큰 유효성 검사
 	public boolean validateToken(String token) {
 		try {
-			parseClaims(token); // Claims 파싱 시 예외가 발생하지 않으면 유효한 토큰으로 간주
-		} catch (ExpiredJwtException e) {
-			throw new InvalidTokenException("JWT 토큰이 만료됨"); // 만료된 토큰 예외 던짐
+			parseClaims(token);
+		} catch (TokenExpiredException e) {
+			throw e;  // TokenExpiredException은 그대로 전파
 		} catch (JwtException e) {
-			throw new InvalidTokenException("유효하지 않은 토큰"); // 유효하지 않은 토큰 예외 던짐
+			throw new InvalidTokenException("유효하지 않은 토큰");
 		}
 		return true;
 	}
