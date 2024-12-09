@@ -24,7 +24,6 @@ public class WebConfig implements WebMvcConfigurer {
 
         registry.addInterceptor(jwtInterceptor)
             .order(2)
-            .addPathPatterns("/api/v1/auth/**")
             .addPathPatterns("/api/v1/**")
             .excludePathPatterns(
                 "/api/v1/producer/send",
