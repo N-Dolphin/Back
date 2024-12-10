@@ -196,8 +196,6 @@ public class ProfileController implements ProfileControllerSwagger {
 
 		List<ProfileDto> profiles = profileService.getProfiles(profileId);
 
-		//여기다 매칭된 유저는 제외
-
 		return ResponseEntity.ok(profiles);
 	}
 

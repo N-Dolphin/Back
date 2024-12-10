@@ -116,14 +116,17 @@ public class ProfileService {
 		);
 
 		// 각 프로필에 대한 첫 번째 이미지를 함께 조회하여 ProfileDto로 변환
-		List<ProfileDto> profileDtos = profilesList.stream()
+		return profilesList.stream()
 			.map(p -> {
 				Optional<ProfileImage> firstImage = profileImageRepository.findFirstByProfile_ProfileId(p.getProfileId());
-				return new ProfileDto(firstImage.get().getImageUrl(), p.getProfileName(), p.getAge());
+				return new ProfileDto(
+					firstImage.map(ProfileImage::getImageUrl).orElse(null),  // 이미지가 없는 경우 처리
+					p.getProfileName(),
+					p.getAge()
+				);
 			})
+			.filter(dto -> dto.imageUrl() != null)  // 이미지 없는 프로필 제외하고 싶다면
 			.collect(Collectors.toList());
-
-		return profileDtos;
 	}
 
 
