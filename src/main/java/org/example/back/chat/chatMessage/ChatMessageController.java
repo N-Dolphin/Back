@@ -57,7 +57,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 
 @RestController
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:3000")  // React 앱의 origin 허용
 @Slf4j
 public class ChatMessageController {
 
