@@ -14,9 +14,9 @@ import lombok.RequiredArgsConstructor;
 public class AuthTokensGenerator {
 	private static final String BEARER_TYPE = "Bearer";
 	private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 120;            // 120분
-	private static final long ACCESS_TOKEN_EXPIRE_TIME_TMP = 1000 * 60;
+	private static final long ACCESS_TOKEN_EXPIRE_TIME_TMP = 1000 * 60 * 30;
 	private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;  // 7일
-	private static final long REFRESH_TOKEN_EXPIRE_TIME_TMP = 1000 * 60;
+	private static final long REFRESH_TOKEN_EXPIRE_TIME_TMP = 1000 * 60 * 60 * 24 * 7;
 
 	private final JwtTokenProvider jwtTokenProvider;
 	private final RedisServiceImpl redisService;
