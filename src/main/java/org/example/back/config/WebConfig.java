@@ -39,17 +39,6 @@ public class WebConfig implements WebMvcConfigurer {
                 "/api/v1/chat/rooms",
                 "/api/v1/auth/refresh"
             )
-            .excludePathPatterns("/**", HttpMethod.OPTIONS.name());  // OPTIONS 요청 제외
+            .excludePathPatterns(HttpMethod.OPTIONS.name());  // OPTIONS 요청 제외
     }
-
-    // @Override
-    // public void addCorsMappings(CorsRegistry registry) {
-    //     registry.addMapping("/api/**")
-    //         .allowedOriginPatterns("*")  // "*" 대신 이것을 사용
-    //         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-    //         .allowedHeaders("*")
-    //         .exposedHeaders("Authorization")  // Authorization 헤더 노출
-    //         .allowCredentials(true)
-    //         .maxAge(3600);
-    // }
 }
