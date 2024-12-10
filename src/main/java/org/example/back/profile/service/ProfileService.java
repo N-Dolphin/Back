@@ -30,10 +30,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Transactional
 @Service
+@Slf4j
 public class ProfileService {
 
 	private final ProfileRepository profileRepository;
@@ -103,30 +105,37 @@ public class ProfileService {
 		Profile profile = profileRepository.findByProfileId(profileId)
 			.orElseThrow(() -> new IllegalArgumentException("Invalid profile ID"));
 
-		// 현재 위치 정보 가져오기
-		Point currentLocation = profile.getLocation().getLocation();
+		try {
+			Point currentLocation = profile.getLocation().getLocation();
+			log.info("Current location: {}", currentLocation);
 
-		// 반경 3km 이내의 프로필을 찾고, 본인 제외, 거리 순으로 정렬
-		// List<Profile> profilesList = profileRepository.findProfilesSortedByDistance(currentLocation, profileId, 3000);
+			List<Profile> profilesList = profileRepository.findUnswipedProfilesSortedByDistance(
+				currentLocation,
+				profileId,
+				3000
+			);
 
-		List<Profile> profilesList = profileRepository.findUnswipedProfilesSortedByDistance(
-			currentLocation,
-			profileId,
-			3000
-		);
 
-		// 각 프로필에 대한 첫 번째 이미지를 함께 조회하여 ProfileDto로 변환
-		return profilesList.stream()
-			.map(p -> {
-				Optional<ProfileImage> firstImage = profileImageRepository.findFirstByProfile_ProfileId(p.getProfileId());
-				return new ProfileDto(
-					firstImage.map(ProfileImage::getImageUrl).orElse(null),  // 이미지가 없는 경우 처리
-					p.getProfileName(),
-					p.getAge()
-				);
-			})
-			.filter(dto -> dto.imageUrl() != null)  // 이미지 없는 프로필 제외하고 싶다면
-			.collect(Collectors.toList());
+			log.info("Found {} profiles", profilesList.size());
+
+			// 각 프로필에 대한 첫 번째 이미지를 함께 조회하여 ProfileDto로 변환
+			return profilesList.stream()
+				.map(p -> {
+					Optional<ProfileImage> firstImage = profileImageRepository.findFirstByProfile_ProfileId(p.getProfileId());
+					return new ProfileDto(
+						firstImage.map(ProfileImage::getImageUrl).orElse(null),  // 이미지가 없는 경우 처리
+						p.getProfileName(),
+						p.getAge()
+					);
+				})
+				.filter(dto -> dto.imageUrl() != null)  // 이미지 없는 프로필 제외하고 싶다면
+				.collect(Collectors.toList());
+
+		} catch (Exception e) {
+			log.error("Error in getProfiles: ", e);
+			throw e;
+		}
+
 	}
 
 
