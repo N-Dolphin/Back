@@ -22,16 +22,18 @@ public class ChatMessageRes extends MessageRes {
 	private LocalDateTime createdAt;
 	private int unreadCnt;
 	private FileInfo fileInfo;
+	private Long chatRoomId;
 
 	public ChatMessageRes(MessageType messageType, String id, Long profileId,
 		String content, LocalDateTime createdAt,
-		int unreadCnt, FileInfo fileInfo) {
+		int unreadCnt, FileInfo fileInfo, Long chatRoomId) {
 		super(messageType, id);
 		this.profileId = profileId;
 		this.content = content;
 		this.createdAt = createdAt;
 		this.unreadCnt = unreadCnt;
 		this.fileInfo = fileInfo;
+		this.chatRoomId=chatRoomId;
 	}
 
 	public static MessageRes createRes(ChatMessage message, int unreadCnt) {
@@ -42,7 +44,8 @@ public class ChatMessageRes extends MessageRes {
 			message.getContent(),
 			message.getCreatedAt(),
 			unreadCnt,
-			message.getFileInfo()
+			message.getFileInfo(),
+			message.getChatRoomId()
 		);
 	}
 }

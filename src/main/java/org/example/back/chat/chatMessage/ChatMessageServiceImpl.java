@@ -97,6 +97,8 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 			System.err.println("Error printing message format: " + e.getMessage());
 		}
 
+		System.out.println("전송하려는 메세지의 채팅방 id는 " + messageResponse.getChatRoomId() +"입니다");
+
 		String destination = ROUTING_KEY_PREFIX + chatRoomId;
 		messagingTemplate.convertAndSend(destination, messageResponse);
 
