@@ -28,7 +28,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RefreshTokenController implements RefreshTokenControllerSwagger{
 
-	private final AuthTokensGenerator authTokensGenerator;
 	private final RedisService redisService;
 	private final JwtTokenProvider jwtTokenProvider;
 
@@ -63,13 +62,5 @@ public class RefreshTokenController implements RefreshTokenControllerSwagger{
 		} catch (Exception e) {
 			throw new InvalidTokenException("Failed to refresh token: " + e.getMessage());
 		}
-	}
-	// 토큰 추출 메소드
-	private String resolveToken(HttpServletRequest request) {
-		String bearerToken = request.getHeader("Authorization");
-		if (bearerToken != null && bearerToken.startsWith("Bearer ")) {
-			return bearerToken.substring(7);
-		}
-		return null;
 	}
 }
