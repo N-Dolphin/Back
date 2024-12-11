@@ -16,6 +16,7 @@ import org.example.back.chat.chatroommember.ChatRoomParticipant;
 import org.example.back.chat.common.constant.MessageType;
 import org.example.back.chat.common.dto.ChatDto;
 import org.example.back.chat.common.dto.ChatMessageDeleteRequest;
+import org.example.back.chat.common.dto.ChatMessagesResponse;
 import org.example.back.chat.common.dto.ChatRoomEnterRequest;
 import org.example.back.chat.common.dto.EnterConfirmRes;
 import org.example.back.chat.common.dto.FileInfo;
@@ -29,6 +30,7 @@ import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.user.service.UserService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -58,7 +60,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class ChatMessageController {
+public class ChatMessageController implements ChatMessageControllerSwagger {
 
 	private final ChatMessageServiceImpl chatMessageService;
 	private final StompHeaderAccessorUtil stompHeaderAccessorUtil;
@@ -206,15 +208,36 @@ public class ChatMessageController {
 	}
 
 
-	@GetMapping("/chat-messages/chat-rooms/{chatRoomId}")
-	public ResponseEntity<List<MessageRes>> getChatMessages(
+	// @GetMapping("/chat-messages/chat-rooms/{chatRoomId}")
+	// public ResponseEntity<List<MessageRes>> getChatMessages(
+	// 	@PathVariable("chatRoomId") Long chatRoomId,
+	// 	@RequestParam(name = "page", defaultValue = "0") int page,
+	// 	@RequestParam(name = "size", defaultValue = "5") int size
+	// )  {
+	// 	List<MessageRes> chatMessageResList = chatMessageService.getChatMessages(chatRoomId, page, size);
+	// 	return ResponseEntity.ok(chatMessageResList);
+	// }
+
+	@GetMapping("/api/v1/chat-messages/chat-rooms/{chatRoomId}")
+	@Override
+	public ResponseEntity<ChatMessagesResponse> getChatMessages(
 		@PathVariable("chatRoomId") Long chatRoomId,
-		@RequestParam(defaultValue = "0") int page,
-		@RequestParam(defaultValue = "100") int size
+		@RequestParam(name = "page", defaultValue = "0") int page,
+		@RequestParam(name = "size", defaultValue = "5") int size
 	) {
-		List<MessageRes> chatMessageResList = chatMessageService.getChatMessages(chatRoomId, page, size);
-		return ResponseEntity.ok(chatMessageResList);
+		Page<MessageRes> chatMessagePage = chatMessageService.getChatMessages(chatRoomId, page, size);
+
+		ChatMessagesResponse response = new ChatMessagesResponse(
+			chatMessagePage.getContent(),
+			chatMessagePage.getNumber(),
+			chatMessagePage.getTotalPages(),
+			chatMessagePage.hasNext(),
+			chatMessagePage.getTotalElements()
+		);
+
+		return ResponseEntity.ok(response);
 	}
+
 
 	private String uploadToS3(byte[] fileData, String contentType, String fileName) {
 		ObjectMetadata metadata = new ObjectMetadata();

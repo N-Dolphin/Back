@@ -5,6 +5,7 @@ import org.example.back.chat.common.dto.ChatDto;
 import org.example.back.chat.common.dto.ChatMessageRes;
 import org.example.back.chat.common.dto.ChatRoomEnterRequest;
 import org.example.back.chat.common.dto.MessageRes;
+import org.springframework.data.domain.Page;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 
 import java.time.LocalDateTime;
@@ -16,5 +17,5 @@ public interface ChatMessageService {
 	void handleDisconnectMessage(StompHeaderAccessor accessor);
 	void exitChatRoom(ChatRoom chatRoom, Long profileId);
 	void deleteMessage(Long chatRoomId, Long profileId, String messageId);
-	List<MessageRes> getChatMessages(Long chatRoomId, int page, int size);
+	Page<MessageRes> getChatMessages(Long chatRoomId, int page, int size);
 }
