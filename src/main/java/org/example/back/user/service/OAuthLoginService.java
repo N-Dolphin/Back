@@ -37,11 +37,10 @@ public class OAuthLoginService {
 		boolean hasProfileImage = profile.map(Profile::getProfileId)
 			.flatMap(profileImageRepository::findFirstByProfile_ProfileId) // 여기 수정
 			.isPresent();
-		
+
 		return new SignInResponseDto(authTokensGenerator.generate(userEntity.getUserId()),3600L, hasProfile,hasProfileImage,hasProfileLocation);
 	}
 
-	@Transactional
 	public UserEntity findOrCreateMember(OAuthInfoResponse oAuthInfoResponse) {
 		return userRepository.findByEmail(oAuthInfoResponse.getEmail()).orElse(
 			newMember(oAuthInfoResponse)
@@ -50,12 +49,6 @@ public class OAuthLoginService {
 
 	@Transactional
 	public UserEntity newMember(OAuthInfoResponse oAuthInfoResponse) {
-
-		Optional<UserEntity> existingUser = userRepository.findByEmail(oAuthInfoResponse.getEmail());
-		if (existingUser.isPresent()) {
-			return existingUser.get();
-		}
-
 		UserEntity userEntity = UserEntity.ofOauth("Oauth", oAuthInfoResponse.getEmail(),null,"USER",
 			OAuthProvider.KAKAO);
 		return userRepository.save(userEntity);

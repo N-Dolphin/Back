@@ -36,27 +36,6 @@ public class RedisServiceImpl implements RedisService {
 		return param.value();
 	}
 
-
-	// @Override
-	// public void saveRefreshToken(String key, String refreshToken, long duration) {
-	// 	ValueOperations<String, Object> operations = redisTemplate.opsForValue();
-	// 	operations.set(key, refreshToken, duration, TimeUnit.MILLISECONDS);
-	// 	log.info("Refresh token saved to Redis: key={}, duration={}ms", key, duration);
-	// }
-	//
-	// @Override
-	// public String getRefreshToken(String key) {
-	// 	try {
-	// 		ValueOperations<String, Object> operations = redisTemplate.opsForValue();
-	// 		Object value = operations.get(key);
-	// 		log.info("Redis get operation - Key: {}, Retrieved Value: {}, Value Type: {}",
-	// 			key, value, value != null ? value.getClass().getName() : "null");
-	// 		return (String) value;
-	// 	} catch (Exception e) {
-	// 		log.error("Redis operation failed for key: " + key, e);
-	// 		throw e;
-	// 	}
-	// }
 	@Override
 	public void saveRefreshToken(String userId, String refreshToken, long duration) {
 		ValueOperations<String, Object> operations = redisTemplate.opsForValue();
