@@ -105,29 +105,47 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 		return messageResponse;
 	}
 
+	// @Transactional(readOnly = true)
+	// @Override
+	// public List<MessageRes> getChatMessages(Long chatRoomId, int page, int size) {
+	// 	ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
+	// 		.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("채팅방을 찾을 수 없습니다."));
+	//
+	// 	Set<Long> onlineMembersInChatRoom = redisChatUtil.getOnlineMembers(chatRoomId);
+	//
+	// 	// 페이징 처리
+	// 	Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+	// 	Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomIdOrderByCreatedAtDesc(
+	// 		chatRoom.getId(),
+	// 		pageable
+	// 	);
+	//
+	// 	List<MessageRes> messageResList = chatMessages.getContent().stream()
+	// 		.map(chatMessage -> {
+	// 			int unreadCnt = chatRoom.getUnreadCount(onlineMembersInChatRoom, chatMessage.getCreatedAt());
+	// 			return ChatMessageRes.createRes(chatMessage, unreadCnt);
+	// 		})
+	// 		.toList();
+	//
+	// 	return messageResList;
+	// }
 	@Transactional(readOnly = true)
-	@Override
-	public List<MessageRes> getChatMessages(Long chatRoomId, int page, int size) {
+	public Page<MessageRes> getChatMessages(Long chatRoomId, int page, int size) {
 		ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
 			.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("채팅방을 찾을 수 없습니다."));
 
 		Set<Long> onlineMembersInChatRoom = redisChatUtil.getOnlineMembers(chatRoomId);
 
-		// 페이징 처리
 		Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 		Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomIdOrderByCreatedAtDesc(
 			chatRoom.getId(),
 			pageable
 		);
 
-		List<MessageRes> messageResList = chatMessages.getContent().stream()
-			.map(chatMessage -> {
-				int unreadCnt = chatRoom.getUnreadCount(onlineMembersInChatRoom, chatMessage.getCreatedAt());
-				return ChatMessageRes.createRes(chatMessage, unreadCnt);
-			})
-			.toList();
-
-		return messageResList;
+		return chatMessages.map(chatMessage -> {
+			int unreadCnt = chatRoom.getUnreadCount(onlineMembersInChatRoom, chatMessage.getCreatedAt());
+			return ChatMessageRes.createRes(chatMessage, unreadCnt);
+		});
 	}
 
 	@Transactional

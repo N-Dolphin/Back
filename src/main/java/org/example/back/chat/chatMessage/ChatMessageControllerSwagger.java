@@ -2,6 +2,7 @@ package org.example.back.chat.chatMessage;
 
 import java.util.List;
 
+import org.example.back.chat.common.dto.ChatMessagesResponse;
 import org.example.back.chat.common.dto.MessageRes;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,14 +31,14 @@ public interface ChatMessageControllerSwagger {
 			@ApiResponse(
 				responseCode = "200",
 				description = "메시지 조회 성공",
-				content = @Content(schema = @Schema(implementation = MessageRes.class))
+				content = @Content(schema = @Schema(implementation = ChatMessagesResponse.class))
 			)
 		}
 	)
-	ResponseEntity<List<MessageRes>> getChatMessages(
+	ResponseEntity<ChatMessagesResponse> getChatMessages(
 		@PathVariable Long chatRoomId,
 		@RequestParam(defaultValue = "0") int page,
-		@RequestParam(defaultValue = "100") int size
+		@RequestParam(defaultValue = "5") int size
 	);
 
 	@Operation(
