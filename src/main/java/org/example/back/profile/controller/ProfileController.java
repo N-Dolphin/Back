@@ -16,6 +16,7 @@ import org.example.back.profile.domain.ProfileResponseDto;
 import org.example.back.profile.exception.BadRequestException;
 import org.example.back.profile.exception.ConflictException;
 import org.example.back.profile.exception.InternalServerErrorException;
+import org.example.back.profile.exception.ProfileNameAlreadyExistException;
 import org.example.back.profile.exception.ProfileNotFoundException;
 import org.example.back.profile.exception.UnauthorizedException;
 import org.example.back.profile.repository.ProfileRepository;
@@ -100,6 +101,10 @@ public class ProfileController implements ProfileControllerSwagger {
 			throw new ConflictException("이미 프로필이 존재합니다");
 		}
 
+		if (profileRepository.findProfileByProfileName(request.profileName()).isPresent()){
+			throw new ProfileNameAlreadyExistException();
+		}
+
 		// 5. 프로필 생성
 		try {
 			ProfileDto profileDto = profileService.createProfile(request, userId);
@@ -137,6 +142,11 @@ public class ProfileController implements ProfileControllerSwagger {
 			userId = Long.valueOf(userIdToken);
 		} catch (NumberFormatException e) {
 			throw new BadRequestException("유효하지 않은 사용자 ID 형식입니다");
+		}
+
+
+		if (profileRepository.findProfileByProfileName(request.profileName()).isPresent()){
+			throw new ProfileNameAlreadyExistException();
 		}
 
 		// 5. 프로필 생성
