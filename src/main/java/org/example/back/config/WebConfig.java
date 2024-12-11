@@ -41,13 +41,4 @@ public class WebConfig implements WebMvcConfigurer {
             )
             .excludePathPatterns(HttpMethod.OPTIONS.name());  // OPTIONS 요청 제외
     }
-
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")
-            .allowedOrigins("http://localhost:3000")
-            .allowedMethods("*")
-            .allowedHeaders("*")
-            .exposedHeaders("Authorization");
-    }
 }
