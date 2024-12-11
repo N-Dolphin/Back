@@ -40,17 +40,6 @@ public final class AuthController implements AuthControllerSwagger{
 	@Value("${oauth.kakao.authorizeUrl}")
 	private String AUTHORIZATION_ENDPOINT;
 
-
-	// @PostMapping("/kakao")
-	// @Override
-	// public ResponseEntity<?> loginKakao(@RequestBody KakaoLoginParams params) {
-	// 	try {
-	// 		return ResponseEntity.ok(oAuthLoginService.login(params));
-	// 	} catch (HttpClientErrorException.BadRequest e) {
-	// 		return ResponseEntity.badRequest().body("인증 코드가 만료되었거나 유효하지 않습니다. 다시 로그인해주세요.");
-	// 	}
-	// }
-	// AuthController에 동시성 제어 추가
 	@PostMapping("/kakao")
 	public ResponseEntity<?> loginKakao(@RequestBody KakaoLoginParams params) {
 		String requestKey = "kakao:auth:" + params.getAuthorizationCode();
@@ -65,7 +54,6 @@ public final class AuthController implements AuthControllerSwagger{
 			redisService.delete(requestKey);
 		}
 	}
-	
 
 	@GetMapping
 	@Override
