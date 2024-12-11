@@ -60,7 +60,7 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-public class ChatMessageController {
+public class ChatMessageController implements ChatMessageControllerSwagger {
 
 	private final ChatMessageServiceImpl chatMessageService;
 	private final StompHeaderAccessorUtil stompHeaderAccessorUtil;
@@ -218,7 +218,8 @@ public class ChatMessageController {
 	// 	return ResponseEntity.ok(chatMessageResList);
 	// }
 
-	@GetMapping("/chat-messages/chat-rooms/{chatRoomId}")
+	@GetMapping("/api/v1/chat-messages/chat-rooms/{chatRoomId}")
+	@Override
 	public ResponseEntity<ChatMessagesResponse> getChatMessages(
 		@PathVariable("chatRoomId") Long chatRoomId,
 		@RequestParam(name = "page", defaultValue = "0") int page,
