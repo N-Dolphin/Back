@@ -144,8 +144,10 @@ public class ProfileController implements ProfileControllerSwagger {
 			throw new BadRequestException("유효하지 않은 사용자 ID 형식입니다");
 		}
 
+		Long profileId= userService.getProfileIdByUserId(userId);
 
-		if (profileRepository.findProfileByProfileName(request.profileName()).isPresent()){
+		if (!request.profileName().equals(profileRepository.findProfileByProfileId(profileId).get().getProfileName())&&
+			profileRepository.findProfileByProfileName(request.profileName()).isPresent()){
 			throw new ProfileNameAlreadyExistException();
 		}
 

@@ -126,21 +126,8 @@ public class ChatMessageController implements ChatMessageControllerSwagger {
 	@MessageMapping("chat.enter")
 	public void  enterChatRoom(StompHeaderAccessor accessor, ChatRoomEnterRequest request) {
 		try {
-
-
-			log.info("Enter chat room attempt - roomId: {}", request.getChatRoomId());
-
 			Long profileId = stompHeaderAccessorUtil.getMemberIdInSession(accessor);
-			log.info("Profile ID from session: {}", profileId);
-
 			Long chatRoomId = request.getChatRoomId();
-			log.info("Attempting to enter chat room: {}", chatRoomId);
-
-			// 채팅방 ID를 세션에 저장
-			stompHeaderAccessorUtil.setChatRoomIdInSession(accessor, chatRoomId);
-			log.info("Chat room ID saved in session");
-
-
 
 			// 채팅방 ID를 세션에 저장
 			stompHeaderAccessorUtil.setChatRoomIdInSession(accessor, chatRoomId);
@@ -149,6 +136,12 @@ public class ChatMessageController implements ChatMessageControllerSwagger {
 			if (!chatRoomServiceImpl.isAccessibleChatRoom(chatRoomId, profileId)) {
 				throw new ChatRoomAccessDeniedException("접근할 수 없는 채팅방입니다.");
 			}
+
+			// 입장한 사람의 메시지는 모두 읽음 처리됨을 알림
+			messagingTemplate.convertAndSend(
+				"/exchange/chat.exchange/room." + chatRoomId,
+				new EnterConfirmRes(profileId, chatRoomId)
+			);
 
 			// 채팅방 조회 및 참가자 구분
 			ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
