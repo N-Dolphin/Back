@@ -81,9 +81,16 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 			.findFirst()
 			.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("수신자를 찾을 수 없습니다."));
 
-		// 수신자가 온라인인지 확인
-		Set<Long> onlineMembers = redisChatUtil.getOnlineMembers(chatRoomId);
-		int unreadCount = onlineMembers.contains(receiverId) ? 0 : 1;
+		// 수신자의 현재 채팅방 ID 확인 (StompHeaderAccessorUtil 사용)
+		int unreadCount = 1;  // 기본값은 1 (안읽음)
+		try {
+			if (stompHeaderAccessorUtil.getChatRoomIdInSession(accessor).equals(chatRoomId)) {
+				unreadCount = 0;  // 같은 채팅방에 있으면 읽음 처리
+			}
+		} catch (RuntimeException e) {
+			// 세션에 채팅방 ID가 없다는 것은 해당 채팅방에 없다는 의미
+			unreadCount = 1;
+		}
 
 		MessageRes messageRes = ChatMessageRes.createRes(savedMessage, unreadCount);
 		ChatMessageRes messageResponse = (ChatMessageRes) messageRes;
@@ -148,26 +155,41 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 		});
 	}
 
-	@Transactional
+	// @Transactional
+	// @Override
+	// public void handleDisconnectMessage(StompHeaderAccessor accessor) {
+	// 	Long profileId = stompHeaderAccessorUtil.removeMemberIdInSession(accessor);
+	//
+	// 	// chatRoomId가 없으면 조기 반환
+	// 	Long chatRoomId = null;
+	// 	try {
+	// 		chatRoomId = stompHeaderAccessorUtil.removeChatRoomIdInSession(accessor);
+	// 	} catch (RuntimeException e) {
+	// 		return;
+	// 	}
+	//
+	// 	ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
+	// 		.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("채팅방을 찾을 수 없습니다."));
+	//
+	// 	ChatRoomParticipant chatRoomParticipant = chatRoom.getParticipant(profileId);
+	// 	chatRoomParticipant.updateLastEntryTime();
+	//
+	// 	exitChatRoom(chatRoom, profileId);
+	// }
 	@Override
 	public void handleDisconnectMessage(StompHeaderAccessor accessor) {
 		Long profileId = stompHeaderAccessorUtil.removeMemberIdInSession(accessor);
+		Long chatRoomId = stompHeaderAccessorUtil.removeChatRoomIdInSession(accessor);
 
-		// chatRoomId가 없으면 조기 반환
-		Long chatRoomId = null;
-		try {
-			chatRoomId = stompHeaderAccessorUtil.removeChatRoomIdInSession(accessor);
-		} catch (RuntimeException e) {
-			return;
+		if (chatRoomId != null) {
+			ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
+				.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("채팅방을 찾을 수 없습니다."));
+
+			ChatRoomParticipant chatRoomParticipant = chatRoom.getParticipant(profileId);
+			chatRoomParticipant.updateLastEntryTime();
+
+			exitChatRoom(chatRoom, profileId);
 		}
-
-		ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
-			.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("채팅방을 찾을 수 없습니다."));
-
-		ChatRoomParticipant chatRoomParticipant = chatRoom.getParticipant(profileId);
-		chatRoomParticipant.updateLastEntryTime();
-
-		exitChatRoom(chatRoom, profileId);
 	}
 
 	@Override
