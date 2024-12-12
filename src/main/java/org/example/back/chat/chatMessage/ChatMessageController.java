@@ -25,6 +25,7 @@ import org.example.back.chat.exception.ChatRoomAccessDeniedException;
 import org.example.back.chat.exception.ChatRoomNotFoundException;
 import org.example.back.chat.exception.ChatRoomNotValidException;
 import org.example.back.chat.exception.dto.WebSocketErrorResponse;
+import org.example.back.chat.util.RedisChatUtil;
 import org.example.back.chat.util.StompHeaderAccessorUtil;
 import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.user.service.UserService;
@@ -70,6 +71,7 @@ public class ChatMessageController implements ChatMessageControllerSwagger {
 	private final JwtTokenProvider jwtTokenProvider;
 	private final AmazonS3 amazonS3;
 	private final ChatRoomServiceImpl chatRoomServiceImpl;
+	private final RedisChatUtil redisChatUtil;
 
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
@@ -131,6 +133,9 @@ public class ChatMessageController implements ChatMessageControllerSwagger {
 
 			// 채팅방 ID를 세션에 저장
 			stompHeaderAccessorUtil.setChatRoomIdInSession(accessor, chatRoomId);
+
+			// Redis에 온라인 멤버로 등록 (여기에 추가)
+			redisChatUtil.addOnlineMember(chatRoomId, profileId);
 
 			// 채팅방 존재 여부 및 참가 자격 확인
 			if (!chatRoomServiceImpl.isAccessibleChatRoom(chatRoomId, profileId)) {
@@ -194,22 +199,29 @@ public class ChatMessageController implements ChatMessageControllerSwagger {
 		}
 	}
 
+	// @EventListener
+	// public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
+	// 	StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+	// 	Long profileId = stompHeaderAccessorUtil.removeMemberIdInSession(accessor);
+	// 	Long chatRoomId = stompHeaderAccessorUtil.removeChatRoomIdInSession(accessor);
+	//
+	// 	chatMessageService.handleDisconnectMessage(accessor);
+	// }
 	@EventListener
 	public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-		chatMessageService.handleDisconnectMessage(accessor);
+		log.info("WebSocket Connection Closed - Session ID: {}", accessor.getSessionId());
+
+		Long profileId = stompHeaderAccessorUtil.removeMemberIdInSession(accessor);
+		Long chatRoomId = stompHeaderAccessorUtil.removeChatRoomIdInSession(accessor);
+
+		log.info("Disconnect Event - Profile ID: {}, ChatRoom ID: {}", profileId, chatRoomId);
+
+		if (chatRoomId != null) {
+			log.info("Removing member {} from chat room {}", profileId, chatRoomId);
+			redisChatUtil.removeChatRoom2Member(chatRoomId, profileId);
+		}
 	}
-
-
-	// @GetMapping("/chat-messages/chat-rooms/{chatRoomId}")
-	// public ResponseEntity<List<MessageRes>> getChatMessages(
-	// 	@PathVariable("chatRoomId") Long chatRoomId,
-	// 	@RequestParam(name = "page", defaultValue = "0") int page,
-	// 	@RequestParam(name = "size", defaultValue = "5") int size
-	// )  {
-	// 	List<MessageRes> chatMessageResList = chatMessageService.getChatMessages(chatRoomId, page, size);
-	// 	return ResponseEntity.ok(chatMessageResList);
-	// }
 
 	@GetMapping("/api/v1/chat-messages/chat-rooms/{chatRoomId}")
 	@Override

@@ -34,10 +34,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Transactional
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ChatMessageServiceImpl implements ChatMessageService {
 
 	private final ChatMessageRepository chatMessageRepository;
@@ -81,14 +83,11 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 			.findFirst()
 			.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("수신자를 찾을 수 없습니다."));
 
-		// 수신자의 현재 채팅방 ID 확인 (StompHeaderAccessorUtil 사용)
-		int unreadCount = 1;  // 기본값은 1 (안읽음)
-		try {
-			if (stompHeaderAccessorUtil.getChatRoomIdInSession(accessor).equals(chatRoomId)) {
-				unreadCount = 0;  // 같은 채팅방에 있으면 읽음 처리
-			}
-		} catch (RuntimeException e) {
-			// 세션에 채팅방 ID가 없다는 것은 해당 채팅방에 없다는 의미
+		Set<Long> onlineMembers = redisChatUtil.getOnlineMembers(chatRoomId);
+		int unreadCount = onlineMembers.contains(receiverId) ? 0 : 1;
+
+		// Redis에서 수신자의 상태를 확인할 수 없다면 기본값은 안읽음 처리
+		if (onlineMembers == null || onlineMembers.isEmpty()) {
 			unreadCount = 1;
 		}
 
@@ -112,30 +111,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 		return messageResponse;
 	}
 
-	// @Transactional(readOnly = true)
-	// @Override
-	// public List<MessageRes> getChatMessages(Long chatRoomId, int page, int size) {
-	// 	ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
-	// 		.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("채팅방을 찾을 수 없습니다."));
-	//
-	// 	Set<Long> onlineMembersInChatRoom = redisChatUtil.getOnlineMembers(chatRoomId);
-	//
-	// 	// 페이징 처리
-	// 	Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
-	// 	Page<ChatMessage> chatMessages = chatMessageRepository.findByChatRoomIdOrderByCreatedAtDesc(
-	// 		chatRoom.getId(),
-	// 		pageable
-	// 	);
-	//
-	// 	List<MessageRes> messageResList = chatMessages.getContent().stream()
-	// 		.map(chatMessage -> {
-	// 			int unreadCnt = chatRoom.getUnreadCount(onlineMembersInChatRoom, chatMessage.getCreatedAt());
-	// 			return ChatMessageRes.createRes(chatMessage, unreadCnt);
-	// 		})
-	// 		.toList();
-	//
-	// 	return messageResList;
-	// }
 	@Transactional(readOnly = true)
 	public Page<MessageRes> getChatMessages(Long chatRoomId, int page, int size) {
 		ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
@@ -155,40 +130,25 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 		});
 	}
 
-	// @Transactional
-	// @Override
-	// public void handleDisconnectMessage(StompHeaderAccessor accessor) {
-	// 	Long profileId = stompHeaderAccessorUtil.removeMemberIdInSession(accessor);
-	//
-	// 	// chatRoomId가 없으면 조기 반환
-	// 	Long chatRoomId = null;
-	// 	try {
-	// 		chatRoomId = stompHeaderAccessorUtil.removeChatRoomIdInSession(accessor);
-	// 	} catch (RuntimeException e) {
-	// 		return;
-	// 	}
-	//
-	// 	ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
-	// 		.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("채팅방을 찾을 수 없습니다."));
-	//
-	// 	ChatRoomParticipant chatRoomParticipant = chatRoom.getParticipant(profileId);
-	// 	chatRoomParticipant.updateLastEntryTime();
-	//
-	// 	exitChatRoom(chatRoom, profileId);
-	// }
 	@Override
 	public void handleDisconnectMessage(StompHeaderAccessor accessor) {
-		Long profileId = stompHeaderAccessorUtil.removeMemberIdInSession(accessor);
-		Long chatRoomId = stompHeaderAccessorUtil.removeChatRoomIdInSession(accessor);
+		try {
+			Long profileId = stompHeaderAccessorUtil.removeMemberIdInSession(accessor);
+			Long chatRoomId = stompHeaderAccessorUtil.removeChatRoomIdInSession(accessor);
 
-		if (chatRoomId != null) {
-			ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
-				.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("채팅방을 찾을 수 없습니다."));
+			if (chatRoomId != null) {
+				ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
+					.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("채팅방을 찾을 수 없습니다."));
 
-			ChatRoomParticipant chatRoomParticipant = chatRoom.getParticipant(profileId);
-			chatRoomParticipant.updateLastEntryTime();
+				// Redis에서 온라인 멤버 제거
+				redisChatUtil.removeChatRoom2Member(chatRoomId, profileId);
 
-			exitChatRoom(chatRoom, profileId);
+				// 마지막 접속 시간 업데이트
+				ChatRoomParticipant chatRoomParticipant = chatRoom.getParticipant(profileId);
+				chatRoomParticipant.updateLastEntryTime();
+			}
+		} catch (Exception e) {
+			log.error("Error during disconnect handling", e);
 		}
 	}
 
