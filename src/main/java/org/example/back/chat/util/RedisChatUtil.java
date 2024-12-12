@@ -27,6 +27,10 @@ public class RedisChatUtil {
 			.collect(Collectors.toSet());
 	}
 
+	public void addOnlineMember(Long chatRoomId, Long memberId) {
+		SetOperations<String, String> ops = redisTemplate.opsForSet();
+		ops.add(getChatRoomKey(chatRoomId), String.valueOf(memberId));
+	}
 
 	public void removeChatRoom2Member(Long chatRoomId, Long memberId) {
 		SetOperations<String, String> ops = redisTemplate.opsForSet();
