@@ -4,6 +4,7 @@ package org.example.back.chat.chatRoom;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.example.back.chat.chatMessage.ChatMessage;
@@ -21,6 +22,7 @@ import org.example.back.chat.common.dto.SimpleChatRoomRecord;
 import org.example.back.chat.exception.ChatRoomAccessDeniedException;
 import org.example.back.chat.exception.ChatRoomNotFoundException;
 import org.example.back.chat.exception.ChatRoomNotValidException;
+import org.example.back.chat.exception.ChatRoomParticipantsNotFoundException;
 import org.example.back.chat.util.RedisChatUtil;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -67,22 +69,73 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 	}
 
 
+	// public List<SimpleChatRoomRecord> getSimpleChatRooms(Long profileId) {
+	// 	List<ChatRoomParticipant> participants =
+	// 		chatRoomParticipantRepository.findAllByProfileId(profileId);
+	//
+	// 	return participants.stream()
+	// 		.map(participant -> {
+	// 			// 읽지 않은 메시지 수 계산 (자신이 보낸 메시지 제외)
+	// 			Long unreadCount = chatMessageRepository
+	// 				.countByChatRoomIdAndProfileIdNotAndCreatedAtAfter(
+	// 					participant.getChatRoom().getId(),
+	// 					profileId,  // 자신이 보낸 메시지 제외
+	// 					participant.getLastEntryTime()
+	// 				);
+	//
+	// 			return new SimpleChatRoomRecord(
+	// 				participant.getChatRoom().getId(),
+	// 				profileId,
+	// 				participant.getPartnerProfileId(),
+	// 				unreadCount
+	// 			);
+	// 		})
+	// 		.toList();
+	// }
+	// 채팅방 메시지를 읽었을 때 호출되는 메서드 추가
+	@Transactional
+	public void updateLastReadTime(Long chatRoomId, Long profileId) {
+		ChatRoom chatRoom = chatRoomRepository.findByIdWithParticipants(chatRoomId)
+			.orElseThrow(() -> new ChatRoomNotFoundException("채팅방을 찾을 수 없습니다."));
+
+		ChatRoomParticipant participant = chatRoom.getParticipants().stream()
+			.filter(p -> p.getProfileId().equals(profileId))
+			.findFirst()
+			.orElseThrow(() -> new ChatRoomParticipantsNotFoundException("참가자를 찾을 수 없습니다."));
+
+		participant.updateLastEntryTime();  // 마지막 읽은 시간 업데이트
+	}
+
+	// getSimpleChatRooms 메서드 수정
 	public List<SimpleChatRoomRecord> getSimpleChatRooms(Long profileId) {
 		List<ChatRoomParticipant> participants =
 			chatRoomParticipantRepository.findAllByProfileId(profileId);
 
 		return participants.stream()
 			.map(participant -> {
-				// 읽지 않은 메시지 수 계산 (자신이 보낸 메시지 제외)
+				Long chatRoomId = participant.getChatRoom().getId();
+				Set<Long> onlineMembers = redisChatUtil.getOnlineMembers(chatRoomId);
+
+				// 자신이 온라인이면 unreadCount를 0으로 설정
+				if (onlineMembers != null && onlineMembers.contains(profileId)) {
+					return new SimpleChatRoomRecord(
+						chatRoomId,
+						profileId,
+						participant.getPartnerProfileId(),
+						0L
+					);
+				}
+
+				// 오프라인일 경우에만 읽지 않은 메시지 수 계산
 				Long unreadCount = chatMessageRepository
 					.countByChatRoomIdAndProfileIdNotAndCreatedAtAfter(
-						participant.getChatRoom().getId(),
-						profileId,  // 자신이 보낸 메시지 제외
+						chatRoomId,
+						profileId,
 						participant.getLastEntryTime()
 					);
 
 				return new SimpleChatRoomRecord(
-					participant.getChatRoom().getId(),
+					chatRoomId,
 					profileId,
 					participant.getPartnerProfileId(),
 					unreadCount

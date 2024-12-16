@@ -134,6 +134,10 @@ public class ChatMessageController implements ChatMessageControllerSwagger {
 			// 채팅방 ID를 세션에 저장
 			stompHeaderAccessorUtil.setChatRoomIdInSession(accessor, chatRoomId);
 
+			// 채팅방 입장 시 lastEntryTime 업데이트
+			chatRoomServiceImpl.updateLastReadTime(chatRoomId, profileId);
+
+
 			// Redis에 온라인 멤버로 등록 (여기에 추가)
 			redisChatUtil.addOnlineMember(chatRoomId, profileId);
 
