@@ -2,6 +2,7 @@ package org.example.back.redis;
 
 import java.util.concurrent.TimeUnit;
 
+import org.example.back.user.exception.RefreshTokenExpiredException;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
@@ -58,6 +59,17 @@ public class RedisServiceImpl implements RedisService {
 		}
 	}
 
+	public boolean isRefreshTokenExpired(String refreshToken) {
+		Long ttl = redisTemplate.getExpire(refreshToken);
+		return ttl == null || ttl <= 0;  // 키가 없거나 만료된 경우
+	}
+
+	public String validateRefreshToken(String refreshToken) {
+		if (isRefreshTokenExpired(refreshToken)) {
+			throw new RefreshTokenExpiredException();
+		}
+		return getRefreshToken(refreshToken);
+	}
 
 	@Override
 	// RedisService에 메소드 추가

@@ -40,8 +40,8 @@ public class RefreshTokenController implements RefreshTokenControllerSwagger{
 		try {
 			String refreshToken = request.getRefreshToken();
 
-			String userId = redisService.getRefreshToken(refreshToken);
-			System.out.println("유저아이디는:" + userId);
+			//리프레시 토큰 검증
+			String userId = redisService.validateRefreshToken(refreshToken);
 
 			// 새로운 Access Token 생성
 			Date accessTokenExpiredAt = new Date(System.currentTimeMillis() + ACCESS_TOKEN_EXPIRE_TIME);
