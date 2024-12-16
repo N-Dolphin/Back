@@ -136,12 +136,16 @@ jobs:
       - name: Stop current server
         uses: appleboy/ssh-action@master
         with:
-
           username: ubuntu
           host: ${{ secrets.BACK_SERVER_IP }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script_stop: true
           script: |
-            echo ${{env.CURRENT_UPSTREAM}}
-            sudo docker stop ${{env.CURRENT_UPSTREAM}}
-            sudo docker rm ${{env.CURRENT_UPSTREAM}}
+            echo "Current upstream: ${{env.CURRENT_UPSTREAM}}"
+            if sudo docker ps -a --format '{{.Names}}' | grep -q "^${{env.CURRENT_UPSTREAM}}$"; then
+              echo "Stopping and removing ${{env.CURRENT_UPSTREAM}} container..."
+              sudo docker stop ${{env.CURRENT_UPSTREAM}}
+              sudo docker rm ${{env.CURRENT_UPSTREAM}}
+            else
+              echo "No existing ${{env.CURRENT_UPSTREAM}} container found. Skipping container removal."
+            fi
