@@ -8,7 +8,7 @@ public interface RedisService {
 
 	// 추가
 	String getRefreshToken(String key);
-
+	String validateRefreshToken(String refreshToken);
 	void saveOAuthTokens(String userId, String springRefreshToken, String kakaoRefreshToken, long springDuration, long kakaoDuration);
 
 	boolean setIfAbsent(String key, String value, long timeoutSeconds);
