@@ -11,8 +11,16 @@ import org.example.back.profile.exception.BadRequestException;
 import org.example.back.profile.exception.ConflictException;
 import org.example.back.profile.exception.InternalServerErrorException;
 import org.example.back.profile.exception.UnauthorizedException;
+import org.example.back.user.exception.CertificationNotAllowedException;
+import org.example.back.user.exception.EmailSendFailedException;
+import org.example.back.user.exception.InvalidPasswordException;
 import org.example.back.user.exception.InvalidTokenException;
+import org.example.back.user.exception.RefreshTokenExpiredException;
 import org.example.back.user.exception.TokenExpiredException;
+import org.example.back.user.exception.UserAlreadyExistsException;
+import org.example.back.user.exception.UserEmailNotAllowedException;
+import org.example.back.user.exception.UserNotAllowedException;
+import org.example.back.user.exception.UserNotFoundException;
 import org.springframework.data.redis.RedisConnectionFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -142,6 +150,70 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TokenExpiredException.class)
     public ResponseEntity<ClientErrorResponse> handleTokenExpired(TokenExpiredException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(e.getStatus(), e.getMessage()),
+            e.getStatus()
+        );
+    }
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<ClientErrorResponse> handleUserNotFound(UserNotFoundException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(e.getStatus(), e.getMessage()),
+            e.getStatus()
+        );
+    }
+
+    @ExceptionHandler(UserNotAllowedException.class)
+    public ResponseEntity<ClientErrorResponse> handleUserNotAllowed(UserNotAllowedException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(e.getStatus(), e.getMessage()),
+            e.getStatus()
+        );
+    }
+
+    @ExceptionHandler(UserEmailNotAllowedException.class)
+    public ResponseEntity<ClientErrorResponse> handleUserEmailNotAllowed(UserEmailNotAllowedException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(e.getStatus(), e.getMessage()),
+            e.getStatus()
+        );
+    }
+
+    @ExceptionHandler(UserAlreadyExistsException.class)
+    public ResponseEntity<ClientErrorResponse> handleUserAlreadyExists(UserAlreadyExistsException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(e.getStatus(), e.getMessage()),
+            e.getStatus()
+        );
+    }
+
+    @ExceptionHandler(RefreshTokenExpiredException.class)
+    public ResponseEntity<ClientErrorResponse> handleRefreshTokenExpired(RefreshTokenExpiredException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(e.getStatus(), e.getMessage()),
+            e.getStatus()
+        );
+    }
+
+    @ExceptionHandler(InvalidPasswordException.class)
+    public ResponseEntity<ClientErrorResponse> handleInvalidPassword(InvalidPasswordException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(e.getStatus(), e.getMessage()),
+            e.getStatus()
+        );
+    }
+
+    @ExceptionHandler(EmailSendFailedException.class)
+    public ResponseEntity<ClientErrorResponse> handleEmailSendFailed(EmailSendFailedException e) {
+        return new ResponseEntity<>(
+            new ClientErrorResponse(e.getStatus(), e.getMessage()),
+            e.getStatus()
+        );
+    }
+
+    @ExceptionHandler(CertificationNotAllowedException.class)
+    public ResponseEntity<ClientErrorResponse> handleCertificationNotAllowed(CertificationNotAllowedException e) {
         return new ResponseEntity<>(
             new ClientErrorResponse(e.getStatus(), e.getMessage()),
             e.getStatus()
