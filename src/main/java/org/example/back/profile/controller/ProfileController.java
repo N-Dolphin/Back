@@ -267,7 +267,7 @@ public class ProfileController implements ProfileControllerSwagger {
 			ProfileResponseDto responseDTO = ProfileResponseDto.from(null, null);
 			return ResponseEntity.ok(responseDTO);
 		}  else {
-			Long profileId = userService.getProfileIdByUserIdAtFirst(userId);
+			Long profileId = userService.getProfileIdByUserId(userId);
 			Profile userProfile = profileService.findProfileByProfileId(profileId);
 
 			// profileId로 프로필 이미지들을 조회하여 다수의 결과 처리
