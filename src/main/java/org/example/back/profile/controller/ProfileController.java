@@ -26,6 +26,7 @@ import org.example.back.profileimage.entity.ProfileImage;
 import org.example.back.profileimage.repository.ProfileImageRepository;
 import org.example.back.swipe.entity.Swipe;
 import org.example.back.swipe.repository.SwipeRepository;
+import org.example.back.user.dto.User;
 import org.example.back.user.entity.UserEntity;
 import org.example.back.user.exception.InvalidTokenException;
 import org.example.back.user.exception.UserNotFoundException;
@@ -63,6 +64,7 @@ public class ProfileController implements ProfileControllerSwagger {
 	private final UserService userService;
 	private final ProfileImageRepository profileImageRepository;
 	private final SwipeRepository swipeRepository;
+	private final UserRepository userRepository;
 
 	@Value("${app.profile.default-image-url}")
 	private String defaultProfileImageUrl;
@@ -257,25 +259,32 @@ public class ProfileController implements ProfileControllerSwagger {
 		String token = resolveToken(request);
 		String userIdToken = jwtTokenProvider.extractSubject(token);
 		Long userId = Long.valueOf(userIdToken);
-		Long profileId = userService.getProfileIdByUserId(userId);
 
-		Profile userProfile = profileService.findProfileByProfileId(profileId);
+		UserEntity user = userRepository.findByUserId(userId)
+			.orElseThrow(() -> new UserNotFoundException());
 
-		// profileId로 프로필 이미지들을 조회하여 다수의 결과 처리
-		List<ProfileImage> profileImages = profileImageRepository.findAllByProfile_ProfileId(profileId);
+		if (profileRepository.findByUserId(user.getUserId()).isEmpty()) {
+			ProfileResponseDto responseDTO = ProfileResponseDto.from(null, null);
+			return ResponseEntity.ok(responseDTO);
+		}  else {
+			Long profileId = userService.getProfileIdByUserId(userId);
+			Profile userProfile = profileService.findProfileByProfileId(profileId);
 
-		// 이미지 URL 리스트 추출
-		List<String> imageUrls = profileImages.stream()
-			.map(ProfileImage::getImageUrl)
-			.toList();
+			// profileId로 프로필 이미지들을 조회하여 다수의 결과 처리
+			List<ProfileImage> profileImages = profileImageRepository.findAllByProfile_ProfileId(profileId);
 
-		// 이미지 URL 리스트를 ProfileResponseDto에 전달
-		ProfileResponseDto responseDTO = ProfileResponseDto.from(userProfile, imageUrls);
+			// 이미지 URL 리스트 추출
+			List<String> imageUrls = profileImages.stream()
+				.map(ProfileImage::getImageUrl)
+				.toList();
 
-		return ResponseEntity.ok(responseDTO);
+			// 이미지 URL 리스트를 ProfileResponseDto에 전달
+			ProfileResponseDto responseDTO = ProfileResponseDto.from(userProfile, imageUrls);
+
+			return ResponseEntity.ok(responseDTO);
+		}
+
 	}
-
-
 	private boolean checkProfileMatch(Long profileId, Long getProfileId) {
 		List<Swipe> swipes = swipeRepository.findByFromProfileIdOrToProfileId(profileId, getProfileId);
 

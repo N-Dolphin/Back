@@ -163,6 +163,16 @@ public class UserService {
 			throw new ProfileNotFoundException();
 		}
 	}
+	public Long getProfileIdByUserIdAtFirst(Long userId) {
+		// 유저 조회
+		UserEntity user = userRepository.findByUserId(userId)
+			.orElseThrow(() -> new UserNotFoundException());
+
+		// 프로필 조회
+		return profileRepository.findByUserId(user.getUserId())
+			.map(Profile::getProfileId) // 프로필 ID를 추출
+			.orElse(null); // 프로필이 없으면 null 반환
+	}
 
 
 	private static class CertificationNumber {

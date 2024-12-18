@@ -13,14 +13,29 @@ public record ProfileResponseDto(
 	List<String> profileImages // 이미지 URL 리스트 추가
 ) {
 	public static ProfileResponseDto from(Profile profile, List<String> imageUrls) {
+		if (profile == null) {
+			// profile이 null일 경우 기본값 반환
+			return new ProfileResponseDto(
+				null, // profileId
+				"",   // profileName
+				"",   // selfIntroduction
+				null, // age
+				"",   // gender
+				null, // location
+				imageUrls != null ? imageUrls : List.of() // 이미지 URL 리스트가 null인 경우 빈 리스트 반환
+			);
+		}
+
+		// profile이 존재하는 경우의 응답
 		return new ProfileResponseDto(
 			profile.getProfileId(),
 			profile.getProfileName(),
 			profile.getSelfIntroduction(),
 			profile.getAge(),
-			profile.getGender().toString(),
+			profile.getGender() != null ? profile.getGender().toString() : "",
 			profile.getLocation() != null ? LocationDto.from(profile.getLocation().getLocation()) : null,
-			imageUrls // 이미지 URL 리스트를 받아서 설정
+			imageUrls != null ? imageUrls : List.of() // 이미지 URL 리스트가 null인 경우 빈 리스트 반환
 		);
 	}
+
 }
