@@ -2,11 +2,13 @@ package org.example.back.profileimage;
 
 import org.example.back.config.provider.JwtTokenProvider;
 import org.example.back.profile.exception.UnauthorizedException;
+import org.example.back.profileimage.entity.ProfileImage;
 import org.example.back.profileimage.exception.FileEmptyException;
 import org.example.back.profileimage.exception.FileSizeExceededException;
 import org.example.back.profileimage.exception.FileUploadException;
 import org.example.back.profileimage.exception.InvalidFileTypeException;
 import org.example.back.profileimage.exception.S3UploadException;
+import org.example.back.profileimage.repository.ProfileImageRepository;
 import org.example.back.profileimage.service.ProfileImageService;
 import org.example.back.user.service.UserService;
 import org.springframework.web.bind.annotation.*;
@@ -43,6 +45,7 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 	private final ProfileImageService profileImageService;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UserService userService;
+	private final ProfileImageRepository profileImageRepository;
 
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucketName;
@@ -71,6 +74,16 @@ public class ProfileImageController implements ProfileImageControllerSwagger {
 		String userIdToken = jwtTokenProvider.extractSubject(token);
 		Long userId = Long.valueOf(userIdToken);
 		Long profileId = userService.getProfileIdByUserId(userId);
+
+		List<ProfileImage> profileImages = profileImageRepository.findByProfile_ProfileId(profileId);
+		if (!profileImages.isEmpty()) {
+			for (ProfileImage image : profileImages) {
+				// S3에서 삭제
+				deleteFileFromS3(image.getImageUrl());
+			}
+			// DB에서 삭제
+			profileImageRepository.deleteAll(profileImages);
+		}
 
 		List<String> imgUrlList = new ArrayList<>();
 
