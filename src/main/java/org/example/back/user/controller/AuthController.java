@@ -75,10 +75,10 @@ public final class AuthController implements AuthControllerSwagger{
 		String requestKey = "kakao:auth:" + params.getAuthorizationCode();
 		log.info("Kakao login attempt - Authorization code received: {}", params.getAuthorizationCode());
 
-		if (!redisService.setIfAbsent(requestKey, "processing", 30)) {
-			log.warn("Duplicate login attempt detected with auth code: {}", params.getAuthorizationCode());
-			return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("처리 중입니다");
-		}
+		// if (!redisService.setIfAbsent(requestKey, "processing", 30)) {
+		// 	log.warn("Duplicate login attempt detected with auth code: {}", params.getAuthorizationCode());
+		// 	return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("처리 중입니다");
+		// }
 
 		try {
 			log.info("Processing kakao login request...");
