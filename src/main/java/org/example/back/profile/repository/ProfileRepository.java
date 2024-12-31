@@ -55,7 +55,7 @@ public interface ProfileRepository extends JpaRepository<Profile, Long> {
 
 	@Query(value = """
     SELECT p.* FROM profile p 
-    WHERE ST_DWithin(geography(p.location), geography(:currentLocation), :radius) 
+    WHERE ST_DWithin( 	(p.location), geography(:currentLocation), :radius) 
     AND p.profileid != :profileId 
     AND p.profileid NOT IN (
         SELECT toprofileid    

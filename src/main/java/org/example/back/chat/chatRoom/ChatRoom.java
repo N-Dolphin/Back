@@ -77,10 +77,4 @@ public class ChatRoom {
 
 		return participants.size() - onlineProfiles.size() - unreadCount;
 	}
-	private List<LocalDateTime> getLastEntryTimesExcludingOnlineProfiles(Set<Long> onlineProfileIds) {
-		return participants.stream()
-			.filter(participant -> !onlineProfileIds.contains(participant.getProfileId()))
-			.map(ChatRoomParticipant::getLastEntryTime)
-			.toList();
-	}
 }

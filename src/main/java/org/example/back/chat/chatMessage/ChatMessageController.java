@@ -203,14 +203,6 @@ public class ChatMessageController implements ChatMessageControllerSwagger {
 		}
 	}
 
-	// @EventListener
-	// public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
-	// 	StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
-	// 	Long profileId = stompHeaderAccessorUtil.removeMemberIdInSession(accessor);
-	// 	Long chatRoomId = stompHeaderAccessorUtil.removeChatRoomIdInSession(accessor);
-	//
-	// 	chatMessageService.handleDisconnectMessage(accessor);
-	// }
 	@EventListener
 	public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
 		StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
@@ -247,7 +239,6 @@ public class ChatMessageController implements ChatMessageControllerSwagger {
 		return ResponseEntity.ok(response);
 	}
 
-
 	private String uploadToS3(byte[] fileData, String contentType, String fileName) {
 		ObjectMetadata metadata = new ObjectMetadata();
 		metadata.setContentType(contentType);
@@ -279,14 +270,11 @@ public class ChatMessageController implements ChatMessageControllerSwagger {
 		}
 	}
 
-
-
 	@MessageMapping("chat.delete")
 	public void deleteMessage(StompHeaderAccessor accessor, ChatMessageDeleteRequest request) {
 		Long profileId = stompHeaderAccessorUtil.getMemberIdInSession(accessor);
 		chatMessageService.deleteMessage(request.getChatRoomId(), profileId, request.getMessageId());
 	}
-
 
 	@DeleteMapping("/api/v1/chat-rooms/{chatRoomId}/leave")
 	public ResponseEntity<Void> leaveChatRoom(

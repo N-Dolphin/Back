@@ -43,42 +43,10 @@ public final class AuthController implements AuthControllerSwagger{
 	@Value("${oauth.kakao.authorizeUrl}")
 	private String AUTHORIZATION_ENDPOINT;
 
-	// @PostMapping("/kakao")
-	// public ResponseEntity<?> loginKakao(@RequestBody KakaoLoginParams params) {
-	// 	String requestKey = "kakao:auth:" + params.getAuthorizationCode();
-	// 	if (!redisService.setIfAbsent(requestKey, "processing", 30)) {
-	// 		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("처리 중입니다");
-	// 	}
-	// 	try {
-	// 		return ResponseEntity.ok(oAuthLoginService.login(params));
-	// 	} catch (HttpClientErrorException.BadRequest e) {
-	// 		return ResponseEntity.badRequest().body("인증 코드가 만료되었거나 유효하지 않습니다. 다시 로그인해주세요.");
-	// 	} finally {
-	// 		redisService.delete(requestKey);
-	// 	}
-	// }
-	//
-	// @GetMapping
-	// @Override
-	// public void redirectToKakaoLogin(HttpServletResponse response) throws IOException {
-	// 	String redirectUrl = String.format(
-	// 		"%s?client_id=%s&redirect_uri=%s&response_type=code&prompt=login",
-	// 		AUTHORIZATION_ENDPOINT,
-	// 		CLIENT_ID,
-	// 		REDIRECT_URI
-	// 	);
-	// 	response.sendRedirect(redirectUrl);
-	// }
-
 	@PostMapping("/kakao")
 	public ResponseEntity<?> loginKakao(@RequestBody KakaoLoginParams params) {
 		String requestKey = "kakao:auth:" + params.getAuthorizationCode();
 		log.info("Kakao login attempt - Authorization code received: {}", params.getAuthorizationCode());
-
-		// if (!redisService.setIfAbsent(requestKey, "processing", 30)) {
-		// 	log.warn("Duplicate login attempt detected with auth code: {}", params.getAuthorizationCode());
-		// 	return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body("처리 중입니다");
-		// }
 
 		try {
 			log.info("Processing kakao login request...");

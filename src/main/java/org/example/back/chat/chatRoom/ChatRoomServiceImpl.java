@@ -60,7 +60,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 			.createdAt(LocalDateTime.now())
 			.build();
 
-
 		chatMessageRepository.save(chatMessage);
 		rabbitTemplate.convertAndSend(ROUTING_KEY_PREFIX + newRoom.getId(),
 			ChatMessageRes.createRes(chatMessage, newRoom.getParticipantCount()));
@@ -68,30 +67,6 @@ public class ChatRoomServiceImpl implements ChatRoomService {
 		return ChatDto.ChatRoomCreateRes.createRes(newRoom.getId(), fromProfileId, toProfileId);
 	}
 
-
-	// public List<SimpleChatRoomRecord> getSimpleChatRooms(Long profileId) {
-	// 	List<ChatRoomParticipant> participants =
-	// 		chatRoomParticipantRepository.findAllByProfileId(profileId);
-	//
-	// 	return participants.stream()
-	// 		.map(participant -> {
-	// 			// 읽지 않은 메시지 수 계산 (자신이 보낸 메시지 제외)
-	// 			Long unreadCount = chatMessageRepository
-	// 				.countByChatRoomIdAndProfileIdNotAndCreatedAtAfter(
-	// 					participant.getChatRoom().getId(),
-	// 					profileId,  // 자신이 보낸 메시지 제외
-	// 					participant.getLastEntryTime()
-	// 				);
-	//
-	// 			return new SimpleChatRoomRecord(
-	// 				participant.getChatRoom().getId(),
-	// 				profileId,
-	// 				participant.getPartnerProfileId(),
-	// 				unreadCount
-	// 			);
-	// 		})
-	// 		.toList();
-	// }
 	// 채팅방 메시지를 읽었을 때 호출되는 메서드 추가
 	@Transactional
 	public void updateLastReadTime(Long chatRoomId, Long profileId) {

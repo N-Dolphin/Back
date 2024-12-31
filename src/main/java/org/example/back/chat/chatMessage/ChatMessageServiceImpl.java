@@ -58,7 +58,6 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 		// 필요한 경우 추가적인 초기화 작업 수행
 	}
 
-
 	@Override
 	public ChatMessageRes sendMessage(StompHeaderAccessor accessor, ChatDto.ChatMessageReq req) {
 		Long senderId = stompHeaderAccessorUtil.getMemberIdInSession(accessor);
@@ -156,6 +155,7 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 	public void exitChatRoom(ChatRoom chatRoom, Long profileId) {
 		redisChatUtil.removeChatRoom2Member(chatRoom.getId(), profileId);
 	}
+
 	@Override
 	@Transactional
 	public void deleteMessage(Long chatRoomId, Long profileId, String messageId) {
@@ -165,11 +165,9 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 		System.out.println("profileId: " + profileId);
 		System.out.println("messageId: " + messageId);
 
-
 		// ID로만 먼저 찾아보기
 		Optional<ChatMessage> messageById = chatMessageRepository.findById(messageId);
 		System.out.println("Message found by ID only: " + messageById.isPresent());
-
 
 		ChatMessage message = chatMessageRepository
 			.findByChatRoomIdAndProfileIdAndId(chatRoomId, profileId, messageId)
@@ -188,6 +186,4 @@ public class ChatMessageServiceImpl implements ChatMessageService {
 			deleteNotification
 		);
 	}
-
-
 }
