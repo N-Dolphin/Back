@@ -4,7 +4,9 @@
 # 🐬 NDolphin
 유저 매칭과 실시간 채팅을 위한 고가용성 메시징 서버
 
-https://www.ndolophin.com/
+[//]: # (https://www.ndolophin.com/)
+
+[2025/02/13] : 서버 비용문제로 인스턴스 종료하였습니다
 
 [![Spring](https://img.shields.io/badge/Spring-6DB33F?style=flat-square&logo=spring&logoColor=white)](https://spring.io/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
