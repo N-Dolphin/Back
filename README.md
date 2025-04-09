@@ -37,31 +37,26 @@
 <img src="/src/main/resources/static/아키텍쳐설계도.png" alt="system-architecture">
 </div>
 
-📊 ERD 다이어그램
-<div align="center">
-<img src="/src/main/resources/static/erd.png" alt="Entity Relationship Diagram">
-</div>
 
+###주요 엔티티
 
-주요 엔티티
+-UserEntity: 사용자 인증 정보 저장 (이메일, 비밀번호, OAuth 정보)
+-Profile: 사용자 프로필 정보 (이름, 소개, 성별, 나이, 위치)
+-ProfileImage: S3에 저장된 사용자 프로필 이미지 관리
+-AreaFilter: 지리 데이터를 활용한 위치 기반 필터링
+-SearchFilter: 매칭 사용자 검색 조건 (성별, 나이 범위, 검색 거리)
+-Swipe: 프로필 간 상호작용 기록 (좋아요, 싫어요)
+-ChatRoom: 매칭된 두 사용자 간의 대화방
+-ChatRoomParticipant: 채팅방 참가자 정보와 읽은 시간 추적
+-ChatMessage: MongoDB에 저장되는 채팅 메시지 (텍스트, 파일 등)
 
-UserEntity: 사용자 인증 정보 저장 (이메일, 비밀번호, OAuth 정보)
-Profile: 사용자 프로필 정보 (이름, 소개, 성별, 나이, 위치)
-ProfileImage: S3에 저장된 사용자 프로필 이미지 관리
-AreaFilter: 지리 데이터를 활용한 위치 기반 필터링
-SearchFilter: 매칭 사용자 검색 조건 (성별, 나이 범위, 검색 거리)
-Swipe: 프로필 간 상호작용 기록 (좋아요, 싫어요)
-ChatRoom: 매칭된 두 사용자 간의 대화방
-ChatRoomParticipant: 채팅방 참가자 정보와 읽은 시간 추적
-ChatMessage: MongoDB에 저장되는 채팅 메시지 (텍스트, 파일 등)
+###주요 관계
 
-주요 관계
-
-User-Profile: 사용자는 하나의 프로필을 가짐
-Profile-ProfileImage: 프로필은 여러 이미지를 가질 수 있음
-Profile-Swipe: 사용자 간 좋아요/싫어요 관계
-Profile-ChatRoomParticipant: 사용자는 여러 채팅방에 참여할 수 있음
-ChatRoom-ChatMessage: 채팅방은 여러 메시지를 포함함
+-User-Profile: 사용자는 하나의 프로필을 가짐
+-Profile-ProfileImage: 프로필은 여러 이미지를 가질 수 있음
+-Profile-Swipe: 사용자 간 좋아요/싫어요 관계
+-Profile-ChatRoomParticipant: 사용자는 여러 채팅방에 참여할 수 있음
+-ChatRoom-ChatMessage: 채팅방은 여러 메시지를 포함함
 
 ## 🛠 Tech Stack
 
